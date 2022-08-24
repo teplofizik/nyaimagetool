@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "NyaImageTool": {
+      "commandName": "Project",
+      "commandLineArgs": "test.imgscript"
+    }
+  }
+}
