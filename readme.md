@@ -110,6 +110,21 @@ set <imagetype> arch <arch>
 <imagetype> is "ramfs", "kernel", "devtree" or "all"
 <arch> is FIT arch variants: "arm", "arm64", "x86", "x86_64", etc.
 
+Set image name (used in Legacy format):
+```
+set <imagetype> name <imagename>
+```
+
+Set entry address (for kernel):
+```
+set kernel entry <hexaddress>
+```
+
+Set data load address (for kernel):
+```
+set kernel load <hexaddress>
+```
+
 ## Commands for modify fiolesystem content:
 Standart arguments for fs commands:
 <path> -- path in image filesystem

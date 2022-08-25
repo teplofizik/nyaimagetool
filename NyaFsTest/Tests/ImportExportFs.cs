@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaFsTest
+namespace NyaFsTest.Tests
 {
     static class ImportExportFs
     {
