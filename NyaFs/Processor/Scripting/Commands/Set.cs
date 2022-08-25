@@ -11,7 +11,7 @@ namespace NyaFs.Processor.Scripting.Commands
 
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel", "devtree", "ramfs", "all" }),
-                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name" }),
+                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry" }),
                     new Params.StringScriptArgsParam("value")
                 }));
         }
@@ -132,6 +132,32 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "name":
                         Array.ForEach(Info.ToArray(), I => I.Name = Value);
                         return new ScriptStepResult(ScriptStepStatus.Ok, $"Set name ok: {Value}!");
+                    case "load":
+                        try
+                        {
+                            uint Load = Convert.ToUInt32(Value, 16);
+
+                            Array.ForEach(Info.ToArray(), I => I.DataLoadAddress = Load);
+
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Set load address ok: {Load:x08}!");
+                        }
+                        catch (Exception E)
+                        {
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid load address: {Value}!");
+                        }
+                    case "entry":
+                        try
+                        {
+                            uint Entry = Convert.ToUInt32(Value, 16);
+
+                            Array.ForEach(Info.ToArray(), I => I.EntryPointAddress = Entry);
+
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Set entry address ok: {Entry:x08}!");
+                        }
+                        catch(Exception E)
+                        {
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid entry address: {Value}!");
+                        }
                     default:
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown parameter {Param}!");
                 }
