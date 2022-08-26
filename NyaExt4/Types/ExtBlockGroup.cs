@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaExt4.Types
+namespace NyaExt2.Types
 {
-    class ExtBlockGroup : RawPacket
+    public class ExtBlockGroup : RawPacket
     {
         public ExtBlockGroup(byte[] Data) : base(Data)
         {

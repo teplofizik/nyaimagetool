@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NyaExt4
+namespace NyaExt2
 {
     public class ExtDisk
     {

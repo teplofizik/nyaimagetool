@@ -4,12 +4,17 @@ using System.Text;
 
 namespace NyaFsTest.Tests
 {
-    static class Ext4Fs
+
+    static class Ext2Fs
     {
         public static void ReadSuperblock()
         {
-            var Fs = new NyaExt4.ExtFs("ramfs.ext4");
+            var Fs = new NyaExt2.Implementations.Ext2Fs("ramfs.ext4");
 
+            Fs.Dump();
+            Fs.DumpINodes();
         }
+
+
     }
 }

@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaExt4.Types
+namespace NyaExt2.Types
 {
-    class ExtINode : RawPacket
+    public class ExtINode : RawPacket
     {
         public ExtINode(byte[] Data) : base(Data)
         {

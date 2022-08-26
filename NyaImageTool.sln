@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaImageTool", "NyaImageToo
 		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaExt4", "NyaExt4\NyaExt4.csproj", "{B7799C6F-8A5B-4BD8-8BFD-3D1140033AA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaExt2", "NyaExt4\NyaExt2.csproj", "{B7799C6F-8A5B-4BD8-8BFD-3D1140033AA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

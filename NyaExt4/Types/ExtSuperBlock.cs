@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaExt4.Types
+namespace NyaExt2.Types
 {
     /// <summary>
     /// The Super Block of Ext Filesystem

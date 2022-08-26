@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaExt4.Helper
+namespace NyaExt2.Helper
 {
     internal static class FsHelper
     {

@@ -7,7 +7,7 @@ namespace NyaFsTest
     {
         static void Main(string[] args)
         {
-            Ext4Fs.ReadSuperblock();
+            Ext2Fs.ReadSuperblock();
         }
     }
 }
