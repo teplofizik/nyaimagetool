@@ -30,7 +30,7 @@ namespace NyaExt2.Implementations
             INodeTable = BG.INodeTableLo;
         }
 
-        private Types.ExtINode GetINode(uint Id) => new Types.ExtINode(ReadArray(INodeTableOffset + INodeSize * (Id - 1), INodeSize));
+        internal Types.ExtINode GetINode(uint Id) => new Types.ExtINode(ReadArray(INodeTableOffset + INodeSize * (Id - 1), INodeSize));
 
         public override void Dump()
         {
@@ -42,6 +42,30 @@ namespace NyaExt2.Implementations
 
             Console.WriteLine($" INode table address: 0x{INodeTableOffset:x08}");
             Console.WriteLine($"    INode table size: {INodesCount * BlockSize / 1024} kB");
+            Console.WriteLine($"         Free inodes: {BG.FreeINodesCountLo}");
+
+            var Root = GetRootDir();
+        }
+
+        /*internal byte[] GetINodeContent(Types.ExtINode Node)
+        {
+            var Size = Node.SizeLo;
+            var Blocks = Node.Block;
+            var Type = Node.NodeType;
+
+        }*/
+
+        internal Types.ExtINode GetRootDir()
+        {
+            for (uint i = 1; i < INodesCount; i++)
+            {
+                var N = GetINode(i);
+
+                if (N.NodeType == Types.ExtINodeType.DIR)
+                    return N;
+            }
+
+            return null;
         }
 
         public override void DumpINodes()
@@ -51,8 +75,8 @@ namespace NyaExt2.Implementations
             {
                 var N = GetINode(i);
 
-
-                Console.WriteLine($"{i:0000}: m{N.Mode:x04} u:{N.UID} g:{N.GID} s:{N.SizeLo} l:{N.LinksCount} f:{N.Flags}");
+                if(N.NodeType != Types.ExtINodeType.NONE)
+                    Console.WriteLine($"{i:0000}: t:{N.NodeType} m:{N.ModeStr:x04} u:{N.UID} g:{N.GID} s:{N.SizeLo} l:{N.LinksCount} f:{N.Flags}");
             }
         }
     }

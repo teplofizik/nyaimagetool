@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NyaExt2.Types
 {
-    public class ExtINode : RawPacket
+    internal class ExtINode : RawPacket
     {
         public ExtINode(byte[] Data) : base(Data)
         {
@@ -41,6 +41,22 @@ namespace NyaExt2.Types
             get { return ReadUInt16(0x00); }
             set { WriteUInt16(0x00, value); }
         }
+
+        /// <summary>
+        /// 0x1000  S_IFIFO(FIFO)
+        /// 0x2000  S_IFCHR(Character device)
+        /// 0x4000  S_IFDIR(Directory)
+        /// 0x6000  S_IFBLK(Block device)
+        /// 0x8000  S_IFREG(Regular file)
+        /// 0xA000  S_IFLNK(Symbolic link)
+        /// 0xC000  S_IFSOCK(Socket)
+        /// </summary>
+        public ExtINodeType NodeType => (ExtINodeType)(Mode & 0xF000);
+
+        /// <summary>
+        /// Mode as string
+        /// </summary>
+        public string ModeStr => Helper.FsHelper.ConvertModeToString(Mode & 0xFFF);
 
         /// <summary>
         /// Lower 16-bits of Owner UID.
@@ -187,6 +203,15 @@ namespace NyaExt2.Types
         {
             get { return ReadUInt32(0x24); }
             set { WriteUInt32(0x24, value); }
+        }
+
+        /// <summary>
+        /// It NodeType == LINK and Data Length < 60 bytes, text contains in blocks field.
+        /// </summary>
+        public string SLinkText
+        {
+            get { return ReadString(0x28, 60); }
+            set { WriteString(0x28, value, 60); }
         }
 
         /// <summary>

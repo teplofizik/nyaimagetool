@@ -9,7 +9,7 @@ namespace NyaExt2.Types
     /// The Super Block of Ext Filesystem
     /// https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout
     /// </summary>
-    public class ExtSuperBlock : RawPacket
+    internal class ExtSuperBlock : RawPacket
     {
         public ExtSuperBlock(byte[] Data) : base(Data)
         {

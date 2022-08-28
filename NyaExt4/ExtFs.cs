@@ -17,8 +17,8 @@ namespace NyaExt2
 
         }
 
-        public Types.ExtSuperBlock SuperBlock  => new Types.ExtSuperBlock(ReadArray(0x400, 0x400));
-        public Types.ExtBlockGroup BlockGroup => new Types.ExtBlockGroup(ReadArray(0x800, 0x400));
+        internal Types.ExtSuperBlock SuperBlock  => new Types.ExtSuperBlock(ReadArray(0x400, 0x400));
+        internal Types.ExtBlockGroup BlockGroup => new Types.ExtBlockGroup(ReadArray(0x800, 0x400));
 
         protected virtual void Init()
         {
