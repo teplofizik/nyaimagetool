@@ -141,7 +141,7 @@ namespace NyaFs.Processor.Scripting.Commands
 
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Set load address ok: {Load:x08}!");
                         }
-                        catch (Exception E)
+                        catch (Exception)
                         {
                             return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid load address: {Value}!");
                         }
@@ -154,7 +154,7 @@ namespace NyaFs.Processor.Scripting.Commands
 
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Set entry address ok: {Entry:x08}!");
                         }
-                        catch(Exception E)
+                        catch(Exception)
                         {
                             return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid entry address: {Value}!");
                         }

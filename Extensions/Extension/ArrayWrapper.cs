@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Extension.Packet
 {
-    public class RawPacketWrapper
+    public class ArrayWrapper
     {
-        private byte[] Raw;
+        protected byte[] Raw;
         private long StructOffset = 0;
         private long StructSize = 0;
 
@@ -16,7 +16,7 @@ namespace Extension.Packet
         /// </summary>
         /// <param name="Data">Array to parsing and editing</param>
         /// <param name="Offset">Offset to struct</param>
-        public RawPacketWrapper(byte[] Data, long Offset, long Size)
+        public ArrayWrapper(byte[] Data, long Offset, long Size)
         {
             Raw = Data;
             StructOffset = Offset;
@@ -63,7 +63,7 @@ namespace Extension.Packet
         /// <param name="Text">Content</param>
         /// <param name="Length">Length of string</param>
         /// <returns>Offset after this string</returns>
-        protected long WriteANSIString(long Offset, string Text, int Length) => Raw.WriteANSIString(StructOffset + Offset, Text, Length) - StructOffset;
+        protected long WriteANSIString(long Offset, string Text, long Length) => Raw.WriteANSIString(StructOffset + Offset, Text, Length) - StructOffset;
         
         /// <summary>
         /// Read UTF8 null-terminated string from array
@@ -71,7 +71,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset from start of struct to field</param>
         /// <param name="Length">Length of string</param>
         /// <returns>readed string</returns>
-        protected string ReadANSIString(long Offset, int Length) => Raw.ReadANSIString(StructOffset + Offset, Length);
+        protected string ReadANSIString(long Offset, long Length) => Raw.ReadANSIString(StructOffset + Offset, Length);
 
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Extension.Packet
         /// <param name="Text">Content UTF8</param>
         /// <param name="Length">Length of string</param>
         /// <returns>Offset after this field</returns>
-        protected long WriteString(long Offset, string Text, int Length) => Raw.WriteString(StructOffset + Offset, Text, Length) - StructOffset;
+        protected long WriteString(long Offset, string Text, long Length) => Raw.WriteString(StructOffset + Offset, Text, Length) - StructOffset;
         
         /// <summary>
         /// Read ANSI null-terminated string from array
@@ -89,7 +89,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset from start of struct to field</param>
         /// <param name="Length">Length of string</param>
         /// <returns>Readed string</returns>
-        protected string ReadString(long Offset, int Length) => Raw.ReadString(StructOffset + Offset, Length);
+        protected string ReadString(long Offset, long Length) => Raw.ReadString(StructOffset + Offset, Length);
 
         // Byte access
 
@@ -99,7 +99,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset from start of struct to field</param>
         /// <param name="Value">Value of byte field</param>
         /// <returns>Offset after this field</returns>
-        protected long WriteByte(long Offset, int Value) => Raw.WriteByte(StructOffset + Offset, Convert.ToByte(Value & 0xFF)) - StructOffset;
+        protected long WriteByte(long Offset, long Value) => Raw.WriteByte(StructOffset + Offset, Convert.ToByte(Value & 0xFF)) - StructOffset;
         
         /// <summary>
         /// Read byte from array
@@ -221,7 +221,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed int16[] value</returns>
-        protected int[] ReadInt16Array(long Offset, long Length) => Raw.ReadInt16Array(Offset, Length);
+        protected int[] ReadInt16Array(long Offset, long Length) => Raw.ReadInt16Array(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read int16 be array
@@ -229,7 +229,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed int16[] value</returns>
-        protected int[] ReadInt16BEArray(long Offset, long Length) => Raw.ReadInt16BEArray(Offset, Length);
+        protected int[] ReadInt16BEArray(long Offset, long Length) => Raw.ReadInt16BEArray(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read uint16 le array
@@ -237,7 +237,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed uint16[] value</returns>
-        protected uint[] ReadUInt16Array(long Offset, long Length) => Raw.ReadUInt16Array(Offset, Length);
+        protected uint[] ReadUInt16Array(long Offset, long Length) => Raw.ReadUInt16Array(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read uint16 be array
@@ -245,7 +245,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed uint16[] value</returns>
-        protected uint[] ReadUInt16BEArray(long Offset, long Length) => Raw.ReadUInt16BEArray(Offset, Length);
+        protected uint[] ReadUInt16BEArray(long Offset, long Length) => Raw.ReadUInt16BEArray(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read int32 le array
@@ -253,7 +253,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed int32[] value</returns>
-        protected int[] ReadInt32Array(long Offset, long Length) => Raw.ReadInt32Array(Offset, Length);
+        protected int[] ReadInt32Array(long Offset, long Length) => Raw.ReadInt32Array(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read int32 be array
@@ -261,7 +261,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed int32[] value</returns>
-        protected int[] ReadInt32BEArray(long Offset, long Length) => Raw.ReadInt32BEArray(Offset, Length);
+        protected int[] ReadInt32BEArray(long Offset, long Length) => Raw.ReadInt32BEArray(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read uint32 le array
@@ -269,7 +269,7 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed uint32[] value</returns>
-        protected uint[] ReadUInt32Array(long Offset, long Length) => Raw.ReadUInt32Array(Offset, Length);
+        protected uint[] ReadUInt32Array(long Offset, long Length) => Raw.ReadUInt32Array(StructOffset + Offset, Length);
 
         /// <summary>
         /// Read uint32 be array
@@ -277,6 +277,6 @@ namespace Extension.Packet
         /// <param name="Offset">Offset to field</param>
         /// <param name="Length">Lenght of readed array</param>
         /// <returns>Readed uint32[] value</returns>
-        protected uint[] ReadUInt32BEArray(long Offset, long Length) => Raw.ReadUInt32BEArray(Offset, Length);
+        protected uint[] ReadUInt32BEArray(long Offset, long Length) => Raw.ReadUInt32BEArray(StructOffset + Offset, Length);
     }
 }

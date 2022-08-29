@@ -8,8 +8,4 @@
     <ProjectReference Include="..\Extensions\Extensions.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Types\Extensions\" />
-  </ItemGroup>
-
 </Project>

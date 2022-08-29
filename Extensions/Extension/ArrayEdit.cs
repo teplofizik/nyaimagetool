@@ -157,9 +157,6 @@ namespace Extension.Array
                 }
             }
 
-            // Пследний символ всегда 0
-            Data[Offset + Length - 1] = 0;
-
             return Offset + Length;
         }
 

@@ -5,11 +5,32 @@ using System.Text;
 
 namespace NyaExt2.Types
 {
-    internal class ExtINode : RawPacket
+    internal class ExtINode : ArrayWrapper
     {
-        public ExtINode(byte[] Data) : base(Data)
+        /// <summary>
+        /// Wrapper for INode struct
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <param name="Offset"></param>
+        public ExtINode(byte[] Data, long Offset) : base(Data, Offset, 0x80) // ext2, ext3 => 128 bytes
         {
 
+        }
+
+        /// <summary>
+        /// For extensions...
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <param name="Offset"></param>
+        /// <param name="Size"></param>
+        public ExtINode(byte[] Data, long Offset, long Size) : base(Data, Offset, Size)
+        {
+
+        }
+
+        public override string ToString()
+        {
+            return $"t:{NodeType} m:{ModeStr:x04} u:{UID} g:{GID} s:{SizeLo} l:{LinksCount} f:{Flags}";
         }
 
         /// <summary>
@@ -52,6 +73,27 @@ namespace NyaExt2.Types
         /// 0xC000  S_IFSOCK(Socket)
         /// </summary>
         public ExtINodeType NodeType => (ExtINodeType)(Mode & 0xF000);
+
+        /// <summary>
+        /// Filesystem node type
+        /// </summary>
+        public FilesystemEntryType FsNodeType
+        {
+            get
+            {
+                switch(NodeType)
+                {
+                    case ExtINodeType.FIFO: return FilesystemEntryType.Fifo;
+                    case ExtINodeType.CHAR: return FilesystemEntryType.Character;
+                    case ExtINodeType.DIR: return FilesystemEntryType.Directory;
+                    case ExtINodeType.BLOCK: return FilesystemEntryType.Block;
+                    case ExtINodeType.REG: return FilesystemEntryType.Regular;
+                    case ExtINodeType.LINK: return FilesystemEntryType.Link;
+                    case ExtINodeType.SOCK: return FilesystemEntryType.Socket;
+                    default: return FilesystemEntryType.Invalid;
+                }
+            }
+        }
 
         /// <summary>
         /// Mode as string
@@ -208,10 +250,10 @@ namespace NyaExt2.Types
         /// <summary>
         /// It NodeType == LINK and Data Length < 60 bytes, text contains in blocks field.
         /// </summary>
-        public string SLinkText
+        public byte[] BlockRaw
         {
-            get { return ReadString(0x28, 60); }
-            set { WriteString(0x28, value, 60); }
+            get { return ReadArray(0x28, 60); }
+            set { WriteArray(0x28, value, 60); }
         }
 
         /// <summary>
@@ -310,96 +352,5 @@ namespace NyaExt2.Types
             get { return ReadUInt16(0x7C); }
             set { WriteUInt16(0x7C, value); }
         }
-
-        /// <summary>
-        /// Size of this inode - 128. Alternately, the size of the extended inode fields beyond the original ext2 inode, including this field.
-        /// u16 i_extra_isize (0x80)
-        /// </summary>
-        public uint ExtraISize
-        {
-            get { return ReadUInt16(0x80); }
-            set { WriteUInt16(0x80, value); }
-        }
-
-        /// <summary>
-        /// Upper 16-bits of the inode checksum.
-        /// u16 i_checksum_hi (0x82)
-        /// </summary>
-        public uint ChecksumHi
-        {
-            get { return ReadUInt16(0x82); }
-            set { WriteUInt16(0x82, value); }
-        }
-
-        /// <summary>
-        /// Extra change time bits. This provides sub-second precision. See Inode Timestamps section.
-        /// u32 i_ctime_extra (0x84)
-        /// </summary>
-        public uint CTimeExtra
-        {
-            get { return ReadUInt32(0x84); }
-            set { WriteUInt32(0x84, value); }
-        }
-
-        /// <summary>
-        /// Extra modification time bits. This provides sub-second precision.
-        /// u32 i_mtime_extra (0x88)
-        /// </summary>
-        public uint MTimeExtra
-        {
-            get { return ReadUInt32(0x88); }
-            set { WriteUInt32(0x88, value); }
-        }
-
-        /// <summary>
-        /// Extra access time bits. This provides sub-second precision.
-        /// u32 i_atime_extra (0x8C)
-        /// </summary>
-        public uint ATimeExtra
-        {
-            get { return ReadUInt32(0x8C); }
-            set { WriteUInt32(0x8C, value); }
-        }
-
-        /// <summary>
-        /// File creation time, in seconds since the epoch.
-        /// u32 i_crtime (0x90)
-        /// </summary>
-        public uint CrTime
-        {
-            get { return ReadUInt32(0x90); }
-            set { WriteUInt32(0x90, value); }
-        }
-
-        /// <summary>
-        /// Extra access time bits. This provides sub-second precision.
-        /// u32 i_crtime_extra (0x94)
-        /// </summary>
-        public uint CrTimeExtra
-        {
-            get { return ReadUInt32(0x94); }
-            set { WriteUInt32(0x94, value); }
-        }
-
-        /// <summary>
-        /// Upper 32-bits for version number.
-        /// u32 i_version_hi (0x98)
-        /// </summary>
-        public uint Version
-        {
-            get { return ReadUInt32(0x98); }
-            set { WriteUInt32(0x98, value); }
-        }
-
-        /// <summary>
-        /// Project ID.
-        /// u32 i_projid (0x9C)
-        /// </summary>
-        public uint ProjectID
-        {
-            get { return ReadUInt32(0x9C); }
-            set { WriteUInt32(0x9C, value); }
-        }
-
     }
 }

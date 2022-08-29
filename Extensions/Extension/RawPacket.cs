@@ -7,7 +7,7 @@ using Extension.Array;
 
 namespace Extension.Packet
 {
-    public class RawPacket : RawPacketWrapper
+    public class RawPacket : ArrayWrapper
     {
         /// <summary>
         /// Конструктор пакета по образцу
