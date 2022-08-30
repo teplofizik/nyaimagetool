@@ -55,13 +55,17 @@ Load fs from legacy image:
 ```
 load <filename.legacy> ramfs legacy
 ```
-Load fs from cpio.gz file:
+Load fs from gz file (cpio or ext2 image):
 ```
-load <filename.cpio.gz> ramfs gz
+load <filename.gz> ramfs gz
 ```
 Load fs from cpio file:
 ```
 load <filename.cpio> ramfs cpio
+```
+Load fs from ext2 image:
+```
+load <filename.ext2> ramfs ext2
 ```
 Load kernel from gzipped image:
 ```
@@ -93,6 +97,12 @@ store <filename.cpio> ramfs cpio
 Store device tree as dtb:
 ```
 store <filename.dtb> devtree dtb
+```
+
+## Export files from image
+Exporting files and folders to specified directory. If directory not exists, it will be created 
+```
+export <path>
 ```
 
 ## Commands for modify image parameters:
