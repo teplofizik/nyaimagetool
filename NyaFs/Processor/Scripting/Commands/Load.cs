@@ -12,7 +12,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", /*"legacy",*/ "fit" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "legacy", "fit" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
@@ -104,6 +104,21 @@ namespace NyaFs.Processor.Scripting.Commands
                 var Kernel = new ImageFormat.Elements.Kernel.LinuxKernel();
                 switch (Format)
                 {
+                    case "legacy":
+                        {
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);
+                            Importer.ReadToKernel(Kernel);
+                            if (Kernel.Loaded)
+                            {
+                                Processor.SetKernel(Kernel);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Legacy image is loaded as kernel! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Legacy image is loaded as kernel!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Legacy file is not loaded!");
+                        }
                     case "gz":
                         {
                             var Importer = new ImageFormat.Elements.Kernel.Reader.GzReader(Path);
@@ -204,7 +219,7 @@ namespace NyaFs.Processor.Scripting.Commands
                         }
                     case "legacy":
                         {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyFsReader(Path);
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
                             Importer.ReadToFs(Fs);
                             if (Fs.Loaded)
                             {

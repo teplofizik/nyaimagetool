@@ -13,11 +13,11 @@ namespace NyaFs.ImageFormat.Types
 
 		public LegacyImage(string Filename) : base(System.IO.File.ReadAllBytes(Filename)) { }
 
-		public LegacyImage(ImageInfo Info, byte[] gzPackedData) : base(0x40 + gzPackedData.Length)
+		public LegacyImage(ImageInfo Info, CompressionType Compression, byte[] Data) : base(0x40 + Data.Length)
         {
 			WriteUInt32BE(0, 0x27051956);
 
-			Length = gzPackedData.Length;
+			Length = Data.Length;
 			Type = Info.Type;
 			CPUArchitecture = Info.Architecture;
 			OperatingSystem = Info.OperatingSystem;
@@ -25,14 +25,14 @@ namespace NyaFs.ImageFormat.Types
 			EntryPointAddress = Info.EntryPointAddress;
 			Compression = CompressionType.IH_COMP_GZIP;
 
-			WriteArray(0x40, gzPackedData, gzPackedData.Length);
+			WriteArray(0x40, Data, Data.Length);
 
 			WriteUInt32BE(0x08, Convert.ToUInt32(((DateTimeOffset)DateTimeOffset.Now).ToUnixTimeSeconds()));
 			WriteString(0x20, Info.Name ?? "Unknown name", 0x20);
 			WriteUInt32BE(0x04, 0); 
 			
 			// Calc CRC
-			WriteUInt32BE(0x18, CalcCrc(gzPackedData));
+			WriteUInt32BE(0x18, CalcCrc(Data));
 			WriteUInt32BE(0x04, CalcCrc(ReadArray(0, 0x40)));
 		}
 

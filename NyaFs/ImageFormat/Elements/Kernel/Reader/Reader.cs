@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Kernel.Reader
 {
-    class Reader
+    public class Reader
     {
         /// <summary>
         /// Читаем в ядро

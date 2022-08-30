@@ -8,11 +8,11 @@ namespace NyaFs.Processor.Scripting.Commands
     {
         public Store() : base("store")
         {
-            //AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
-            //        new Params.FsPathScriptArgsParam(),
-            //       new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-            //       new Params.EnumScriptArgsParam("format", new string[] { "gz", "legacy"/*, "fit"*/ }),
-            //    }));
+            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
+                    new Params.FsPathScriptArgsParam(),
+                   new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "gz", "uImage", "zImage" }),
+                }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
@@ -23,10 +23,9 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "devtree"}),
-                    new Params.EnumScriptArgsParam("format", new string[] { "dtb"/*, "fit"*/ }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "dtb" }),
                 }));
 
-            
             AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam()
                 }));
@@ -119,8 +118,34 @@ namespace NyaFs.Processor.Scripting.Commands
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
                         }
+                    case "uImage":
+                        {
+                            var Kernel = Processor.GetKernel();
+                            if ((Kernel != null) && Kernel.Loaded)
+                            {
+                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+                                var Exporter = new ImageFormat.Elements.Kernel.Writer.LegacyWriter(Path, false);
+                                Exporter.WriteKernel(Kernel);
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as legacy uncompressed image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
+                        }
+                    case "zImage":
+                        {
+                            var Kernel = Processor.GetKernel();
+                            if ((Kernel != null) && Kernel.Loaded)
+                            {
+                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+                                var Exporter = new ImageFormat.Elements.Kernel.Writer.LegacyWriter(Path, true);
+                                Exporter.WriteKernel(Kernel);
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as legacy gzip-compressed image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
+                        }
                     default:
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown devtree format!");
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown kernel image format!");
                 }
             }
 
@@ -175,7 +200,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "legacy":
                         {
                             ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.LegacyFsWriter(Path);
+                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
                             if (Exporter.CheckFilesystem(Fs))
                             {
                                 Exporter.WriteFs(Fs);

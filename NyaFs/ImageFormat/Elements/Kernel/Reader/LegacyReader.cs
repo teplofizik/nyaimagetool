@@ -3,14 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NyaFs.ImageFormat.Elements.Fs.Reader
+namespace NyaFs.ImageFormat.Elements.Kernel.Reader
 {
-    public class LegacyFsReader : Reader
+    public class LegacyReader : Reader
     {
         bool Loaded = false;
+        bool Compressed;
         Types.LegacyImage Image;
 
-        public LegacyFsReader(string Filename)
+        public LegacyReader(string Filename)
         {
             Image = new Types.LegacyImage(Filename);
 
@@ -25,16 +26,16 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 return;
             }
 
-            if (Image.Type != ImageFormat.Types.ImageType.IH_TYPE_RAMDISK)
+            if (Image.Type != ImageFormat.Types.ImageType.IH_TYPE_KERNEL)
             {
-                Log.Error(0, $"File {Filename} is not ramdisk file.");
+                Log.Error(0, $"File {Filename} is not kernel legacy file.");
                 return;
             }
 
             Loaded = true;
         }
 
-        public void UpdateImageInfo(Filesystem Dst)
+        public void UpdateImageInfo(LinuxKernel Dst)
         {
             if (Loaded)
             {
@@ -48,37 +49,15 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         }
 
         /// <summary>
-        /// Читаем в файловую систему из cpio-файла
+        /// Читаем в ядро
         /// </summary>
         /// <param name="Dst"></param>
-        public override void ReadToFs(Filesystem Dst)
+        public override void ReadToKernel(LinuxKernel Dst)
         {
             if (!Loaded) return;
 
-            var Data = GetDecompressedData(Image.Data, Image.Compression);
-
-            var FilesystemType = FilesystemDetector.DetectFs(Data);
-
-            if (FilesystemType == Types.FsType.Cpio)
-            {
-                UpdateImageInfo(Dst);
-
-                var Reader = new CpioReader(Data);
-                Reader.ReadToFs(Dst);
-
-                Helper.LogHelper.RamfsInfo(Dst, "CPIO");
-            }
-            else if (FilesystemType == Types.FsType.Ext2)
-            {
-                UpdateImageInfo(Dst);
-
-                var Reader = new ExtReader(Data);
-                Reader.ReadToFs(Dst);
-
-                Helper.LogHelper.RamfsInfo(Dst, "EXT2");
-            }
-            else
-                Log.Error(0, "Unsupported filesystem...");
+            Dst.Image = GetDecompressedData(Image.Data, Image.Compression);
+            UpdateImageInfo(Dst);
         }
 
         byte[] GetDecompressedData(byte[] Source, Types.CompressionType Compression)

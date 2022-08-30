@@ -4,11 +4,11 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Writer
 {
-    public class LegacyFsWriter : Writer
+    public class LegacyWriter : Writer
     {
         string Filename;
 
-        public LegacyFsWriter(string Filename)
+        public LegacyWriter(string Filename)
         {
             this.Filename = Filename;
         }
@@ -25,7 +25,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                 var Info = Fs.Info.Clone();
                 Info.Type = ImageFormat.Types.ImageType.IH_TYPE_RAMDISK;
 
-                var Image = new Types.LegacyImage(Info, PackedData);
+                var Image = new Types.LegacyImage(Info, Types.CompressionType.IH_COMP_GZIP, PackedData);
                 System.IO.File.WriteAllBytes(Filename, Image.getPacket());
             }
         }
