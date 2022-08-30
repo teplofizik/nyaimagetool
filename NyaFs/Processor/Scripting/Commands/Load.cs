@@ -12,7 +12,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "legacy", "fit" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "legacy", "fit", "raw" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
@@ -104,6 +104,21 @@ namespace NyaFs.Processor.Scripting.Commands
                 var Kernel = new ImageFormat.Elements.Kernel.LinuxKernel();
                 switch (Format)
                 {
+                    case "raw":
+                        {
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.RawReader(Path);
+                            Importer.ReadToKernel(Kernel);
+                            if (Kernel.Loaded)
+                            {
+                                Processor.SetKernel(Kernel);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Raw kernel image is loaded as kernel! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Raw kernel image is loaded as kernel!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"kernel file is not loaded!");
+                        }
                     case "legacy":
                         {
                             var Importer = new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);

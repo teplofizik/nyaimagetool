@@ -4,14 +4,15 @@ There is a tool for editing and converting uboot images in different formats: cp
 There is possible to add or update files in ramfs image.
 
 ## Supported image formats
-1. Kernel: gz, fit
-2. Ramfs: cpio, cpio.gz, legacy, fit
+1. Kernel: gz, fit, raw, legacy (uImage, zImage)
+2. Ramfs: cpio, cpio.gz, ext2.gz, legacy, fit, ext2
 3. Device tree: dtb, fit
 
 ## Supported filesystems
 
 Supported at now:
-1. CPIO ASCII
+1. CPIO ASCII (RW)
+2. EXT2 (R)
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
@@ -67,9 +68,17 @@ Load fs from ext2 image:
 ```
 load <filename.ext2> ramfs ext2
 ```
+Load kernel from raw binary image:
+```
+load <filename.gz> kernel raw
+```
 Load kernel from gzipped image:
 ```
 load <filename.gz> kernel gz
+```
+Load kernel from legacy (uImage, zImage) image:
+```
+load <filename.gz> kernel legacy
 ```
 Load device tree from dtb:
 ```
@@ -93,6 +102,22 @@ store <filename.cpio.gz> ramfs gz
 Store fs as cpio file:
 ```
 store <filename.cpio> ramfs cpio
+```
+Store kernel as raw binary file:
+```
+store <kernel.raw> kernel raw
+```
+Store kernel as gz file:
+```
+store <kernel.gz> kernel gz
+```
+Store kernel as uncompressed legacy (uImage) file:
+```
+store <kernel.uImage> kernel uImage
+```
+Store kernel as compressed legacy (zImage) file:
+```
+store <kernel.zImage> kernel zImage
 ```
 Store device tree as dtb:
 ```
