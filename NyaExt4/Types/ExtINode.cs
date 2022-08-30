@@ -247,6 +247,8 @@ namespace NyaExt2.Types
             set { WriteUInt32(0x24, value); }
         }
 
+        private string LinkText => ((NodeType == ExtINodeType.LINK) && (SizeLo <= 60)) ? UTF8Encoding.UTF8.GetString(BlockRaw) : "";
+
         /// <summary>
         /// It NodeType == LINK and Data Length < 60 bytes, text contains in blocks field.
         /// </summary>
