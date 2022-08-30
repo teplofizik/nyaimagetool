@@ -216,7 +216,7 @@ namespace NyaFs.FlattenedDeviceTree.Reader
             }
         }
 
-        private bool Correct
+        public bool Correct
         {
             get
             {

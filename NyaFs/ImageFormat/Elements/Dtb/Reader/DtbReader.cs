@@ -19,11 +19,16 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
         /// <param name="Dst"></param>
         public override void ReadToDevTree(DeviceTree Dst)
         {
-            var Dtb = new FlattenedDeviceTree.Reader.FDTReader(Path).Read();
-            Dst.DevTree = Dtb;
-            Dst.Info.Type = Types.ImageType.IH_TYPE_FLATDT;
+            var Dtb = new FlattenedDeviceTree.Reader.FDTReader(Path);
+            if (Dtb.Correct)
+            {
+                Dst.DevTree = Dtb.Read();
+                Dst.Info.Type = Types.ImageType.IH_TYPE_FLATDT;
 
-            Helper.LogHelper.DevtreeInfo(Dst);
+                Helper.LogHelper.DevtreeInfo(Dst);
+            }
+            else
+                Log.Error(0, $"Invalid dtb header in {Path}");
         }
     }
 }
