@@ -18,7 +18,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "legacy", "fit" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "legacy", "fit", "ext2" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -228,6 +228,21 @@ namespace NyaFs.Processor.Scripting.Commands
                                     return new ScriptStepResult(ScriptStepStatus.Warning, $"Fit is loaded as filesystem! Old filesystem is replaced by this.");
                                 else
                                     return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from FIT image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"legacy file is not loaded!");
+                        }
+                    case "ext2":
+                        {
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ExtReader(Path);
+                            Importer.ReadToFs(Fs);
+                            if (Fs.Loaded)
+                            {
+                                Processor.SetFs(Fs);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Ext2 image is loaded as filesystem! Old filesystem is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from ext2 image!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"legacy file is not loaded!");

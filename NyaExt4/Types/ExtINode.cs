@@ -252,8 +252,8 @@ namespace NyaExt2.Types
         /// </summary>
         public byte[] BlockRaw
         {
-            get { return ReadArray(0x28, 60); }
-            set { WriteArray(0x28, value, 60); }
+            get { return ReadArray(0x28, SizeLo); }
+            set { WriteArray(0x28, value, SizeLo); }
         }
 
         /// <summary>

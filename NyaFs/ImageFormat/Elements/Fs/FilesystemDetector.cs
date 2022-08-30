@@ -28,7 +28,7 @@ namespace NyaFs.ImageFormat.Elements.Fs
                 return Types.FsType.Cpio;
 
             if (IsExt4(Raw))
-                return Types.FsType.Ext4;
+                return Types.FsType.Ext2;
 
             return Types.FsType.Unknown;
         }
@@ -38,7 +38,7 @@ namespace NyaFs.ImageFormat.Elements.Fs
             switch (Type)
             {
                 case Types.FsType.Cpio: return "CPIO (ASCII)";
-                case Types.FsType.Ext4: return "Ext4";
+                case Types.FsType.Ext2: return "Ext2";
                 default: return "Unknown";
             }
         }

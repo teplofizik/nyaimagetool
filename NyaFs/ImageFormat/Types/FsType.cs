@@ -8,6 +8,6 @@ namespace NyaFs.ImageFormat.Types
     {
         Unknown,
         Cpio,
-        Ext4
+        Ext2
     }
 }

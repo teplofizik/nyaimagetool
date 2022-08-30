@@ -1,19 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Reader
 {
     public class ExtReader : Reader
     {
-        //string Filename;
-        //ExtDisk disk;
+        NyaExt2.Implementations.Ext2Fs Fs;
+
+        public ExtReader(string Filename) : this(System.IO.File.ReadAllBytes(Filename)) { }
 
         public ExtReader(byte[] data)
         {
-            //Filename = "tempextimage.ext4"; ///System.IO.Path.GetTempFileName();
-
-            //System.IO.File.WriteAllBytes(Filename, data);
-            //disk = ExtDisk.Open(Filename);
+            Fs = new NyaExt2.Implementations.Ext2Fs(data);
         }
 
         /// <summary>
@@ -22,57 +21,59 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// <param name="Dst"></param>
         public override void ReadToFs(Filesystem Dst)
         {
-            //var fs = ExtFileSystem.Open(disk, disk.Partitions[0]);
-
-            //ProcessDirectory(fs, Dst.Root, ".");
-        }
-        /*
-        private byte[] GetFile(ExtFileSystem fs, string Path)
-        {
-            var file = fs.OpenFile(Path, FileMode.Open, FileAccess.Read);
-
-            var Res = new byte[file.Length];
-            var Readed = file.Read(Res, 0, Convert.ToInt32(file.Length));
-
-            file.Close();
-
-            return Res;
+            DumpDir(Dst.Root, ".");
         }
 
-        private void ProcessDirectory(ExtFileSystem fs, Items.Dir ParentItem, string Path)
+        private void DumpDir(Items.Dir Dir, string Path)
         {
-            uint Mode = fs.GetMode(Path);
-            var Owner = fs.GetOwner(Path);
+            var Elements = Fs.ReadDir(Path);
 
-            Log.Write(4, $"Added dir: {Path}");
-            var CurrentDir = new Items.Dir(Path, Owner.Item1, Owner.Item2, Mode);
-            ParentItem.Items.Add(CurrentDir);
-
-            // Process dirs
-            var Dirs = fs.GetDirectories(Path, "*", System.IO.SearchOption.TopDirectoryOnly);
-            foreach (var D in Dirs)
+            foreach (var E in Elements)
             {
-                ProcessDirectory(fs, CurrentDir, D);
-            }
+                //Console.WriteLine(E);
 
-            // Process files
-            var Files = fs.GetFiles(Path, "*", System.IO.SearchOption.TopDirectoryOnly);
-            foreach (var F in Files)
-            {
-                uint FMode = fs.GetMode(Path);
-                var FOwner = fs.GetOwner(Path);
-                var Data = GetFile(fs, Path);
-
-                Log.Write(4, $"Added file: {F} size {Data.Length}");
-                var File = new Items.File(F, Owner.Item1, Owner.Item2, Mode, Data);
-
-                CurrentDir.Items.Add(File);
+                switch (E.NodeType)
+                {
+                    case NyaExt2.Types.FilesystemEntryType.Directory:
+                        {
+                            var SubDir = new Items.Dir(E.Path, E.User, E.Group, E.HexMode);
+                            Dir.Items.Add(SubDir);
+                            DumpDir(SubDir, E.Path);
+                        }
+                        break;
+                    case NyaExt2.Types.FilesystemEntryType.Regular:
+                        {
+                            var File = new Items.File(E.Path, E.User, E.Group, E.HexMode, Fs.Read(E.Path));
+                            Dir.Items.Add(File);
+                        }
+                        break;
+                    case NyaExt2.Types.FilesystemEntryType.Link:
+                        {
+                            var Target = UTF8Encoding.UTF8.GetString(Fs.Read(E.Path));
+                            var Link = new Items.SymLink(E.Path, E.User, E.Group, E.HexMode, Target);
+                            Dir.Items.Add(Link);
+                        }
+                        break;
+                    case NyaExt2.Types.FilesystemEntryType.Character:
+                        {
+                            var Node = new Items.Node(E.Path, E.User, E.Group, E.HexMode);
+                            Dir.Items.Add(Node);
+                        }
+                        break;
+                    case NyaExt2.Types.FilesystemEntryType.Fifo:
+                        {
+                            var Fifo = new Items.Fifo(E.Path, E.User, E.Group, E.HexMode);
+                            Dir.Items.Add(Fifo);
+                        }
+                        break;
+                    case NyaExt2.Types.FilesystemEntryType.Block:
+                        {
+                            var Block = new Items.Block(E.Path, E.User, E.Group, E.HexMode);
+                            Dir.Items.Add(Block);
+                        }
+                        break;
+                }
             }
         }
-        ~ExtReader()
-        {
-            disk.Dispose();
-            System.IO.File.Delete(Filename);
-        }*/
     }
 }

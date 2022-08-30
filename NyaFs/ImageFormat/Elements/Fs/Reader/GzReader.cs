@@ -20,11 +20,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             this.Data = Data;
         }
 
-        private string DetectFs(byte[] Raw)
-        {
-            return "cpio";
-        }
-
         /// <summary>
         /// Читаем в файловую систему из cpio-файла
         /// </summary>
@@ -33,17 +28,23 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             byte[] Raw = Compressors.Gzip.Decompress(Data);
 
-            var Fs = DetectFs(Raw);
-            switch(Fs)
+            var Fs = FilesystemDetector.DetectFs(Raw);
+            switch (Fs)
             {
-                case "cpio":
+                case Types.FsType.Cpio:
                     {
-                        var cpr = new CpioReader(Raw);
-                        cpr.ReadToFs(Dst);
+                        var Reader = new CpioReader(Raw);
+                        Reader.ReadToFs(Dst);
                     } 
                     break;
-                case "ext4":
-                    throw new NotImplementedException($"Filesystem type {Fs} not implemented");
+                case Types.FsType.Ext2:
+                    {
+                        var Reader = new ExtReader(Raw);
+                        Reader.ReadToFs(Dst);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Unknown filesystem");
             }
         }
     }

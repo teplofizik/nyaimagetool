@@ -1,7 +1,7 @@
 ﻿using Extension.Array;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace NyaExt2.Implementations
 {
@@ -48,6 +48,25 @@ namespace NyaExt2.Implementations
             }
         }
 
+        public byte[] Read(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                switch (Node.NodeType)
+                {
+                    case Types.ExtINodeType.REG:
+                    case Types.ExtINodeType.LINK:
+                        return GetINodeContent(Node);
+                    default:
+                        return null;
+                }
+            }
+            else
+                return null;
+        }
+
         public Types.FilesystemEntry[] ReadDir(string Path)
         {
             var DirNode = GetINodeByPath(Path);
@@ -63,7 +82,7 @@ namespace NyaExt2.Implementations
 
                     var N = GetINode(E.INode);
 
-                    Console.WriteLine($"{E.Name} {E.INode}     {N}");
+                    //Console.WriteLine($"{E.Name} {E.INode}     {N}");
                     Res.Add(new Types.FilesystemEntry(N.FsNodeType, CombinePath(Path, E.Name), N.UID, N.GID, N.Mode, GetNodeSize(N)));
                 }
 
@@ -134,8 +153,6 @@ namespace NyaExt2.Implementations
 
             Console.WriteLine($"    INode table size: {INodesCount * BlockSize / 1024} kB");
             Console.WriteLine($"         Free inodes: {BG.FreeINodesCountLo}");
-
-            var RootDir = ReadDir(".");
         }
 
         internal Types.ExtDirectoryEntry[] GetDirEntries(Types.ExtINode Dir)
@@ -158,7 +175,7 @@ namespace NyaExt2.Implementations
                 Entry = new Types.ExtDirectoryEntry(DirContent, Offset);
             }
 
-            return Entries.ToArray();
+            return Entries.OrderBy(E => E.Name).ToArray();
         }
 
         internal byte[] GetINodeBlockContent(Types.ExtINode Node)
@@ -166,30 +183,107 @@ namespace NyaExt2.Implementations
             byte[] Res = new byte[Node.SizeLo];
             var Blocks = Node.Block;
 
-            long ToRead = Node.SizeLo;
             long DataOffset = 0;
-            // Direct data block addressing!..
-            for(int i = 0; i < 12; i++)
+            {
+                // Direct blocks
+                DataOffset = ReadToArrayFromBlockTable(Res, DataOffset, Node.SizeLo, Blocks, 12);
+                // Direct data block addressing!..
+                if (DataOffset == Node.SizeLo)
+                    return Res;
+            }
+
+            if (Blocks[12] != 0)
+            {
+                // Indirect blocks 1 level
+                var IndirectTable = ReadUInt32Array(Blocks[12] * BlockSize, BlockSize / 4);
+                DataOffset = ReadToArrayFromBlockTable(Res, DataOffset, Node.SizeLo, IndirectTable, IndirectTable.Length);
+
+                if (DataOffset == Node.SizeLo)
+                    return Res;
+            }
+
+            if (Blocks[13] != 0)
+            {
+                // Indirect blocks 2 level
+                var IndirectTable2 = ReadUInt32Array(Blocks[13] * BlockSize, BlockSize / 4);
+                DataOffset = ReadIndirectDataTable(Res, DataOffset, Node.SizeLo, IndirectTable2, IndirectTable2.Length);
+
+                if (DataOffset == Node.SizeLo)
+                    return Res;
+            }
+
+            if(Blocks[14] != 0)
+            {
+                // Indirect blocks 3 level
+                var IndirectTable3Offset = Blocks[14] * BlockSize;
+                var IndirectTable3 = ReadUInt32Array(Blocks[14] * BlockSize, BlockSize / 4);
+
+                foreach (var IndirectOffset2 in IndirectTable3)
+                {
+                    var IndirectTable2 = ReadUInt32Array(IndirectOffset2, BlockSize / 4);
+
+                    DataOffset = ReadIndirectDataTable(Res, DataOffset, Node.SizeLo, IndirectTable2, IndirectTable2.Length);
+
+                    if (DataOffset == Node.SizeLo)
+                        return Res;
+                }
+            }
+
+            //throw new NotImplementedException("Invalid blocks content!..");
+
+            if (DataOffset != Node.SizeLo) 
+                Console.WriteLine($"Invalid blocks content in Node");
+
+            return Res;
+        }
+
+        private long ReadIndirectDataTable(byte[] Data, long Offset, long Size, uint[] IndirectTable2, int TableLength)
+        {
+            foreach (var IndirectOffset in IndirectTable2)
+            {
+                if (IndirectOffset > 0)
+                {
+                    var IndirectTable = ReadUInt32Array(IndirectOffset * BlockSize, BlockSize / 4);
+
+                    Offset = ReadToArrayFromBlockTable(Data, Offset, Size, IndirectTable, IndirectTable.Length);
+
+                    if (Offset == Size)
+                        return Offset;
+                }
+            }
+
+            return Offset;
+        }
+
+        private long ReadToArrayFromBlockTable(byte[] Data, long Offset, long Size, uint[] Blocks, int TableLength)
+        {
+            for (int i = 0; i < TableLength; i++)
             {
                 var B = Blocks[i];
                 if (B != 0)
                 {
+                    var ToRead = (Size - Offset);
                     var BlockOffset = B * BlockSize;
                     var TR = (ToRead > BlockSize) ? BlockSize : ToRead;
                     var ReadOutData = ReadArray(BlockOffset, TR);
 
-                    Res.WriteArray(DataOffset, ReadOutData, TR);
+                    Data.WriteArray(Offset, ReadOutData, TR);
 
-                    DataOffset += TR;
-                    ToRead -= TR;
-                    if (ToRead == 0)
-                        return Res;
+                    Offset += TR;
+                    if (Offset == Size)
+                        return Offset;
                 }
                 else
-                    throw new InvalidOperationException("Invalid INode block data...");
+                {
+                    Offset += BlockSize;
+
+                    if (Offset == Size)
+                        return Offset;
+                }
+                //    throw new InvalidOperationException("Invalid INode block table");
             }
 
-            throw new NotImplementedException("Indirect INode data blocka are not implemented now!");
+            return Offset;
         }
 
         internal byte[] GetINodeContent(Types.ExtINode Node)
@@ -197,6 +291,9 @@ namespace NyaExt2.Implementations
             var Size = Node.SizeLo;
             var Blocks = Node.Block;
             var Type = Node.NodeType;
+
+            if (Size == 0)
+                return new byte[] { };
 
             // Тип ноды
             switch (Type)
@@ -232,8 +329,15 @@ namespace NyaExt2.Implementations
             {
                 var N = GetINode(i);
 
-                if(N.NodeType != Types.ExtINodeType.NONE)
-                    Console.WriteLine($"{i:0000}: t:{N.NodeType} m:{N.ModeStr:x04} u:{N.UID} g:{N.GID} s:{N.SizeLo} l:{N.LinksCount} f:{N.Flags}");
+                if (N.NodeType != Types.ExtINodeType.NONE)
+                {
+                    //Console.WriteLine($"{i:0000}: t:{N.NodeType} m:{N.ModeStr:x04} u:{N.UID} g:{N.GID} s:{N.SizeLo} l:{N.LinksCount} f:{N.Flags}");
+
+                    //if ((N.NodeType == Types.ExtINodeType.REG) || (N.NodeType == Types.ExtINodeType.LINK))
+                    //{
+                    //    var Content = GetINodeContent(N);
+                    //}
+                }
             }
         }
     }

@@ -28,16 +28,18 @@ namespace NyaFsTest.Tests
                // "load test.fit ramfs fit",
                // "load test.fit devtree fit",
               //  "load test.fit kernel fit",
-                "load test.fit",
+              //  "load test.fit",
               //  "set ramfs name TestImageARM64",
               //  "set ramfs os linux",
               //  "set ramfs arch arm64",
-                "set kernel load 1050000",
-                "set kernel entry 1040000",
+                "load initramfs.zynq.SD ramfs legacy",
+                //"set kernel load 1050000",
+                //"set kernel entry 1040000",
                 "include include/scp.module",
                 "file etc/test.txt test.txt rwxr--r-- 0 0",
                 // "store initramfs.bin.SD.modified ramfs legacy"
-                "store builded.fit",
+                // "store builded.fit",
+                "export exported",
                 "store ramfs.cpio ramfs cpio"
             }).Script;
 
