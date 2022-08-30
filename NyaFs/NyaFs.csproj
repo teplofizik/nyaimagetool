@@ -17,4 +17,8 @@
     <Folder Include="Processor\Scripting\Commands\Kernel\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="LZMA-SDK" Version="19.0.0" />
+  </ItemGroup>
+
 </Project>

@@ -65,6 +65,7 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
             switch(Compression)
             {
                 case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.Decompress(Source);
+                case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.Decompress(Source);
                 case Types.CompressionType.IH_COMP_NONE: return Source;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
