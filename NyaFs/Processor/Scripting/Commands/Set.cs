@@ -11,7 +11,7 @@ namespace NyaFs.Processor.Scripting.Commands
 
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel", "devtree", "ramfs", "all" }),
-                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry" }),
+                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry", "compression" }),
                     new Params.StringScriptArgsParam("value")
                 }));
         }
@@ -93,6 +93,20 @@ namespace NyaFs.Processor.Scripting.Commands
                 // Ok. Image info is selected. Now update it.
                 switch (Param)
                 {
+                    case "compression":
+                        {
+                            try
+                            {
+                                var Comp = ParseCompression(Value);
+
+                                Array.ForEach(Info.ToArray(), I => I.Compression = Comp);
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set compression ok: {Value}!");
+                            }
+                            catch(Exception E)
+                            {
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown compression: {Value}!");
+                            }
+                        }
                     case "os":
                         {
                             var OS = ParseOS(Value);
@@ -199,6 +213,18 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "xtensa": return ImageFormat.Types.CPU.IH_ARCH_XTENSA; // Xtensa
                     case "riscv": return ImageFormat.Types.CPU.IH_ARCH_RISCV; // RISC-V
                     default: return ImageFormat.Types.CPU.IH_ARCH_INVALID;
+                }
+            }
+
+            ImageFormat.Types.CompressionType ParseCompression(string Compression)
+            {
+                switch (Compression.ToLower())
+                {
+                    case "none": return ImageFormat.Types.CompressionType.IH_COMP_NONE;
+                    case "gzip": return ImageFormat.Types.CompressionType.IH_COMP_GZIP;
+                    case "lzma": return ImageFormat.Types.CompressionType.IH_COMP_LZMA;
+                    default:
+                        throw new ArgumentException("Unsupported compression type");
                 }
             }
 

@@ -44,6 +44,8 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 Dst.Info.DataLoadAddress = Image.DataLoadAddress;
                 Dst.Info.EntryPointAddress = Image.EntryPointAddress;
                 Dst.Info.Type = Image.Type;
+
+                Dst.Info.Compression = Image.Compression;
             }
         }
 

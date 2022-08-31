@@ -244,12 +244,54 @@ namespace NyaFs.ImageFormat.Helper
             }
         }
 
-        public static byte[] GetDecompressedData(byte[] Source, string Compression)
+        public static string GetCompression(Types.CompressionType Compression)
         {
             switch (Compression)
             {
-                case "gzip": return Compressors.Gzip.Decompress(Source);
-                case "none": return Source;
+                case Types.CompressionType.IH_COMP_NONE: return "none";
+                case Types.CompressionType.IH_COMP_GZIP: return "gzip";
+                case Types.CompressionType.IH_COMP_LZMA: return "lzma";
+                default:
+                    Log.Error(0, $"Unsupported compression type: {Compression}");
+                    throw new ArgumentException($"Unsupported compression type: {Compression}");
+            }
+        }
+
+        public static Types.CompressionType GetCompression(string Compression)
+        {
+            switch (Compression)
+            {
+                case "none": return Types.CompressionType.IH_COMP_NONE;
+                case "gzip": return Types.CompressionType.IH_COMP_GZIP;
+                case "lzma": return Types.CompressionType.IH_COMP_LZMA;
+                default:
+                    Log.Error(0, $"Unsupported compression type: {Compression}");
+                    throw new ArgumentException($"Unsupported compression type: {Compression}");
+            }
+        }
+
+        public static byte[] GetDecompressedData(byte[] Source, string Compression) => GetDecompressedData(Source, GetCompression(Compression));
+
+        public static byte[] GetDecompressedData(byte[] Source, Types.CompressionType Compression)
+        {
+            switch (Compression)
+            {
+                case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.Decompress(Source);
+                case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.Decompress(Source);
+                case Types.CompressionType.IH_COMP_NONE: return Source;
+                default:
+                    Log.Error(0, $"Unsupported compression type: {Compression}");
+                    throw new ArgumentException($"Unsupported compression type: {Compression}");
+            }
+        }
+
+        public static byte[] GetCompressedData(byte[] Source, Types.CompressionType Compression)
+        {
+            switch (Compression)
+            {
+                case Types.CompressionType.IH_COMP_NONE: return Source;
+                case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.CompressWithHeader(Source);
+                case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.CompressWithHeader(Source);
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");

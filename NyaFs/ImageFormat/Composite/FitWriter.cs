@@ -67,7 +67,7 @@ namespace NyaFs.ImageFormat.Composite
 
             {
                 var K = Blob.GetKernel(0);
-                var Data = Compressors.Gzip.CompressWithHeader(K.Image);
+                var Data = Helper.FitHelper.GetCompressedData(K.Image, K.Info.Compression);
                 var Kernel = new FlattenedDeviceTree.Types.Node("kernel@default");
 
                 Kernel.AddStringValue("description", "Linux kernel");
@@ -75,7 +75,7 @@ namespace NyaFs.ImageFormat.Composite
                 Kernel.AddStringValue("type", Helper.FitHelper.GetType(K.Info.Type));
                 Kernel.AddStringValue("arch", Helper.FitHelper.GetCPUArchitecture(K.Info.Architecture));
                 Kernel.AddStringValue("os", Helper.FitHelper.GetOperatingSystem(K.Info.OperatingSystem));
-                Kernel.AddStringValue("compression", "gzip");
+                Kernel.AddStringValue("compression", Helper.FitHelper.GetCompression(K.Info.Compression));
                 Kernel.AddUInt32Value("load", K.Info.DataLoadAddress);
                 Kernel.AddUInt32Value("entry", K.Info.EntryPointAddress);
                 Kernel.Nodes.Add(GetHashNode(Data));
@@ -85,14 +85,15 @@ namespace NyaFs.ImageFormat.Composite
 
             {
                 var DT = Blob.GetDevTree(0);
-                var Data = new FlattenedDeviceTree.Writer.FDTWriter(DT.DevTree).GetBinary();
+                var Raw = new FlattenedDeviceTree.Writer.FDTWriter(DT.DevTree).GetBinary();
+                var Data = Helper.FitHelper.GetCompressedData(Raw, DT.Info.Compression);
                 var DevTree = new FlattenedDeviceTree.Types.Node("fdt@default");
 
                 DevTree.AddStringValue("description", "Flattened Device Tree blob");
                 DevTree.AddRawValue("data", Data);
                 DevTree.AddStringValue("type", Helper.FitHelper.GetType(DT.Info.Type));
                 DevTree.AddStringValue("arch", Helper.FitHelper.GetCPUArchitecture(DT.Info.Architecture));
-                DevTree.AddStringValue("compression", "none");
+                DevTree.AddStringValue("compression", Helper.FitHelper.GetCompression(DT.Info.Compression));
                 DevTree.Nodes.Add(GetHashNode(Data));
 
                 Node.Nodes.Add(DevTree);
@@ -100,9 +101,10 @@ namespace NyaFs.ImageFormat.Composite
 
             {
                 var FS = Blob.GetFilesystem(0);
-                var Writer = new ImageFormat.Elements.Fs.Writer.GzCpioWriter();
+                var Writer = new ImageFormat.Elements.Fs.Writer.CpioWriter();
                 Writer.WriteFs(FS);
-                var Data = Writer.RawStream;
+                var Raw = Writer.RawStream;
+                var Data = Helper.FitHelper.GetCompressedData(Raw, FS.Info.Compression);
                 var RamDisk = new FlattenedDeviceTree.Types.Node("ramdisk@default");
 
                 RamDisk.AddStringValue("description", "Ramdisk");
@@ -110,7 +112,7 @@ namespace NyaFs.ImageFormat.Composite
                 RamDisk.AddStringValue("type", Helper.FitHelper.GetType(FS.Info.Type));
                 RamDisk.AddStringValue("arch", Helper.FitHelper.GetCPUArchitecture(FS.Info.Architecture));
                 RamDisk.AddStringValue("os", Helper.FitHelper.GetOperatingSystem(FS.Info.OperatingSystem));
-                RamDisk.AddStringValue("compression", "gzip");
+                RamDisk.AddStringValue("compression", Helper.FitHelper.GetCompression(FS.Info.Compression));
                 RamDisk.Nodes.Add(GetHashNode(Data));
 
                 Node.Nodes.Add(RamDisk);

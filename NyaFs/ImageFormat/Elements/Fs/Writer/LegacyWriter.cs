@@ -20,12 +20,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                 var CpWriter = new CpioWriter();
                 CpWriter.WriteFs(Fs);
 
-                var PackedData = Compressors.Gzip.CompressWithHeader(CpWriter.RawStream);
-
                 var Info = Fs.Info.Clone();
                 Info.Type = ImageFormat.Types.ImageType.IH_TYPE_RAMDISK;
 
-                var Image = new Types.LegacyImage(Info, Types.CompressionType.IH_COMP_GZIP, PackedData);
+                var Image = new Types.LegacyImage(Info, Info.Compression, Helper.FitHelper.GetCompressedData(CpWriter.RawStream, Info.Compression));
                 System.IO.File.WriteAllBytes(Filename, Image.getPacket());
             }
         }

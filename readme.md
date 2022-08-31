@@ -4,7 +4,7 @@ There is a tool for editing and converting uboot images in different formats: cp
 There is possible to add or update files in ramfs image.
 
 ## Supported image formats
-1. Kernel: gz, fit, raw, legacy (uImage, zImage)
+1. Kernel: gz, fit, raw, legacy
 2. Ramfs: cpio, cpio.gz, ext2.gz, legacy, fit, ext2
 3. Device tree: dtb, fit
 
@@ -111,13 +111,9 @@ Store kernel as gz file:
 ```
 store <kernel.gz> kernel gz
 ```
-Store kernel as uncompressed legacy (uImage) file:
+Store kernel as uncompressed legacy file:
 ```
-store <kernel.uImage> kernel uImage
-```
-Store kernel as compressed legacy (zImage) file:
-```
-store <kernel.zImage> kernel zImage
+store <kernel.uImage> kernel legacy
 ```
 Store device tree as dtb:
 ```
@@ -150,6 +146,12 @@ Set image name (used in Legacy format):
 set <imagetype> name <imagename>
 ```
 
+Set compression type (for FIT/legacy):
+```
+set <imagetype> compression <compression>
+```
+<compression> is "none", "gzip", "lzma"
+
 Set entry address (for kernel):
 ```
 set kernel entry <hexaddress>
@@ -159,6 +161,7 @@ Set data load address (for kernel):
 ```
 set kernel load <hexaddress>
 ```
+
 
 ## Commands for modify fiolesystem content:
 Standart arguments for fs commands:

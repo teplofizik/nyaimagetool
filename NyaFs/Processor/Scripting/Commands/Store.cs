@@ -11,7 +11,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "uImage", "zImage" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
@@ -131,28 +131,15 @@ namespace NyaFs.Processor.Scripting.Commands
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
                         }
-                    case "uImage":
+                    case "legacy":
                         {
                             var Kernel = Processor.GetKernel();
                             if ((Kernel != null) && Kernel.Loaded)
                             {
                                 ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                                var Exporter = new ImageFormat.Elements.Kernel.Writer.LegacyWriter(Path, false);
+                                var Exporter = new ImageFormat.Elements.Kernel.Writer.LegacyWriter(Path);
                                 Exporter.WriteKernel(Kernel);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as legacy uncompressed image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
-                        }
-                    case "zImage":
-                        {
-                            var Kernel = Processor.GetKernel();
-                            if ((Kernel != null) && Kernel.Loaded)
-                            {
-                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                                var Exporter = new ImageFormat.Elements.Kernel.Writer.LegacyWriter(Path, true);
-                                Exporter.WriteKernel(Kernel);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as legacy gzip-compressed image!");
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as legacy image!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");

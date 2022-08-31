@@ -56,21 +56,9 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
         {
             if (!Loaded) return;
 
-            Dst.Image = GetDecompressedData(Image.Data, Image.Compression);
+            Dst.Image = Helper.FitHelper.GetDecompressedData(Image.Data, Image.Compression);
+            Dst.Info.Compression = Image.Compression;
             UpdateImageInfo(Dst);
-        }
-
-        byte[] GetDecompressedData(byte[] Source, Types.CompressionType Compression)
-        {
-            switch(Compression)
-            {
-                case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.Decompress(Source);
-                case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.Decompress(Source);
-                case Types.CompressionType.IH_COMP_NONE: return Source;
-                default:
-                    Log.Error(0, $"Unsupported compression type: {Compression}");
-                    throw new ArgumentException($"Unsupported compression type: {Compression}");
-            }
         }
 
         /// <summary>

@@ -28,6 +28,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             byte[] Raw = Compressors.Gzip.Decompress(Data);
 
+            Dst.Info.Compression = Types.CompressionType.IH_COMP_GZIP;
             var Fs = FilesystemDetector.DetectFs(Raw);
             switch (Fs)
             {

@@ -119,6 +119,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                     Dst.Info.DataLoadAddress = 0;
                     Dst.Info.EntryPointAddress = 0;
                     Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                    Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
 
                     var Reader = new CpioReader(Data);
                     Reader.ReadToFs(Dst);

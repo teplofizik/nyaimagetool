@@ -99,6 +99,7 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
                 var Dtb = Helper.FitHelper.GetDecompressedData(Data, Compression);
                 Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
                 Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
                 Dst.DevTree = new FlattenedDeviceTree.Reader.FDTReader(Dtb).Read();
 
                 Helper.LogHelper.DevtreeInfo(Dst);

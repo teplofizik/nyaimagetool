@@ -128,6 +128,7 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
                 Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
                 Dst.Info.DataLoadAddress = LoadAddress;
                 Dst.Info.EntryPointAddress = EntryAddress;
+                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
                 Dst.Image = Kernel;
 
                 Helper.LogHelper.KernelInfo(Dst);
