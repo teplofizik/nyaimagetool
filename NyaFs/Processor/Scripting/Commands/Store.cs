@@ -17,7 +17,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "legacy" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -209,6 +209,13 @@ namespace NyaFs.Processor.Scripting.Commands
                             var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.GzCpioWriter(Path);
                             Exporter.WriteFs(Fs);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as gzipped cpio stream!");
+                        }
+                    case "lzma":
+                        {
+                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
+                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.LzmaCpioWriter(Path);
+                            Exporter.WriteFs(Fs);
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as lzma compressed cpio stream!");
                         }
                     case "legacy":
                         {

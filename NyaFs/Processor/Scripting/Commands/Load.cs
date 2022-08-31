@@ -18,7 +18,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "legacy", "fit", "ext2" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "legacy", "fit", "ext2" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -225,12 +225,27 @@ namespace NyaFs.Processor.Scripting.Commands
                             {
                                 Processor.SetFs(Fs);
                                 if(OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Cpio is loaded as filesystem! Old filesystem is replaced by this.");
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Gzipped image is loaded as filesystem! Old filesystem is replaced by this.");
                                 else
                                     return new ScriptStepResult(ScriptStepStatus.Ok, $"Cpio is loaded as filesystem!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Cpio is not loaded!");
+                        }
+                    case "lzma":
+                        {
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LzmaReader(Path);
+                            Importer.ReadToFs(Fs);
+                            if (Fs.Loaded)
+                            {
+                                Processor.SetFs(Fs);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"lzma compressed image is loaded as filesystem! Old filesystem is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"lzma compressed image is loaded as filesystem!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
                         }
                     case "gz":
                         {

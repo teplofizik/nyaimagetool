@@ -59,26 +59,8 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
 
             var Data = GetDecompressedData(Image.Data, Image.Compression);
 
-            var FilesystemType = FilesystemDetector.DetectFs(Data);
-
-            if (FilesystemType == Types.FsType.Cpio)
-            {
+            if(DetectAndRead(Dst, Data))
                 UpdateImageInfo(Dst);
-
-                var Reader = new CpioReader(Data);
-                Reader.ReadToFs(Dst);
-
-                Helper.LogHelper.RamfsInfo(Dst, "CPIO");
-            }
-            else if (FilesystemType == Types.FsType.Ext2)
-            {
-                UpdateImageInfo(Dst);
-
-                var Reader = new ExtReader(Data);
-                Reader.ReadToFs(Dst);
-
-                Helper.LogHelper.RamfsInfo(Dst, "EXT2");
-            }
             else
                 Log.Error(0, "Unsupported filesystem...");
         }

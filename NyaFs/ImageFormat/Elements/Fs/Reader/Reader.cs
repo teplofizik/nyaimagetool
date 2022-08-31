@@ -20,5 +20,32 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             return origin.AddSeconds(timestamp);
         }
+
+        protected bool DetectAndRead(Filesystem Dst, byte[] Raw)
+        {
+            var Fs = FilesystemDetector.DetectFs(Raw);
+            switch (Fs)
+            {
+                case Types.FsType.Cpio:
+                    {
+                        var Reader = new CpioReader(Raw);
+                        Reader.ReadToFs(Dst);
+
+                        Helper.LogHelper.RamfsInfo(Dst, "CPIO");
+                        return true;
+                    }
+                case Types.FsType.Ext2:
+                    {
+                        var Reader = new ExtReader(Raw);
+                        Reader.ReadToFs(Dst);
+
+                        Helper.LogHelper.RamfsInfo(Dst, "Ext2");
+                        return true;
+                    }
+                default:
+                    //throw new NotImplementedException($"Unknown filesystem");
+                    return false;
+            }
+        }
     }
 }

@@ -6,16 +6,16 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Reader
 {
-    class GzReader : Reader
+    class LzmaReader : Reader
     {
         byte[] Data = null;
 
-        public GzReader(string Filename)
+        public LzmaReader(string Filename)
         {
             Data = System.IO.File.ReadAllBytes(Filename);
         }
 
-        public GzReader(byte[] Data)
+        public LzmaReader(byte[] Data)
         {
             this.Data = Data;
         }
@@ -26,9 +26,9 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// <param name="Dst"></param>
         public override void ReadToFs(Filesystem Dst)
         {
-            byte[] Raw = Compressors.Gzip.Decompress(Data);
+            byte[] Raw = Compressors.Lzma.Decompress(Data);
 
-            Dst.Info.Compression = Types.CompressionType.IH_COMP_GZIP;
+            Dst.Info.Compression = Types.CompressionType.IH_COMP_LZMA;
             DetectAndRead(Dst, Raw);
         }
     }
