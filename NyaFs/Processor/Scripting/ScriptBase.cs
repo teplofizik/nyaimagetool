@@ -42,4 +42,17 @@ namespace NyaFs.Processor.Scripting
             Add(new Commands.Fs.Chown());
         }
     }
+
+    public class ScriptBaseInteractive : ScriptBaseAll
+    {
+        public ScriptBaseInteractive()
+        {
+            // ls {path}
+            // pwd
+            // cd {path}
+            // export {path} {localfilename}
+            // import {path} {localfilename}
+        }
+    }
+
 }

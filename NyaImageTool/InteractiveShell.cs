@@ -7,7 +7,7 @@ namespace NyaImageTool
     class InteractiveShell
     {
         NyaFs.Processor.ImageProcessor Processor = new NyaFs.Processor.ImageProcessor();
-        NyaFs.Processor.Scripting.ScriptBase Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
+        NyaFs.Processor.Scripting.ScriptBase Base = new NyaFs.Processor.Scripting.ScriptBaseInteractive();
 
         public void ShellLoop()
         {
