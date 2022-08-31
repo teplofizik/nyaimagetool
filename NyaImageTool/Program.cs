@@ -9,7 +9,11 @@ namespace NyaImageTool
             if (args.Length == 1)
                 LoadScript(args[0]);
             else
-                Console.WriteLine("Usage: NyaFsTest <scriptfilename>");
+            {
+                var Shell = new InteractiveShell();
+                Shell.ShellLoop();
+                ///Console.WriteLine("Usage: NyaFsTest <scriptfilename>");
+            }
         }
 
         static void LoadScript(string FN)
