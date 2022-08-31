@@ -31,7 +31,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         var Reader = new CpioReader(Raw);
                         Reader.ReadToFs(Dst);
 
-                        Helper.LogHelper.RamfsInfo(Dst, "CPIO");
                         return true;
                     }
                 case Types.FsType.Ext2:

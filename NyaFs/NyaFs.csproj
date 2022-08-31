@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FT.LZ4" Version="1.0.0" />
     <PackageReference Include="LZMA-SDK" Version="19.0.0" />
   </ItemGroup>
 

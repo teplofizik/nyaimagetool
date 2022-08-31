@@ -11,13 +11,13 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "lzma", "legacy" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "lzma", "lz4", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "legacy" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "lz4", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -118,6 +118,19 @@ namespace NyaFs.Processor.Scripting.Commands
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
                         }
+                    case "lz4":
+                        {
+                            var Kernel = Processor.GetKernel();
+                            if ((Kernel != null) && Kernel.Loaded)
+                            {
+                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.Lz4Writer(Path);
+                                Exporter.WriteKernel(Kernel);
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as lz4 compressed stream!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
+                        }
                     case "lzma":
                         {
                             var Kernel = Processor.GetKernel();
@@ -214,6 +227,13 @@ namespace NyaFs.Processor.Scripting.Commands
                         {
                             ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
                             var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.LzmaCpioWriter(Path);
+                            Exporter.WriteFs(Fs);
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as lzma compressed cpio stream!");
+                        }
+                    case "lz4":
+                        {
+                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
+                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.Lz4CpioWriter(Path);
                             Exporter.WriteFs(Fs);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as lzma compressed cpio stream!");
                         }

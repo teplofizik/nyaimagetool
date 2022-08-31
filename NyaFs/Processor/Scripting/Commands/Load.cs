@@ -12,13 +12,13 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "lzma", "legacy", "fit", "raw" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "lzma", "lz4", "legacy", "fit", "raw" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "legacy", "fit", "ext2" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "lz4", "legacy", "fit", "ext2" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -134,6 +134,21 @@ namespace NyaFs.Processor.Scripting.Commands
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Legacy file is not loaded!");
                         }
+                    case "lz4":
+                        {
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.Lz4Reader(Path);
+                            Importer.ReadToKernel(Kernel);
+                            if (Kernel.Loaded)
+                            {
+                                Processor.SetKernel(Kernel);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"LZ4 compressed image is loaded as kernel! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"LZ4 compressed image is loaded as kernel!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"lz4 file is not loaded!");
+                        }
                     case "lzma":
                         {
                             var Importer = new ImageFormat.Elements.Kernel.Reader.LzmaReader(Path);
@@ -231,6 +246,21 @@ namespace NyaFs.Processor.Scripting.Commands
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Cpio is not loaded!");
+                        }
+                    case "lz4":
+                        {
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.Lz4Reader(Path);
+                            Importer.ReadToFs(Fs);
+                            if (Fs.Loaded)
+                            {
+                                Processor.SetFs(Fs);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"lz4 compressed image is loaded as filesystem! Old filesystem is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"lz4 compressed image is loaded as filesystem!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"lz4 file is not loaded!");
                         }
                     case "lzma":
                         {
