@@ -12,13 +12,13 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "lzma", "lz4", "legacy", "fit", "raw" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "lz4", "legacy", "fit", "ext2" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "legacy", "fit", "ext2" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -165,6 +165,7 @@ namespace NyaFs.Processor.Scripting.Commands
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
                         }
                     case "gz":
+                    case "gzip":
                         {
                             var Importer = new ImageFormat.Elements.Kernel.Reader.GzReader(Path);
                             Importer.ReadToKernel(Kernel);
@@ -278,6 +279,7 @@ namespace NyaFs.Processor.Scripting.Commands
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
                         }
                     case "gz":
+                    case "gzip":
                         {
                             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.GzReader(Path);
                             Importer.ReadToFs(Fs);

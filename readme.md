@@ -4,15 +4,23 @@ There is a tool for editing and converting uboot images in different formats: cp
 There is possible to add or update files in ramfs image.
 
 ## Supported image formats
-1. Kernel: gz, fit, raw, legacy
-2. Ramfs: cpio, cpio.gz, ext2.gz, legacy, fit, ext2
+1. Kernel: compressed raw, fit, raw, legacy
+2. Ramfs: cpio, ext2, compressed cpio or ext2, legacy, fit
 3. Device tree: dtb, fit
 
 ## Supported filesystems
-
 Supported at now:
 1. CPIO ASCII (RW)
 2. EXT2 (R)
+
+## Supported compression types
+Supported at now:
+1. GZip (RW)
+2. LZMA (RW)
+3. LZ4 (RW)
+
+LZMA compression is provided by LZMA SDK package.
+LZ4 compression is provided by FT.LZ4 package.
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
@@ -44,22 +52,28 @@ include <scriptpath>
 ```
 
 ## Commands for image loading
+### Composite images
 Load kernel,fs and devtree from FIT image:
 ```
 load <filename.fit>
 ```
+
 Load only one image from FIT image, where imagetype is "kernel", "ramfs" or "devtree":
 ```
 load <filename.fit> <imagetype> fit
 ```
+
+### Ramfs image
 Load fs from legacy image:
 ```
 load <filename.legacy> ramfs legacy
 ```
-Load fs from gz file (cpio or ext2 image):
+Load fs from compressed file (cpio or ext2 image):
 ```
-load <filename.gz> ramfs gz
+load <filename.ct> ramfs <compression>
 ```
+<compression> is "gzip", "lz4", "lzma"
+
 Load fs from cpio file:
 ```
 load <filename.cpio> ramfs cpio
@@ -68,18 +82,24 @@ Load fs from ext2 image:
 ```
 load <filename.ext2> ramfs ext2
 ```
+
+### Kernel image
 Load kernel from raw binary image:
 ```
-load <filename.gz> kernel raw
+load <filename.raw> kernel raw
 ```
-Load kernel from gzipped image:
+Load kernel from archived image:
 ```
-load <filename.gz> kernel gz
+load <filename.ct> kernel <compression>
 ```
+<compression> is "gzip", "lz4", "lzma"
+
 Load kernel from legacy (uImage, zImage) image:
 ```
-load <filename.gz> kernel legacy
+load <filename.img> kernel legacy
 ```
+
+### Device tree blob
 Load device tree from dtb:
 ```
 load <filename.dtb> devtree dtb
@@ -87,34 +107,45 @@ load <filename.dtb> devtree dtb
 ## Commands for image saving
 To store images to legacy or FIT format, there is need to specify os/arch of these images, if they was loaded from images without such info (cpio, gz). 
 
+### Composite images
 Store data as FIT image:
 ```
 store <filename.fit>
 ```
+
+### Ramfs images
 Store fs as legacy image:
 ```
 store <filename.legacy> ramfs legacy
 ```
-Store fs as cpio.gz archive:
+Store fs as compressed cpio archive:
 ```
-store <filename.cpio.gz> ramfs gz
+store <filename.cpio.ct> ramfs <compression>
 ```
+<compression> is "gzip", "lz4", "lzma"
+
 Store fs as cpio file:
 ```
 store <filename.cpio> ramfs cpio
 ```
+
+### Kernel images
 Store kernel as raw binary file:
 ```
 store <kernel.raw> kernel raw
 ```
-Store kernel as gz file:
+Store kernel as compressed image:
 ```
-store <kernel.gz> kernel gz
+store <kernel.ct> kernel <compression>
 ```
+<compression> is "gzip", "lz4", "lzma"
+
 Store kernel as uncompressed legacy file:
 ```
 store <kernel.uImage> kernel legacy
 ```
+
+### Device tree
 Store device tree as dtb:
 ```
 store <filename.dtb> devtree dtb
@@ -150,7 +181,7 @@ Set compression type (for FIT/legacy):
 ```
 set <imagetype> compression <compression>
 ```
-<compression> is "none", "gzip", "lzma"
+<compression> is "none", "gzip", "lzma", "lz4"
 
 Set entry address (for kernel):
 ```

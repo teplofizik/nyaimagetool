@@ -11,13 +11,13 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "lzma", "lz4", "legacy" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "gzip", "lzma", "lz4", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "lzma", "lz4", "legacy" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -145,6 +145,7 @@ namespace NyaFs.Processor.Scripting.Commands
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
                         }
                     case "gz":
+                    case "gzip":
                         {
                             var Kernel = Processor.GetKernel();
                             if ((Kernel != null) && Kernel.Loaded)
@@ -217,6 +218,7 @@ namespace NyaFs.Processor.Scripting.Commands
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as cpio stream!");
                         }
                     case "gz":
+                    case "gzip":
                         {
                             ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
                             var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.GzCpioWriter(Path);
