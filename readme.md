@@ -31,6 +31,9 @@ Run image processing:
 ./NyaImageTool.exe <scriptfilename>
 ```
 
+If program is running without args, it will start in interactive shell mode:
+![Interactive shell](/docs/images/interactiveshell.png)
+
 Script is list of commands:
 ```
 # Load original FIT image (kernel+devtree+ramfs[cpio.gz])...
@@ -200,7 +203,6 @@ Set data load address (for kernel):
 set kernel load <hexaddress>
 ```
 
-
 ## Commands for modify fiolesystem content:
 Standart arguments for fs commands:
 <path> -- path in image filesystem
@@ -243,4 +245,25 @@ Change file owner:
 ```
 chown <user>
 chown <user> <group>
+```
+
+## Interactive shell commands
+Print active directory:
+```
+pwd
+```
+
+Change active directory:
+```
+cd <path>
+```
+
+List items in active dir:
+```
+ls
+```
+
+List items in other dir:
+```
+ls <path>
 ```
