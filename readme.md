@@ -53,6 +53,11 @@ Include another script:
 include <scriptpath>
 ```
 
+Information about loaded images:
+```
+info
+```
+
 ## Commands for image loading
 ### Composite images
 Load kernel,fs and devtree from FIT image:

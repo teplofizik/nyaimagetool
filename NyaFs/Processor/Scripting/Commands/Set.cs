@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NyaFs.Processor.Scripting.Commands
@@ -8,12 +9,49 @@ namespace NyaFs.Processor.Scripting.Commands
     {
         public Set() : base("set")
         {
+            AddConfig(new SetScriptArgsConfig());
+        }
 
-            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
+
+        class SetScriptArgsConfig : ScriptArgsConfig
+        {
+            public SetScriptArgsConfig() : base(0, new ScriptArgsParam[] {
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel", "devtree", "ramfs", "all" }),
                     new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry", "compression" }),
                     new Params.StringScriptArgsParam("value")
-                }));
+                })
+            {
+
+            }
+
+            public override bool IsMyConfig(string[] Args) => true;
+
+            public override bool CheckArgs(string[] Args)
+            {
+                if (Args.Length != 3)
+                {
+                    Log.Error(0, $"Must have 3 args: <imagetype> <param> <value>");
+                    return false;
+                }
+                else
+                {
+                    var AllowedTypes = new string[] { "kernel", "devtree", "ramfs", "all" };
+                    if (!AllowedTypes.Contains(Args[0]))
+                    {
+                        Log.Error(0, "Invalid image type. Must be one of: kernel, devtree, ramfs, all");
+                        return false;
+                    }
+
+                    var AllowedParams = new string[] { "os", "arch", "type", "name", "load", "entry", "compression" };
+                    if (!AllowedParams.Contains(Args[1]))
+                    {
+                        Log.Error(0, "Invalid parameter name. Must be one of: os, arch, type, name, load, entry, compression");
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         public override ScriptStep Get(ScriptArgs Args)

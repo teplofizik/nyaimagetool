@@ -109,17 +109,15 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             {
                 var Data = Helper.FitHelper.GetDecompressedData(CompressedData, Compression);
 
-                if (DetectAndRead(Dst, Data))
-                {
-                    Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
-                    Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
-                    Dst.Info.Name = null;
-                    Dst.Info.DataLoadAddress = 0;
-                    Dst.Info.EntryPointAddress = 0;
-                    Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
-                    Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
-                }
-                else
+                Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
+                Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
+                Dst.Info.Name = null;
+                Dst.Info.DataLoadAddress = 0;
+                Dst.Info.EntryPointAddress = 0;
+                Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
+
+                if (!DetectAndRead(Dst, Data))
                     Log.Error(0, "Unsupported filesystem...");
             }
             else

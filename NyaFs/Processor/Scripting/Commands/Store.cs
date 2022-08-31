@@ -8,27 +8,20 @@ namespace NyaFs.Processor.Scripting.Commands
     {
         public Store() : base("store")
         {
-            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                   new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
+                new string[] { "raw", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }));
 
-            AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                    new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs",
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }));
 
-            AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                    new Params.EnumScriptArgsParam("type", new string[] { "devtree"}),
-                    new Params.EnumScriptArgsParam("format", new string[] { "dtb" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree",
+                new string[] { "dtb" }));
 
             AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam()
                 }));
+
+            AddConfig(new Configs.ErrorConfig("Invalid image type: %1%. Must be one of: kernel, ramfs, devtree"));
         }
 
         public override ScriptStep Get(ScriptArgs Args)

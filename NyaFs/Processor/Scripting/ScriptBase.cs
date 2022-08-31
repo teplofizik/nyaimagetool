@@ -33,6 +33,7 @@ namespace NyaFs.Processor.Scripting
             Add(new Commands.Store());
             Add(new Commands.Set());
             Add(new Commands.Export());
+            Add(new Commands.Info());
             Add(new Commands.Fs.Dir());
             Add(new Commands.Fs.File());
             Add(new Commands.Fs.SLink());

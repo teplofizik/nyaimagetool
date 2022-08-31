@@ -28,8 +28,13 @@ namespace NyaFs.Processor.Scripting
         {
             foreach(var C in Configs)
             {
-                if(CheckConfig(C, Args))
-                    return new ScriptArgs(C.Id, Args);
+                if (CheckConfig(C, Args))
+                {
+                    if (!C.CheckArgs(Args))
+                        return null;
+                    else
+                        return new ScriptArgs(C.Id, Args);
+                }
             }
 
             return null;
@@ -37,19 +42,7 @@ namespace NyaFs.Processor.Scripting
 
         private bool CheckConfig(ScriptArgsConfig Cfg, string[] Args)
         {
-            // Check args count
-            if (Cfg.Params.Length != Args.Length) return false;
-
-            // Count ok. Check, is arg types correct
-            for(int i = 0; i < Cfg.Params.Length; i++)
-            {
-                var P = Cfg.Params[i];
-                var A = Args[i];
-
-                if(!P.CheckParam(A))
-                    return false;
-            }
-            return true;
+            return Cfg.IsMyConfig(Args);
         }
     }
 }

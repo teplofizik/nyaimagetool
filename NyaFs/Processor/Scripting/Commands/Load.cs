@@ -9,28 +9,18 @@ namespace NyaFs.Processor.Scripting.Commands
     {
         public Load() : base("load")
         {
-            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
+                new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }));
 
-            AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                    new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2" }));
 
-            AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                    new Params.EnumScriptArgsParam("type", new string[] { "devtree"}),
-                    new Params.EnumScriptArgsParam("format", new string[] { "dtb", "fit" }),
-                }));
+            AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
+                new string[] { "dtb", "fit"  }));
 
-            
-            AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] {
-                    new Params.FsPathScriptArgsParam(),
-                }));
+            AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] { new Params.FsPathScriptArgsParam() }));
+
+            AddConfig(new Configs.ErrorConfig("Invalid image type: %1%. Must be one of: kernel, ramfs, devtree"));
         }
 
         public override ScriptStep Get(ScriptArgs Args)
@@ -138,6 +128,8 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "lz4":
                     case "gz":
                     case "gzip":
+                    case "bzip2":
+                    case "gz2":
                         {
                             var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                             var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);

@@ -14,5 +14,26 @@ namespace NyaFs.Processor.Scripting
             this.Id = Id;
             this.Params = Params;
         }
+
+        protected bool CheckArgsLen(string[] Args) => (Params.Length == Args.Length);
+
+        public virtual bool IsMyConfig(string[] Args)
+        {
+            if (!CheckArgsLen(Args)) return false;
+
+            // Count ok. Check, is arg types correct
+            for (int i = 0; i < Params.Length; i++)
+            {
+                var P = Params[i];
+                var A = Args[i];
+
+                if (!P.CheckParam(A))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public virtual bool CheckArgs(string[] Args) => CheckArgsLen(Args);
     }
 }
