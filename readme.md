@@ -18,9 +18,11 @@ Supported at now:
 1. GZip (RW)
 2. LZMA (RW)
 3. LZ4 (RW)
+4. BZIP2 (RW)
 
 LZMA compression is provided by LZMA SDK package.
 LZ4 compression is provided by FT.LZ4 package.
+BZIP2 compression is provided by SharpZipLib package.
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
@@ -72,7 +74,7 @@ Load fs from compressed file (cpio or ext2 image):
 ```
 load <filename.ct> ramfs <compression>
 ```
-<compression> is "gzip", "lz4", "lzma"
+<compression> is "gzip", "lz4", "lzma", "bzip2"
 
 Load fs from cpio file:
 ```
@@ -92,7 +94,7 @@ Load kernel from archived image:
 ```
 load <filename.ct> kernel <compression>
 ```
-<compression> is "gzip", "lz4", "lzma"
+<compression> is "gzip", "lz4", "lzma", "bzip2"
 
 Load kernel from legacy (uImage, zImage) image:
 ```
@@ -122,7 +124,7 @@ Store fs as compressed cpio archive:
 ```
 store <filename.cpio.ct> ramfs <compression>
 ```
-<compression> is "gzip", "lz4", "lzma"
+<compression> is "gzip", "lz4", "lzma", "bzip2"
 
 Store fs as cpio file:
 ```
@@ -181,7 +183,7 @@ Set compression type (for FIT/legacy):
 ```
 set <imagetype> compression <compression>
 ```
-<compression> is "none", "gzip", "lzma", "lz4"
+<compression> is "none", "gzip", "lzma", "lz4", "bzip2"
 
 Set entry address (for kernel):
 ```

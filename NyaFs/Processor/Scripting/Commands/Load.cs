@@ -18,7 +18,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "legacy", "fit", "ext2" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -134,51 +134,24 @@ namespace NyaFs.Processor.Scripting.Commands
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Legacy file is not loaded!");
                         }
-                    case "lz4":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"LZ4 compressed image is loaded as kernel! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"LZ4 compressed image is loaded as kernel!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"lz4 file is not loaded!");
-                        }
                     case "lzma":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"LZMA compressed image is loaded as kernel! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"LZMA compressed image is loaded as kernel!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
-                        }
+                    case "lz4":
                     case "gz":
                     case "gzip":
                         {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
                             Importer.ReadToKernel(Kernel);
                             if (Kernel.Loaded)
                             {
                                 Processor.SetKernel(Kernel);
                                 if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Gzipped image is loaded as kernel! Old kernel is replaced by this.");
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} compressed image is loaded as kernel! Old kernel is replaced by this.");
                                 else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Gzipped image is loaded as kernel!");
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} compressed image is loaded as kernel!");
                             }
                             else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"gz file is not loaded!");
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"{Format} compressed file is not loaded!");
                         }
                     case "fit":
                         {
@@ -241,58 +214,33 @@ namespace NyaFs.Processor.Scripting.Commands
                             {
                                 Processor.SetFs(Fs);
                                 if(OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Gzipped image is loaded as filesystem! Old filesystem is replaced by this.");
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"cpio image is loaded as filesystem! Old filesystem is replaced by this.");
                                 else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Cpio is loaded as filesystem!");
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"cpio is loaded as filesystem!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Cpio is not loaded!");
                         }
                     case "lz4":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"lz4 compressed image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"lz4 compressed image is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"lz4 file is not loaded!");
-                        }
                     case "lzma":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"lzma compressed image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"lzma compressed image is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
-                        }
                     case "gz":
                     case "gzip":
+                    case "bz2":
+                    case "bzip2":
                         {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);
                             Importer.ReadToFs(Fs);
                             if (Fs.Loaded)
                             {
                                 Processor.SetFs(Fs);
                                 if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Cpio is loaded as filesystem! Old filesystem is replaced by this.");
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} compressed image is loaded as filesystem! Old filesystem is replaced by this.");
                                 else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"gz file is loaded as filesystem!");
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} compressed image is loaded as filesystem!");
                             }
                             else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"gz file is not loaded!");
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"{Format} file is not loaded!");
                         }
                     case "legacy":
                         {

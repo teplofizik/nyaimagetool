@@ -252,6 +252,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_GZIP: return "gzip";
                 case Types.CompressionType.IH_COMP_LZMA: return "lzma";
                 case Types.CompressionType.IH_COMP_LZ4: return "lz4";
+                case Types.CompressionType.IH_COMP_BZIP2: return "bzip2";
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");
@@ -266,6 +267,7 @@ namespace NyaFs.ImageFormat.Helper
                 case "gzip": return Types.CompressionType.IH_COMP_GZIP;
                 case "lzma": return Types.CompressionType.IH_COMP_LZMA;
                 case "lz4": return Types.CompressionType.IH_COMP_LZ4;
+                case "bzip2": return Types.CompressionType.IH_COMP_BZIP2;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");
@@ -281,6 +283,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.Decompress(Source);
                 case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.Decompress(Source);
                 case Types.CompressionType.IH_COMP_LZ4: return Compressors.Lz4.Decompress(Source);
+                case Types.CompressionType.IH_COMP_BZIP2: return Compressors.Bzip2.Decompress(Source);
                 case Types.CompressionType.IH_COMP_NONE: return Source;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
@@ -296,6 +299,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_GZIP: return Compressors.Gzip.CompressWithHeader(Source);
                 case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.CompressWithHeader(Source);
                 case Types.CompressionType.IH_COMP_LZ4: return Compressors.Lz4.CompressWithHeader(Source);
+                case Types.CompressionType.IH_COMP_BZIP2: return Compressors.Bzip2.CompressWithHeader(Source);
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");

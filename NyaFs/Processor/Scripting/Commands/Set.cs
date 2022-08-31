@@ -224,6 +224,8 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gzip": return ImageFormat.Types.CompressionType.IH_COMP_GZIP;
                     case "lzma": return ImageFormat.Types.CompressionType.IH_COMP_LZMA;
                     case "lz4": return ImageFormat.Types.CompressionType.IH_COMP_LZ4;
+                    case "bzip2": return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
+                    case "bz2": return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
                     default:
                         throw new ArgumentException("Unsupported compression type");
                 }

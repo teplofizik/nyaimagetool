@@ -89,7 +89,7 @@ namespace NyaFsTest.Tests
 
             Fs.Dump();
 
-            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.GzCpioWriter(Dst);
+            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Dst, NyaFs.ImageFormat.Types.CompressionType.IH_COMP_GZIP);
             Exporter.WriteFs(Fs);
         }
 

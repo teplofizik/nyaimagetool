@@ -11,13 +11,13 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "gzip", "lzma", "lz4", "legacy" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "ramfs" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "legacy" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(2, new ScriptArgsParam[] {
@@ -119,41 +119,21 @@ namespace NyaFs.Processor.Scripting.Commands
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
                         }
                     case "lz4":
-                        {
-                            var Kernel = Processor.GetKernel();
-                            if ((Kernel != null) && Kernel.Loaded)
-                            {
-                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.ArchiveWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
-                                Exporter.WriteKernel(Kernel);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as lz4 compressed stream!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
-                        }
                     case "lzma":
-                        {
-                            var Kernel = Processor.GetKernel();
-                            if ((Kernel != null) && Kernel.Loaded)
-                            {
-                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.ArchiveWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
-                                Exporter.WriteKernel(Kernel);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as lzma compressed stream!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
-                        }
                     case "gz":
                     case "gzip":
+                    case "bz2":
+                    case "bzip2":
                         {
                             var Kernel = Processor.GetKernel();
                             if ((Kernel != null) && Kernel.Loaded)
                             {
+                                var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+
                                 ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.ArchiveWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.ArchiveWriter(Path, CompressionType);
                                 Exporter.WriteKernel(Kernel);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as gzipped stream!");
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as {Format} compressed image!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
@@ -217,27 +197,19 @@ namespace NyaFs.Processor.Scripting.Commands
                             Exporter.WriteFs(Fs);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as cpio stream!");
                         }
+                    case "lz4":
+                    case "lzma":
                     case "gz":
                     case "gzip":
+                    case "bz2":
+                    case "bzip2":
                         {
+                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+
                             ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, CompressionType);
                             Exporter.WriteFs(Fs);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as gzipped cpio stream!");
-                        }
-                    case "lzma":
-                        {
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
-                            Exporter.WriteFs(Fs);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as lzma compressed cpio stream!");
-                        }
-                    case "lz4":
-                        {
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
-                            Exporter.WriteFs(Fs);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as lzma compressed cpio stream!");
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as {Format} archived cpio image!");
                         }
                     case "legacy":
                         {

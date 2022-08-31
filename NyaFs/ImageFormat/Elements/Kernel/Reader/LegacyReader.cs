@@ -8,7 +8,6 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
     public class LegacyReader : Reader
     {
         bool Loaded = false;
-        bool Compressed;
         Types.LegacyImage Image;
 
         public LegacyReader(string Filename)

@@ -4,9 +4,9 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Helper
 {
-    public static class FsHelper
+    internal static class FsHelper
     {
-        public static string DetectFilePath(this ScriptStep S, string Path)
+        internal static string DetectFilePath(this ScriptStep S, string Path)
         {
             if (System.IO.File.Exists(Path))
                 return Path;
