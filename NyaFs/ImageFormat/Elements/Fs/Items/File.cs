@@ -17,5 +17,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Items
         {
             return $"FILE {Filename} {User}:{Group} {Mode:x03} {Content.Length} bytes";
         }
+
+        public override long Size => Content.Length;
     }
 }

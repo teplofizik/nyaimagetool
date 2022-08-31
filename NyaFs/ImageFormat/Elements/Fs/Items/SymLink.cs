@@ -17,5 +17,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Items
         {
             return $"LINK {Filename} {User}:{Group} {Mode:x03} => {Target}";
         }
+        public override long Size => Target.Length;
     }
 }

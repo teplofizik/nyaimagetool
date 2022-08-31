@@ -48,8 +48,11 @@ namespace NyaFs.Processor.Scripting
         public ScriptBaseInteractive()
         {
             // ls {path}
+            Add(new Commands.Fs.Interactive.Ls());
             // pwd
+            Add(new Commands.Fs.Interactive.Pwd());
             // cd {path}
+            Add(new Commands.Fs.Interactive.Cd());
             // export {path} {localfilename}
             // import {path} {localfilename}
         }

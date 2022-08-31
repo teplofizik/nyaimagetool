@@ -37,11 +37,21 @@ namespace NyaFs.ImageFormat.Elements.Fs
         public uint Mode; // Access rights 12 bit 4 4 4
 
         public string Filename;
+        public string ShortFilename
+        {
+            get
+            {
+                var Idx = Filename.LastIndexOf('/');
+                return (Idx > 0) ? Filename.Substring(Idx + 1) : Filename;
+            }
+        }
 
         public uint Major = 8;
         public uint Minor = 1;
         public uint RMajor = 0;
         public uint RMinor = 0;
+
+        public virtual long Size => 0;
 
         public DateTime Created = DateTime.UnixEpoch;
         public DateTime Modified = DateTime.UnixEpoch;

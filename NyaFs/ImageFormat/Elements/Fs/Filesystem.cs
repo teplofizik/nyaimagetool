@@ -116,8 +116,9 @@ namespace NyaFs.ImageFormat.Elements.Fs
 
         public FilesystemItem GetElement(string Path)
         {
-            if (Path == ".") return Root;
-            if(Path.Length == 0)
+            if ((Path == ".") || (Path == "/")) return Root;
+
+            if (Path.Length == 0)
                 throw new ArgumentException($"{Path} is empty");
 
             if (Path[0] == '/') Path = Path.Substring(1);

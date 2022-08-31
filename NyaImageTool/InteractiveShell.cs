@@ -13,7 +13,10 @@ namespace NyaImageTool
         {
             while(true)
             {
-                Console.Write("Nya> ");
+                if(Processor.IsFsLoaded)
+                    Console.Write($"Nya:{Processor.ActivePath}> ");
+                else
+                    Console.Write("Nya> ");
 
                 var Readed = Console.ReadLine();
 

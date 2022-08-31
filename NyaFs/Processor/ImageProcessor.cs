@@ -9,6 +9,8 @@ namespace NyaFs.Processor
 {
     public class ImageProcessor
     {
+        public string ActivePath = "/";
+
         ImageFormat.BaseImageBlob Blob = new ImageFormat.BaseImageBlob();
 
         public void SetFs(Filesystem Fs) => Blob.SetFilesystem(0, Fs);
@@ -24,6 +26,8 @@ namespace NyaFs.Processor
         public DeviceTree GetDevTree() => Blob.GetDevTree(0);
 
         public ImageFormat.BaseImageBlob GetBlob() => Blob;
+
+        public bool IsFsLoaded => Blob.IsProvidedFs;
 
         public void Process(Scripting.Script Script)
         {

@@ -9,7 +9,6 @@ namespace NyaFs.Processor.Scripting.Commands
         public Info() : base("info")
         {
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] { }));
-
         }
 
         public override ScriptStep Get(ScriptArgs Args)
