@@ -11,7 +11,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                    new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "legacy" }),
+                   new Params.EnumScriptArgsParam("format", new string[] { "raw", "gz", "lzma", "legacy" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
@@ -114,6 +114,19 @@ namespace NyaFs.Processor.Scripting.Commands
                                 var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.RawWriter(Path);
                                 Exporter.WriteKernel(Kernel);
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as raw image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
+                        }
+                    case "lzma":
+                        {
+                            var Kernel = Processor.GetKernel();
+                            if ((Kernel != null) && Kernel.Loaded)
+                            {
+                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+                                var Exporter = new NyaFs.ImageFormat.Elements.Kernel.Writer.LzmaWriter(Path);
+                                Exporter.WriteKernel(Kernel);
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is stored to file {Path} as lzma compressed stream!");
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");

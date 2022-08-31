@@ -4,26 +4,26 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Kernel.Reader
 {
-    class GzReader : Reader
+    class LzmaReader : Reader
     {
         byte[] Data = null;
 
-        public GzReader(string Filename)
+        public LzmaReader(string Filename)
         {
             Data = System.IO.File.ReadAllBytes(Filename);
         }
 
-        public GzReader(byte[] Data)
+        public LzmaReader(byte[] Data)
         {
             this.Data = Data;
         }
 
         public override void ReadToKernel(LinuxKernel Dst)
         {
-            byte[] Raw = Compressors.Gzip.Decompress(Data);
+            byte[] Raw = Compressors.Lzma.Decompress(Data);
 
             Dst.Image = Raw;
-            Dst.Info.Compression = Types.CompressionType.IH_COMP_GZIP;
+            Dst.Info.Compression = Types.CompressionType.IH_COMP_LZMA;
             Dst.Info.Type = Types.ImageType.IH_TYPE_KERNEL;
             Helper.LogHelper.KernelInfo(Dst);
         }

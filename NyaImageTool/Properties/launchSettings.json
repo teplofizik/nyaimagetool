@@ -2,7 +2,7 @@
   "profiles": {
     "NyaImageTool": {
       "commandName": "Project",
-      "commandLineArgs": "test.imgscript"
+      "commandLineArgs": "zynq/convert.nyas"
     }
   }
 }

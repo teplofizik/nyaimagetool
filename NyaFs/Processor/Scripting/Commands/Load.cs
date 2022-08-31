@@ -12,7 +12,7 @@ namespace NyaFs.Processor.Scripting.Commands
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel" }),
-                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "legacy", "fit", "raw" }),
+                    new Params.EnumScriptArgsParam("format", new string[] { "gz", "lzma", "legacy", "fit", "raw" }),
                 }));
 
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
@@ -133,6 +133,21 @@ namespace NyaFs.Processor.Scripting.Commands
                             }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Legacy file is not loaded!");
+                        }
+                    case "lzma":
+                        {
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.LzmaReader(Path);
+                            Importer.ReadToKernel(Kernel);
+                            if (Kernel.Loaded)
+                            {
+                                Processor.SetKernel(Kernel);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"LZMA compressed image is loaded as kernel! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"LZMA compressed image is loaded as kernel!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"lzma file is not loaded!");
                         }
                     case "gz":
                         {
