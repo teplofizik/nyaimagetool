@@ -4,19 +4,21 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Writer
 {
-    public class Lz4CpioWriter : Writer
+    public class ArchiveCpioWriter : Writer
     {
         string Filename;
         byte[] PackedData = null;
+        Types.CompressionType Compression;
 
-        public Lz4CpioWriter()
+        public ArchiveCpioWriter(Types.CompressionType Compression)
         {
-
+            this.Compression = Compression;
         }
 
-        public Lz4CpioWriter(string Filename)
+        public ArchiveCpioWriter(string Filename, Types.CompressionType Compression)
         {
             this.Filename = Filename;
+            this.Compression = Compression;
         }
 
         public override void WriteFs(Filesystem Fs)
@@ -24,7 +26,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             var CpWriter = new CpioWriter();
             CpWriter.WriteFs(Fs);
 
-            var Data = Compressors.Lz4.CompressWithHeader(CpWriter.RawStream);
+            var Data = Helper.FitHelper.GetCompressedData(CpWriter.RawStream, Compression);
 
             if (Filename != null)
             {

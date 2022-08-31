@@ -106,7 +106,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 {
                     case "raw":
                         {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.RawReader(Path);
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_NONE);
                             Importer.ReadToKernel(Kernel);
                             if (Kernel.Loaded)
                             {
@@ -136,7 +136,7 @@ namespace NyaFs.Processor.Scripting.Commands
                         }
                     case "lz4":
                         {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.Lz4Reader(Path);
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
                             Importer.ReadToKernel(Kernel);
                             if (Kernel.Loaded)
                             {
@@ -151,7 +151,7 @@ namespace NyaFs.Processor.Scripting.Commands
                         }
                     case "lzma":
                         {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.LzmaReader(Path);
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
                             Importer.ReadToKernel(Kernel);
                             if (Kernel.Loaded)
                             {
@@ -167,7 +167,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gz":
                     case "gzip":
                         {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.GzReader(Path);
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
                             Importer.ReadToKernel(Kernel);
                             if (Kernel.Loaded)
                             {
@@ -250,7 +250,7 @@ namespace NyaFs.Processor.Scripting.Commands
                         }
                     case "lz4":
                         {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.Lz4Reader(Path);
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZ4);
                             Importer.ReadToFs(Fs);
                             if (Fs.Loaded)
                             {
@@ -265,7 +265,7 @@ namespace NyaFs.Processor.Scripting.Commands
                         }
                     case "lzma":
                         {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LzmaReader(Path);
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_LZMA);
                             Importer.ReadToFs(Fs);
                             if (Fs.Loaded)
                             {
@@ -281,7 +281,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gz":
                     case "gzip":
                         {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.GzReader(Path);
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_GZIP);
                             Importer.ReadToFs(Fs);
                             if (Fs.Loaded)
                             {

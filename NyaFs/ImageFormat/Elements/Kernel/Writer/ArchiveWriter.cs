@@ -4,24 +4,27 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Kernel.Writer
 {
-    public class GzWriter : Writer
+    public class ArchiveWriter : Writer
     {
         string Filename;
         byte[] PackedData = null;
+        Types.CompressionType Compression;
 
-        public GzWriter()
+
+        public ArchiveWriter(Types.CompressionType Compression)
         {
-
+            this.Compression = Compression;
         }
 
-        public GzWriter(string Filename)
+        public ArchiveWriter(string Filename, Types.CompressionType Compression)
         {
             this.Filename = Filename;
+            this.Compression = Compression;
         }
 
         public override void WriteKernel(LinuxKernel Kernel)
         {
-            var Data = Compressors.Gzip.CompressWithHeader(Kernel.Image);
+            var Data = Helper.FitHelper.GetCompressedData(Kernel.Image, Compression);
 
             if (Filename != null)
             {
