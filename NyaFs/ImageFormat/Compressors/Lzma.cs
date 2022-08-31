@@ -28,7 +28,11 @@ namespace NyaFs.ImageFormat.Compressors
             {
                 using (var output = new MemoryStream())
                 {
+                    byte[] RawSize = new byte[8];
+                    RawSize.WriteUInt64(0, (ulong)Data.Length);
+
                     encoder.WriteCoderProperties(output);
+                    output.Write(RawSize, 0, RawSize.Length);
 
                     encoder.Code(input, output, input.Length, -1, null);
                     return output.ToArray();
