@@ -129,7 +129,7 @@ namespace NyaFs.ImageFormat.Composite
             return Hash;
         }
 
-        private bool CheckFs(Elements.Fs.Filesystem Fs)
+        private bool CheckFs(Elements.Fs.LinuxFilesystem Fs)
         {
             if(Fs.Info.Architecture == Types.CPU.IH_ARCH_INVALID)
             {

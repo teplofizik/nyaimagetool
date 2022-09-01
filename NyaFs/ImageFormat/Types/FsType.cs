@@ -8,6 +8,7 @@ namespace NyaFs.ImageFormat.Types
     {
         Unknown,
         Cpio,
-        Ext2
+        Ext2,
+        SquashFs
     }
 }

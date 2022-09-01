@@ -25,21 +25,21 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// Читаем в файловую систему из папки с диска
         /// </summary>
         /// <param name="Dst"></param>
-        public virtual void ReadToFs(Filesystem Dst)
+        public virtual void ReadToFs(LinuxFilesystem Dst)
         {
-            ProcessDirectory(Dst.Root, Dir);
+            ProcessDirectory(Dst.Fs.Root, Dir);
 
             Helper.LogHelper.RamfsInfo(Dst, "native");
         }
 
-        private void ProcessDirectory(Items.Dir DirItem, string Path)
+        private void ProcessDirectory(Filesystem.Universal.Items.Dir DirItem, string Path)
         {
             // Process dirs
             var Dirs = System.IO.Directory.GetDirectories(Path);
             foreach (var D in Dirs)
             {
                 var RelPath = System.IO.Path.GetRelativePath(Dir, D);
-                var CurrentDir = new Items.Dir(RelPath, User, Group, DirMode);
+                var CurrentDir = new Filesystem.Universal.Items.Dir(RelPath, User, Group, DirMode);
 
                 CurrentDir.Created = System.IO.Directory.GetCreationTime(D);
                 CurrentDir.Modified = System.IO.Directory.GetLastWriteTime(D);
@@ -58,7 +58,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
 
                 var FilePath = System.IO.Path.GetRelativePath(Dir, F);
                 // Console.WriteLine($"Added file: {FilePath} size {Data.Length}");
-                var File = new Items.File(FilePath, User, Group, FileMode, Data);
+                var File = new Filesystem.Universal.Items.File(FilePath, User, Group, FileMode, Data);
                 File.Created = System.IO.File.GetCreationTime(F);
                 File.Modified = System.IO.File.GetLastWriteTime(F);
 

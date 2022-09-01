@@ -51,14 +51,14 @@ namespace NyaFs.Processor
                 var W = Mode[Offset + 1];
                 var X = Mode[Offset + 2];
 
-                if (R == 'r') ModeX |= 4U << ((2 - i) * 4);
-                if (W == 'w') ModeX |= 2U << ((2 - i) * 4);
+                if (R == 'r') ModeX |= 4U << ((2 - i) * 3);
+                if (W == 'w') ModeX |= 2U << ((2 - i) * 3);
                 if (X == 'x') 
-                    ModeX |= 1U << ((2 - i) * 4);
+                    ModeX |= 1U << ((2 - i) * 3);
                 else if (X == 's')
                 {
-                    ModeX |= 1U << ((2 - i) * 4);
-                    ModeX |= 1U << 12 << (2 - i);
+                    ModeX |= 1U << ((2 - i) * 3);
+                    ModeX |= 1U << 9 << (2 - i);
                 }
             }
             return ModeX;

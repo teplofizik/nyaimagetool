@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NyaExt4\NyaExt2.csproj" />
     <ProjectReference Include="..\NyaFs\NyaFs.csproj" />
   </ItemGroup>
 

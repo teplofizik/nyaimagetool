@@ -84,7 +84,7 @@ namespace NyaFs.ImageFormat.Types
 		/// <summary>
 		/// Являются ли корректными данными
 		/// </summary>
-		public bool Correct => CalcCrc(Data) == Crc;
+		public bool Correct => CalcCrc(ImageData) == Crc;
 
 		/// <summary>
 		/// Длина данных
@@ -159,7 +159,7 @@ namespace NyaFs.ImageFormat.Types
 		/// </summary>
 		public DateTime Timestamp => ConvertFromUnixTimestamp(ReadUInt32BE(0x08));
 
-		public byte[] Data => ReadArray(0x40, Length);
+		public byte[] ImageData => ReadArray(0x40, Length);
 
 		static UInt32 CalcCrc(byte[] data)
 		{

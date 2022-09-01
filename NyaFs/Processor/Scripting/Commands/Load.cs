@@ -13,7 +13,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2", "squashfs" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
                 new string[] { "dtb", "fit"  }));
@@ -195,9 +195,24 @@ namespace NyaFs.Processor.Scripting.Commands
             private ScriptStepResult ReadFs(ImageProcessor Processor)
             {
                 var OldLoaded = Processor.GetFs()?.Loaded ?? false;
-                var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+                var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
                 switch (Format)
                 {
+                    case "squashfs":
+                        {
+                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.SquashFsReader(Path);
+                            Importer.ReadToFs(Fs);
+                            if (Fs.Loaded)
+                            {
+                                Processor.SetFs(Fs);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"squashfs image is loaded as filesystem! Old filesystem is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"squashfs is loaded as filesystem!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"squashfs image is not loaded!");
+                        }
                     case "cpio":
                         {
                             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.CpioReader(Path);

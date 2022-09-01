@@ -18,7 +18,7 @@ namespace NyaFs.Processor.Scripting.Helper
             return null;
         }
 
-        private static ImageFormat.Elements.Fs.FilesystemItem GetItem(ImageFormat.Elements.Fs.Filesystem Fs, string Path)
+        private static Filesystem.Universal.FilesystemItem GetItem(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Path)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace NyaFs.Processor.Scripting.Helper
             }
         }
 
-        internal static ImageFormat.Elements.Fs.FilesystemItem GetItem(ImageFormat.Elements.Fs.Filesystem Fs, string Base, string Path)
+        internal static Filesystem.Universal.FilesystemItem GetItem(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Base, string Path)
         {
             if (Path == "")
                 return null;

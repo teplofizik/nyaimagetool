@@ -49,9 +49,9 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs.Exists(Path))
                 {
                     var Item = Fs.GetElement(Path);
-                    if (Item.ItemType == ImageFormat.Types.FilesystemItemType.Dir)
+                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
                     {
-                        var File = Item as ImageFormat.Elements.Fs.Items.Dir;
+                        var File = Item as Filesystem.Universal.Items.Dir;
 
                         File.Mode = Mode;
                         File.User = User;
@@ -69,7 +69,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                     var Parent = Fs.GetParentDirectory(Path);
                     if (Parent != null)
                     {
-                        var File = new ImageFormat.Elements.Fs.Items.Dir(Path, User, Group, Mode);
+                        var File = new Filesystem.Universal.Items.Dir(Path, User, Group, Mode);
 
                         Parent.Items.Add(File);
                         return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} added!");                    }

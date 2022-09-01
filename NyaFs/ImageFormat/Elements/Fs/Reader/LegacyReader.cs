@@ -34,7 +34,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             Loaded = true;
         }
 
-        public void UpdateImageInfo(Filesystem Dst)
+        public void UpdateImageInfo(LinuxFilesystem Dst)
         {
             if (Loaded)
             {
@@ -53,11 +53,11 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// Читаем в файловую систему из cpio-файла
         /// </summary>
         /// <param name="Dst"></param>
-        public override void ReadToFs(Filesystem Dst)
+        public override void ReadToFs(LinuxFilesystem Dst)
         {
             if (!Loaded) return;
 
-            var Data = GetDecompressedData(Image.Data, Image.Compression);
+            var Data = GetDecompressedData(Image.ImageData, Image.Compression);
 
             if(DetectAndRead(Dst, Data))
                 UpdateImageInfo(Dst);

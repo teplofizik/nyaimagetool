@@ -48,8 +48,8 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
 
                     if(Item != null)
                     {
-                        Processor.ActivePath = "/" + Item.Filename;
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Active directory is changed to {Processor.ActivePath}.");
+                        Processor.ActivePath = (Item.Filename.Length > 1) ?  "/" + Item.Filename : Item.Filename;
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Active directory is changed to {Processor.ActivePath}.");
                     }
                     else
                         return new ScriptStepResult(ScriptStepStatus.Error, "Specified path is not found.");

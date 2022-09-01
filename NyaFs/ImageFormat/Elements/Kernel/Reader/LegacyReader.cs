@@ -55,9 +55,11 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
         {
             if (!Loaded) return;
 
-            Dst.Image = Helper.FitHelper.GetDecompressedData(Image.Data, Image.Compression);
+            Dst.Image = Helper.FitHelper.GetDecompressedData(Image.ImageData, Image.Compression);
             Dst.Info.Compression = Image.Compression;
             UpdateImageInfo(Dst);
+
+            Helper.LogHelper.KernelInfo(Dst);
         }
 
         /// <summary>

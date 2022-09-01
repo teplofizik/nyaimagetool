@@ -9,7 +9,7 @@ namespace NyaFsTest
         {
             Script.TestScript();
 
-            //Ext2Fs.DumpFs();
+           // Ext2Fs.DumpFs();
         }
     }
 }

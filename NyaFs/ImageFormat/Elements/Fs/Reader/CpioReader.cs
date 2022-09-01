@@ -23,12 +23,12 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// Читаем в файловую систему из cpio-файла
         /// </summary>
         /// <param name="Dst"></param>
-        public override void ReadToFs(Filesystem Dst)
+        public override void ReadToFs(LinuxFilesystem Dst)
         {
             foreach (var I in Archive.Files)
             {
                 if(I.Path == ".")
-                    ApplyCpioParams(Dst.Root, I);
+                    ApplyCpioParams(Dst.Fs.Root, I);
                 else
                 {
                     //var Parent = Dst.GetParentDir();
@@ -41,7 +41,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                     {
                         case CpioLib.Types.CpioModeFileType.C_ISDIR: // Папка
                             {
-                                var SubDir = new Items.Dir(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                var SubDir = new Filesystem.Universal.Items.Dir(I.Path, I.UserId, I.GroupId, I.HexMode);
                                 ApplyCpioParams(SubDir, I);
                                 Dir.Items.Add(SubDir);
                                 //Console.WriteLine($"Added dir {I.Path}");
@@ -49,7 +49,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                             }
                         case CpioLib.Types.CpioModeFileType.C_ISREG: // Файл
                             {
-                                var File = new Items.File(I.Path, I.UserId, I.GroupId, I.HexMode, I.Content);
+                                var File = new Filesystem.Universal.Items.File(I.Path, I.UserId, I.GroupId, I.HexMode, I.Content);
                                 ApplyCpioParams(File, I);
                                 Dir.Items.Add(File);
                                 break;
@@ -57,7 +57,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         case CpioLib.Types.CpioModeFileType.C_ISLNK: // Ссылка
                             {
                                 var Target = UTF8Encoding.UTF8.GetString(I.Content);
-                                var Link = new Items.SymLink(I.Path, I.UserId, I.GroupId, I.HexMode, Target);
+                                var Link = new Filesystem.Universal.Items.SymLink(I.Path, I.UserId, I.GroupId, I.HexMode, Target);
                                 ApplyCpioParams(Link, I);
                                 Dir.Items.Add(Link);
                                 //Console.WriteLine($"Added symlink {I.Path} to {Target}");
@@ -65,7 +65,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                             }
                         case CpioLib.Types.CpioModeFileType.C_ISCHR: // NOD
                             {
-                                var Node = new Items.Node(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                var Node = new Filesystem.Universal.Items.Node(I.Path, I.UserId, I.GroupId, I.HexMode);
                                 ApplyCpioParams(Node, I);
                                 Dir.Items.Add(Node);
                                 //Console.WriteLine($"Added node {I.Path}");
@@ -73,14 +73,14 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                             }
                         case CpioLib.Types.CpioModeFileType.C_ISBLK: // Block
                             {
-                                var Block = new Items.Block(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                var Block = new Filesystem.Universal.Items.Block(I.Path, I.UserId, I.GroupId, I.HexMode);
                                 ApplyCpioParams(Block, I);
                                 Dir.Items.Add(Block);
                                 break;
                             }
                         case CpioLib.Types.CpioModeFileType.C_ISFIFO: // FIFO
                             {
-                                var Fifo = new Items.Fifo(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                var Fifo = new Filesystem.Universal.Items.Fifo(I.Path, I.UserId, I.GroupId, I.HexMode);
                                 ApplyCpioParams(Fifo, I);
                                 Dir.Items.Add(Fifo);
                                 break;
@@ -95,7 +95,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             Helper.LogHelper.RamfsInfo(Dst, "CPIO");
         }
 
-        private void ApplyCpioParams(FilesystemItem Item, CpioLib.Types.CpioNode Node)
+        private void ApplyCpioParams(NyaFs.Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
         {
             Item.Mode = Node.HexMode;
             Item.Major = Node.Major;

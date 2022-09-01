@@ -24,8 +24,11 @@ namespace NyaFs.ImageFormat.Elements.Fs
 
         public static Types.FsType DetectFs(byte[] Raw)
         {
-            if (Raw.ReadUInt32BE(0) == 0x30373037u)
+            if (Raw.ReadUInt32BE(0) == 0x30373037u) // CPIO start of block
                 return Types.FsType.Cpio;
+
+            if (Raw.ReadUInt32BE(0) == 0x68737173) // hsqs magic
+                return Types.FsType.SquashFs;
 
             if (IsExt4(Raw))
                 return Types.FsType.Ext2;
@@ -39,6 +42,7 @@ namespace NyaFs.ImageFormat.Elements.Fs
             {
                 case Types.FsType.Cpio: return "CPIO (ASCII)";
                 case Types.FsType.Ext2: return "Ext2";
+                case Types.FsType.SquashFs: return "SquashFs";
                 default: return "Unknown";
             }
         }

@@ -17,7 +17,7 @@ namespace NyaFs.ImageFormat.Helper
             Log.Write(1, $"     Entry address: {Kernel.Info.EntryPointAddress:x08}");
         }
 
-        public static void RamfsInfo(Elements.Fs.Filesystem Fs, string FsType)
+        public static void RamfsInfo(Elements.Fs.LinuxFilesystem Fs, string FsType)
         {
             Log.Ok(1, "Filesystem:");
             Log.Write(1, $"  Operating System: {FitHelper.GetOperatingSystem(Fs.Info.OperatingSystem)}");

@@ -66,9 +66,9 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs.Exists(Path))
                 {
                     var Item = Fs.GetElement(Path);
-                    if (Item.ItemType == ImageFormat.Types.FilesystemItemType.SymLink)
+                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.SymLink)
                     {
-                        var SymLink = Item as ImageFormat.Elements.Fs.Items.SymLink;
+                        var SymLink = Item as Filesystem.Universal.Items.SymLink;
 
                         if (UMode == UpdateMode.AddOrUpdate)
                         {
@@ -91,7 +91,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                     {
                         if (UMode == UpdateMode.AddOrUpdate)
                         {
-                            var SymLink = new ImageFormat.Elements.Fs.Items.SymLink(Path, User, Group, Mode, Target);
+                            var SymLink = new Filesystem.Universal.Items.SymLink(Path, User, Group, Mode, Target);
 
                             Parent.Items.Add(SymLink);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} added!");

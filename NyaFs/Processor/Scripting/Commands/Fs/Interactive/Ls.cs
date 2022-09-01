@@ -33,7 +33,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
                 this.Path = Path;
             }
 
-            private ImageFormat.Elements.Fs.Items.Dir GetTarget(ImageFormat.Elements.Fs.Filesystem Fs, string Active)
+            private Filesystem.Universal.Items.Dir GetTarget(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Active)
             {
                 if (Path == null)
                 {
@@ -41,14 +41,14 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
                     {
                         return Fs.GetDirectory(Active);
                     }
-                    catch(Exception E)
+                    catch(Exception)
                     {
                         return null;
                     }
                 }
                 else
                 {
-                    return Helper.FsHelper.GetItem(Fs, Active, Path) as ImageFormat.Elements.Fs.Items.Dir;
+                    return Helper.FsHelper.GetItem(Fs, Active, Path) as Filesystem.Universal.Items.Dir;
                 }
             }
 
@@ -73,7 +73,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
                 }
             }
 
-            private string FormatItem(ImageFormat.Elements.Fs.FilesystemItem Item)
+            private string FormatItem(Filesystem.Universal.FilesystemItem Item)
             {
                 var Mode = $"{GetItemType(Item)}{ConvertModeToString(Item.Mode)}";
                 var User = $"{Item.User}".PadLeft(5);
@@ -81,21 +81,21 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
 
                 var Size = $"{Item.Size}".PadLeft(12);
 
-                var Name = (Item.ItemType == ImageFormat.Types.FilesystemItemType.SymLink) ? $"{Item.ShortFilename} -> {(Item as ImageFormat.Elements.Fs.Items.SymLink).Target}" : Item.ShortFilename;
+                var Name = (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.SymLink) ? $"{Item.ShortFilename} -> {(Item as Filesystem.Universal.Items.SymLink).Target}" : Item.ShortFilename;
 
                 return $"{Mode} {User} {Group} {Size} {Name}";
             }
 
-            private string GetItemType(ImageFormat.Elements.Fs.FilesystemItem Item)
+            private string GetItemType(Filesystem.Universal.FilesystemItem Item)
             {
                 switch(Item.ItemType)
                 {
-                    case ImageFormat.Types.FilesystemItemType.File: return "-";
-                    case ImageFormat.Types.FilesystemItemType.Dir: return "d";
-                    case ImageFormat.Types.FilesystemItemType.SymLink: return "l";
-                    case ImageFormat.Types.FilesystemItemType.Node: return "c";
-                    case ImageFormat.Types.FilesystemItemType.Block: return "b";
-                    case ImageFormat.Types.FilesystemItemType.Fifo: return "f";
+                    case Filesystem.Universal.Types.FilesystemItemType.File: return "-";
+                    case Filesystem.Universal.Types.FilesystemItemType.Directory: return "d";
+                    case Filesystem.Universal.Types.FilesystemItemType.SymLink: return "l";
+                    case Filesystem.Universal.Types.FilesystemItemType.Character: return "c";
+                    case Filesystem.Universal.Types.FilesystemItemType.Block: return "b";
+                    case Filesystem.Universal.Types.FilesystemItemType.Fifo: return "f";
                     default: return "?";
                 }
             }
@@ -104,11 +104,11 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
                 var Res = "";
                 for (int i = 0; i < 3; i++)
                 {
-                    UInt32 Part = (Mode >> (2 - i) * 4) & 0x7;
+                    UInt32 Part = (Mode >> (2 - i) * 3) & 0x7;
 
                     Res += ((Part & 0x04) != 0) ? "r" : "-";
                     Res += ((Part & 0x02) != 0) ? "w" : "-";
-                    Res += ((Part & 0x01) != 0) ? ((((Mode >> 12 >> (2 - i)) & 0x1) != 1) ? "x" : "s") : "-";
+                    Res += ((Part & 0x01) != 0) ? ((((Mode >> 9 >> (2 - i)) & 0x1) != 1) ? "x" : "s") : "-";
                 }
                 return Res;
             }

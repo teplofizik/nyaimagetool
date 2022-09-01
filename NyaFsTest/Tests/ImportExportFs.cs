@@ -10,7 +10,7 @@ namespace NyaFsTest.Tests
         {
             var Dir = "example\\";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.NativeReader(Dir, 0, 0, 0x744, 0x755);
             Importer.ReadToFs(Fs);
 
@@ -21,7 +21,7 @@ namespace NyaFsTest.Tests
         {
             var Fn = "example.cpio";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.CpioReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -32,7 +32,7 @@ namespace NyaFsTest.Tests
         {
             var Fn = "legacy.bin";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -43,7 +43,7 @@ namespace NyaFsTest.Tests
         {
             var Fn = "legacy.bin";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -55,7 +55,7 @@ namespace NyaFsTest.Tests
             var Fn = "legacy.bin";
             var Dst = "extracted\\";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -69,7 +69,7 @@ namespace NyaFsTest.Tests
             var Fn = "initramfs.bin";
             var Dst = "extracted.cpio";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -83,7 +83,7 @@ namespace NyaFsTest.Tests
             var Fn = "legacy.bin";
             var Dst = "extracted.gz";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -98,7 +98,7 @@ namespace NyaFsTest.Tests
             var Fn = "legacy.bin";
             var Dst = "legacy.bin.saved";
 
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Fn);
             Importer.ReadToFs(Fs);
 
@@ -111,7 +111,7 @@ namespace NyaFsTest.Tests
         public static void TestImportFit()
         {
             var Fn = "test.fit";
-            var Fs = new NyaFs.ImageFormat.Elements.Fs.Filesystem();
+            var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
 
             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.FitReader(Fn);
             Importer.ReadToFs(Fs);

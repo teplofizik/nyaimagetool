@@ -21,7 +21,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             this.Compression = Compression;
         }
 
-        public override void WriteFs(Filesystem Fs)
+        public override void WriteFs(LinuxFilesystem Fs)
         {
             var CpWriter = new CpioWriter();
             CpWriter.WriteFs(Fs);

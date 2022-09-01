@@ -23,6 +23,8 @@ namespace Extension.Packet
             StructSize = Size;
         }
 
+        public byte[] Data => Raw.ReadArray(StructOffset, StructSize);
+
         /// <summary>
         /// Определяет длину отдаваемого пакета
         /// </summary>

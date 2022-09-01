@@ -21,12 +21,12 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             this.Filename = Filename;
         }
 
-        public override void WriteFs(Filesystem Fs)
+        public override void WriteFs(LinuxFilesystem Fs)
         {
             Archive = new CpioLib.Types.CpioArchive();
             Archive.Trailer = new CpioLib.Types.Nodes.CpioTrailer();
 
-            ProcessDirectory(Fs.Root);
+            ProcessDirectory(Fs.Fs.Root);
 
             var Data = CpioLib.IO.CpioPacker.GetRawData(Archive);
             if (Filename != null)
@@ -38,44 +38,44 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                 CpioData = Data;
         }
 
-        private void ProcessDirectory(Items.Dir Dir)
+        private void ProcessDirectory(Filesystem.Universal.Items.Dir Dir)
         {
             foreach (var I in Dir.Items)
             {
                 switch (I.ItemType)
                 {
-                    case Types.FilesystemItemType.Dir:
+                    case Filesystem.Universal.Types.FilesystemItemType.Directory:
                         {
-                            var N = Archive.AddDir(I.Filename, Convert.ToUInt32((I as Items.Dir).Items.Count));
+                            var N = Archive.AddDir(I.Filename, Convert.ToUInt32((I as Filesystem.Universal.Items.Dir).Items.Count));
                             SetParamsToCpioNode(I, N);
-                            ProcessDirectory(I as Items.Dir);
+                            ProcessDirectory(I as Filesystem.Universal.Items.Dir);
                         }
                         break;
-                    case Types.FilesystemItemType.File:
+                    case Filesystem.Universal.Types.FilesystemItemType.File:
                         {
-                            var N = Archive.AddFile(I.Filename, DateTime.Now, (I as Items.File).Content);
-                            SetParamsToCpioNode(I, N);
-                        }
-                        break;
-                    case Types.FilesystemItemType.SymLink:
-                        {
-                            var N = Archive.AddSLink(I.Filename, (I as Items.SymLink).Target);
+                            var N = Archive.AddFile(I.Filename, DateTime.Now, (I as Filesystem.Universal.Items.File).Content);
                             SetParamsToCpioNode(I, N);
                         }
                         break;
-                    case Types.FilesystemItemType.Node:
+                    case Filesystem.Universal.Types.FilesystemItemType.SymLink:
+                        {
+                            var N = Archive.AddSLink(I.Filename, (I as Filesystem.Universal.Items.SymLink).Target);
+                            SetParamsToCpioNode(I, N);
+                        }
+                        break;
+                    case Filesystem.Universal.Types.FilesystemItemType.Character:
                         {
                             var N = Archive.AddNod(I.Filename, I.RMajor, I.RMinor);
                             SetParamsToCpioNode(I, N);
                         }
                         break;
-                    case Types.FilesystemItemType.Block:
+                    case Filesystem.Universal.Types.FilesystemItemType.Block:
                         {
                             var N = Archive.AddBlock(I.Filename, I.RMajor, I.RMinor);
                             SetParamsToCpioNode(I, N);
                         }
                         break;
-                    case Types.FilesystemItemType.Fifo:
+                    case Filesystem.Universal.Types.FilesystemItemType.Fifo:
                         {
                             var N = Archive.AddFifo(I.Filename, I.RMajor, I.RMinor);
                             SetParamsToCpioNode(I, N);
@@ -85,7 +85,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             }
         }
 
-        private void SetParamsToCpioNode(FilesystemItem Item, CpioLib.Types.CpioNode Node)
+        private void SetParamsToCpioNode(Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
         {
             Node.HexMode = Item.Mode;
             Node.UserId = Item.User;

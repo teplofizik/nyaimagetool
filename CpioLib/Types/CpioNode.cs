@@ -107,27 +107,8 @@ namespace CpioLib.Types
 
         public UInt32 HexMode
         {
-            get
-            {
-                var M = Mode & 0xFFFU;
-                uint Res = 0;
-                Res |= (M & 0x7);
-                Res |= ((M >> 3) & 0x7) << 4;
-                Res |= ((M >> 6) & 0x7) << 8;
-                Res |= ((M >> 9) & 0x7) << 12;
-
-                return Res;
-            }
-            set
-            {
-                var M = Mode & ~0x1FFU;
-                M |= (value & 0x7);
-                M |= ((value >> 4) & 0x7) << 3;
-                M |= ((value >> 8) & 0x7) << 6;
-                M |= ((value >> 12) & 0x7) << 9;
-
-                Mode = M;
-            }
+            get { return Mode & 0xFFFU; }
+            set { Mode = (Mode & ~0xFFFu) | (value & 0xFFFu); }
         }
 
         public string StrMode

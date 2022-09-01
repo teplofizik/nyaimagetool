@@ -27,20 +27,20 @@ namespace NyaFsTest.Tests
                // "load initramfs.bin.SD ramfs legacy",
                // "load test.fit ramfs fit",
                // "load test.fit devtree fit",
-                "load uImage kernel legacy",
+                "load rootfs.squashfs.hi3516ev100 ramfs squashfs",
               //  "load test.fit",
               //  "set ramfs name TestImageARM64",
               //  "set ramfs os linux",
               //  "set ramfs arch arm64",
-                "load initramfs.zynq.SD ramfs legacy",
+              //  "load initramfs.zynq.SD ramfs legacy",
                 //"set kernel load 1050000",
                 //"set kernel entry 1040000",
-                "include include/scp.module",
-                "file etc/test.txt test.txt rwxr--r-- 0 0",
-                "store bb.bin.SD kernel zImage",
+              //  "include include/scp.module",
+              //  "file etc/test.txt test.txt rwxr--r-- 0 0",
+               // "store ramfs.cpio.bz2 ramfs bz2",
                 // "store builded.fit",
                // "export exported",
-                "store ramfs.cpio ramfs cpio"
+             //   "store ramfs.cpio ramfs cpio"
             }).Script;
 
             if (!Script.HasErrors)

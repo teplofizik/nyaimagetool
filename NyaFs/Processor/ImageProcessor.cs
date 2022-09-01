@@ -13,7 +13,7 @@ namespace NyaFs.Processor
 
         ImageFormat.BaseImageBlob Blob = new ImageFormat.BaseImageBlob();
 
-        public void SetFs(Filesystem Fs) => Blob.SetFilesystem(0, Fs);
+        public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);
 
         public void SetKernel(LinuxKernel Kernel) => Blob.SetKernel(0, Kernel);
 
@@ -21,7 +21,7 @@ namespace NyaFs.Processor
 
         public LinuxKernel GetKernel() => Blob.GetKernel(0);
 
-        public Filesystem GetFs() => Blob.GetFilesystem(0);
+        public LinuxFilesystem GetFs() => Blob.GetFilesystem(0);
 
         public DeviceTree GetDevTree() => Blob.GetDevTree(0);
 

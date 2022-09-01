@@ -10,7 +10,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// Читаем в файловую систему из внешнего источника
         /// </summary>
         /// <param name="Dst"></param>
-        public virtual void ReadToFs(Filesystem Dst)
+        public virtual void ReadToFs(LinuxFilesystem Dst)
         {
 
         }
@@ -21,7 +21,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             return origin.AddSeconds(timestamp);
         }
 
-        protected bool DetectAndRead(Filesystem Dst, byte[] Raw)
+        protected bool DetectAndRead(LinuxFilesystem Dst, byte[] Raw)
         {
             var Fs = FilesystemDetector.DetectFs(Raw);
             switch (Fs)

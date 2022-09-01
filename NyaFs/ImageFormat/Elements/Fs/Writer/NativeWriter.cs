@@ -13,12 +13,12 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             this.Dir = Dir;
         }
 
-        public override void WriteFs(Filesystem Fs)
+        public override void WriteFs(LinuxFilesystem Fs)
         {
-            ProcessDirectory(Fs.Root);
+            ProcessDirectory(Fs.Fs.Root);
         }
 
-        private void ProcessDirectory(Items.Dir Dir)
+        private void ProcessDirectory(Filesystem.Universal.Items.Dir Dir)
         {
             foreach (var I in Dir.Items)
             {
@@ -26,7 +26,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
 
                 switch (I.ItemType)
                 {
-                    case Types.FilesystemItemType.Dir:
+                    case Filesystem.Universal.Types.FilesystemItemType.Directory:
                         if (System.IO.File.Exists(AbsPath))
                             Log.Warning(0, $"{AbsPath} is file, cannot make directory");
                         else
@@ -36,10 +36,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                             else
                                 System.IO.Directory.CreateDirectory(AbsPath);
 
-                            ProcessDirectory(I as Items.Dir);
+                            ProcessDirectory(I as Filesystem.Universal.Items.Dir);
                         }
                         break;
-                    case Types.FilesystemItemType.File:
+                    case Filesystem.Universal.Types.FilesystemItemType.File:
                         if (System.IO.Directory.Exists(AbsPath))
                             Log.Warning(0, $"{AbsPath} is directory, cannot save file");
                         else
@@ -47,10 +47,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                             if (System.IO.File.Exists(AbsPath))
                                 Log.Warning(0, $"{AbsPath} already exists");
 
-                            System.IO.File.WriteAllBytes(AbsPath, (I as Items.File).Content);
+                            System.IO.File.WriteAllBytes(AbsPath, (I as Filesystem.Universal.Items.File).Content);
                         }
                         break;
-                    case Types.FilesystemItemType.SymLink:
+                    case Filesystem.Universal.Types.FilesystemItemType.SymLink:
                         if (System.IO.File.Exists(AbsPath))
                             Log.Warning(0, $"{AbsPath} already exists");
 

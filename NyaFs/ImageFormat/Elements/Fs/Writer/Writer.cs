@@ -6,7 +6,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
 {
     public class Writer
     {
-        public virtual void WriteFs(Filesystem Fs)
+        public virtual void WriteFs(LinuxFilesystem Fs)
         {
 
         }
@@ -20,6 +20,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             return Convert.ToUInt32(((DateTimeOffset)timestamp).ToUnixTimeSeconds());
         }
 
-        public virtual bool CheckFilesystem(Filesystem Fs) => (Fs != null);
+        public virtual bool CheckFilesystem(LinuxFilesystem Fs) => (Fs != null);
     }
 }

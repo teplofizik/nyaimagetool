@@ -78,9 +78,9 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs.Exists(Path))
                 {
                     var Item = Fs.GetElement(Path);
-                    if (Item.ItemType == ImageFormat.Types.FilesystemItemType.File)
+                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.File)
                     {
-                        var File = Item as ImageFormat.Elements.Fs.Items.File;
+                        var File = Item as Filesystem.Universal.Items.File;
 
                         if (AddMode == UpdateMode.AddOrUpdate)
                         {
@@ -105,7 +105,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                         if (AddMode == UpdateMode.AddOrUpdate)
                         {
                             var Content = System.IO.File.ReadAllBytes(DetectedFilename);
-                            var File = new ImageFormat.Elements.Fs.Items.File(Path, User, Group, Mode, Content);
+                            var File = new Filesystem.Universal.Items.File(Path, User, Group, Mode, Content);
 
                             Parent.Items.Add(File);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} added!");

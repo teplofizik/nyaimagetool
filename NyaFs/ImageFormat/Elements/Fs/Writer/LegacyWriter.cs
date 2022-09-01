@@ -13,7 +13,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             this.Filename = Filename;
         }
 
-        public override void WriteFs(Filesystem Fs)
+        public override void WriteFs(LinuxFilesystem Fs)
         {
             if (IsImageInfoCorrect(Fs.Info))
             {
@@ -28,7 +28,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             }
         }
 
-        public override bool CheckFilesystem(Filesystem Fs) => base.CheckFilesystem(Fs) && IsImageInfoCorrect(Fs.Info);
+        public override bool CheckFilesystem(LinuxFilesystem Fs) => base.CheckFilesystem(Fs) && IsImageInfoCorrect(Fs.Info);
 
         bool IsImageInfoCorrect(Types.ImageInfo Info)
         {

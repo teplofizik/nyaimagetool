@@ -26,7 +26,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// Читаем в файловую систему из cpio-файла
         /// </summary>
         /// <param name="Dst"></param>
-        public override void ReadToFs(Filesystem Dst)
+        public override void ReadToFs(LinuxFilesystem Dst)
         {
             byte[] Raw = Helper.FitHelper.GetDecompressedData(Data, Compression);
 

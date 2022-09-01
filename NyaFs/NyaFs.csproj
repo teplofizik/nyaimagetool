@@ -10,16 +10,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CpioLib\CpioLib.csproj" />
-    <ProjectReference Include="..\NyaExt4\NyaExt2.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Filesystem\Cpio\" />
     <Folder Include="Processor\Scripting\Commands\Kernel\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FT.LZ4" Version="1.0.0" />
     <PackageReference Include="LZMA-SDK" Version="19.0.0" />
+    <PackageReference Include="SharpCompress" Version="0.32.2" />
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
   </ItemGroup>
 
