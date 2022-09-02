@@ -12,7 +12,7 @@ There is possible to add or update files in ramfs image.
 Supported at now:
 1. CPIO ASCII (RW)
 2. EXT2 (R)
-3. SquashFs xz (R)
+3. SquashFs [xz, gzip, lzma compressed] (R)
 
 ## Supported compression types
 Supported at now:
@@ -83,7 +83,7 @@ Load fs from compressed file (cpio or ext2 image):
 ```
 load <filename.ct> ramfs <compression>
 ```
-<compression> is "gzip", "lz4", "lzma", "bzip2"
+(compression) is "gzip", "lz4", "lzma", "bzip2"
 
 Load fs from cpio file:
 ```
@@ -93,7 +93,7 @@ Load fs from ext2 image:
 ```
 load <filename.ext2> ramfs ext2
 ```
-Load fs from squashfs image (only xz-compressed):
+Load fs from squashfs image (xz, gzip, lzma compressed):
 ```
 load <filename.ext2> ramfs squashfs
 ```
@@ -107,7 +107,7 @@ Load kernel from archived image:
 ```
 load <filename.ct> kernel <compression>
 ```
-<compression> is "gzip", "lz4", "lzma", "bzip2"
+(compression) is "gzip", "lz4", "lzma", "bzip2"
 
 Load kernel from legacy (uImage, zImage) image:
 ```
@@ -137,7 +137,7 @@ Store fs as compressed cpio archive:
 ```
 store <filename.cpio.ct> ramfs <compression>
 ```
-<compression> is "gzip", "lz4", "lzma", "bzip2"
+(compression) is "gzip", "lz4", "lzma", "bzip2"
 
 Store fs as cpio file:
 ```
@@ -153,7 +153,7 @@ Store kernel as compressed image:
 ```
 store <kernel.ct> kernel <compression>
 ```
-<compression> is "gzip", "lz4", "lzma"
+(compression) is "gzip", "lz4", "lzma"
 
 Store kernel as uncompressed legacy file:
 ```
@@ -177,15 +177,17 @@ Update target OS for image:
 ```
 set <imagetype> os <ostype>
 ```
-<imagetype> is "ramfs" or "kernel", or "all"
-<ostype> is FIT os variants: "linux", etc...
+(imagetype) is "ramfs" or "kernel", or "all"
+
+(ostype) is FIT os variants: "linux", etc...
 
 Update target architecture for image:
 ```
 set <imagetype> arch <arch>
 ```
-<imagetype> is "ramfs", "kernel", "devtree" or "all"
-<arch> is FIT arch variants: "arm", "arm64", "x86", "x86_64", etc.
+(imagetype) is "ramfs", "kernel", "devtree" or "all"
+
+(arch) is FIT arch variants: "arm", "arm64", "x86", "x86_64", etc.
 
 Set image name (used in Legacy format):
 ```
@@ -196,7 +198,7 @@ Set compression type (for FIT/legacy):
 ```
 set <imagetype> compression <compression>
 ```
-<compression> is "none", "gzip", "lzma", "lz4", "bzip2"
+(compression) is "none", "gzip", "lzma", "lz4", "bzip2"
 
 Set entry address (for kernel):
 ```
@@ -210,11 +212,11 @@ set kernel load <hexaddress>
 
 ## Commands for modify fiolesystem content:
 Standart arguments for fs commands:
-<path> -- path in image filesystem
-<localpath> -- path in local filesystem (Windows etc)
-<mode> -- unix-like mode like "rwxr--r--"
-<user> -- user id. 0 for root
-<group> -- group id. 
+(path) -- path in image filesystem
+(localpath) -- path in local filesystem (Windows etc)
+(mode) -- unix-like mode like "rwxr--r--"
+(user) -- user id. 0 for root
+(group) -- group id. 
 
 Add directory:
 ```
