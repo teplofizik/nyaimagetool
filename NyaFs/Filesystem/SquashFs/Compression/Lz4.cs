@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace NyaFs.Filesystem.SquashFs.Compression
 {
@@ -40,9 +41,12 @@ namespace NyaFs.Filesystem.SquashFs.Compression
             throw new NotImplementedException();
         }
 
-        internal override byte[] Decompress(byte[] data)
+        internal override byte[] Decompress(byte[] Data)
         {
-            throw new NotImplementedException();
+            var Res = new byte[8192];
+
+            FT.LZ4.LZ4Codec.Decode(Data, 0, Data.Length, Res, 0, Res.Length);
+            return Res;
         }
 
         [Flags]

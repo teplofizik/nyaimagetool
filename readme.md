@@ -12,7 +12,7 @@ There is possible to add or update files in ramfs image.
 Supported at now:
 1. CPIO ASCII (RW)
 2. EXT2 (R)
-3. SquashFs [xz, gzip, lzma compressed] (R)
+3. SquashFs [xz, gzip, lzma, lz4 compressed] (R)
 
 ## Supported compression types
 Supported at now:
@@ -93,7 +93,7 @@ Load fs from ext2 image:
 ```
 load <filename.ext2> ramfs ext2
 ```
-Load fs from squashfs image (xz, gzip, lzma compressed):
+Load fs from squashfs image (xz, gzip, lzma, lz4 compressed):
 ```
 load <filename.ext2> ramfs squashfs
 ```
