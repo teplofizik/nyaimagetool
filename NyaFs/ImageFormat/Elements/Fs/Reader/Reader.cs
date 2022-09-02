@@ -41,6 +41,14 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         Helper.LogHelper.RamfsInfo(Dst, "Ext2");
                         return true;
                     }
+                case Types.FsType.SquashFs:
+                    {
+                        var Reader = new SquashFsReader(Raw);
+                        Reader.ReadToFs(Dst);
+
+                        Helper.LogHelper.RamfsInfo(Dst, "SquashFs");
+                        return true;
+                    }
                 default:
                     //throw new NotImplementedException($"Unknown filesystem");
                     return false;
