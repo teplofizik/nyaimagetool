@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.Universal
 {
-    interface IFilesystemGetter
+    public interface IFilesystemReader
     {
         /// <summary>
         /// Read file by path

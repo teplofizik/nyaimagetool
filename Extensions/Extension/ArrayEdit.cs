@@ -223,7 +223,7 @@ namespace Extension.Array
 
             for (i = 0; i < Length; i++)
             {
-                if (i < Data.Length)
+                if (Offset + i < Data.Length)
                     Res[i] = Data[Offset + i] ;
                 else
                     Res[i] = 0;

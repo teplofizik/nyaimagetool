@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NyaFs.Filesystem.Ext2
 {
-    public class Ext2Fs : RawPacket, Universal.IFilesystemGetter
+    public class Ext2Fs : RawPacket, Universal.IFilesystemReader
     {
         private uint BlockSize;
         private uint NodesPerGroup;

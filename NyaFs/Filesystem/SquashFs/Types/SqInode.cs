@@ -1,18 +1,19 @@
-﻿using Extension.Packet;
+﻿using Extension.Array;
+using Extension.Packet;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace NyaFs.Filesystem.SquashFs.Types
 {
-    class SqInode : ArrayWrapper
+    class SqInode : RawPacket
     {
-        public SqInode(byte[] Data, long Offset, long Size) : base(Data, Offset, Size)
+        public SqInode(byte[] Data, long Size) : base(Data)
         {
 
         }
 
-        public SqInode(byte[] Data, long Offset) : this(Data, Offset, 0x10)
+        public SqInode(byte[] Data) : this(Data, 0x10)
         {
 
         }

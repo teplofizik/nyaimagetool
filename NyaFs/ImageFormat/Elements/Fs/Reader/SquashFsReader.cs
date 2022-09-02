@@ -5,27 +5,13 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Reader
 {
-    public class SquashFsReader : Reader
+    public class SquashFsReader : BaseFsReader
     {
-        Filesystem.SquashFs.SquashFs Fs;
-
         public SquashFsReader(string Filename) : this(File.ReadAllBytes(Filename))
         {
 
         }
 
-        public SquashFsReader(byte[] Data)
-        {
-            Fs = new Filesystem.SquashFs.SquashFs(Data);
-        }
-
-        /// <summary>
-        /// Читаем в файловую систему из cpio-файла
-        /// </summary>
-        /// <param name="Dst"></param>
-        public override void ReadToFs(LinuxFilesystem Dst)
-        {
-
-        }
+        public SquashFsReader(byte[] Data) : base(new Filesystem.SquashFs.SquashFs(Data)) { }
     }
 }

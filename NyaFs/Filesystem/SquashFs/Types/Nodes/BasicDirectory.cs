@@ -6,7 +6,7 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 {
     class BasicDirectory : SqInode
     {
-        public BasicDirectory(byte[] Data, long Offset) : base(Data, Offset, 0x20)
+        public BasicDirectory(byte[] Data) : base(Data, 0x20)
         {
 
         }

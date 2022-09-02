@@ -50,10 +50,12 @@ namespace NyaFs.FlattenedDeviceTree.Reader
         public FlattenedDeviceTree Read()
         {
             FlattenedDeviceTree fdt = new FlattenedDeviceTree();
-            fdt.ReserveMemory = ReserveMemory;
-            fdt.CpuId = BootCpuIdPhys;
-            ProcessNode(fdt.Root, OffsetDtStruct);
-
+            if (Correct)
+            {
+                fdt.ReserveMemory = ReserveMemory;
+                fdt.CpuId = BootCpuIdPhys;
+                ProcessNode(fdt.Root, OffsetDtStruct);
+            }
             return fdt;
         }
 

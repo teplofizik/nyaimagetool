@@ -41,8 +41,8 @@ namespace NyaFs.Filesystem.SquashFs.Types
         /// </summary>
         internal uint INodeNumber
         {
-            get { return ReadUInt32(0x04); }
-            set { WriteUInt32(0x04, value); }
+            get { return ReadUInt32(0x08); }
+            set { WriteUInt32(0x08, value); }
         }
 
     }
