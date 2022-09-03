@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MiniLZO.cs" />
+  </ItemGroup>
 
 </Project>

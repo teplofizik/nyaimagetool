@@ -62,7 +62,7 @@ namespace NyaLZO
 {
     class BytePointer 
     {
-        private const int BlockSize = 1024;
+       // private const int BlockSize = 1024;
         private byte[] Data;
         private long Offset;
 
@@ -80,12 +80,6 @@ namespace NyaLZO
         public BytePointer(byte[] Data)
         {
             this.Data = Data;
-            Offset = 0;
-        }
-
-        public BytePointer()
-        {
-            this.Data = new byte[BlockSize];
             Offset = 0;
         }
 
@@ -171,7 +165,7 @@ namespace NyaLZO
             get { return Data[Offset + Index]; }
             set {
                 var Idx = Offset + Index;
-                if(Idx < Data.Length)
+                /*if(Idx < Data.Length)
                 {
                     long NeedSize = Data.Length + BlockSize;
                     while(NeedSize < Idx) NeedSize += BlockSize;
@@ -179,7 +173,7 @@ namespace NyaLZO
                     var Temp = new byte[NeedSize];
                     Data.CopyTo(Temp, 0);
                     Data = Temp;
-                }
+                }*/
 
                 Data[Idx] = value; 
             }

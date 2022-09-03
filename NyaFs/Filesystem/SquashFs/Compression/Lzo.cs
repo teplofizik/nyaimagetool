@@ -6,14 +6,16 @@ namespace NyaFs.Filesystem.SquashFs.Compression
 {
     internal class Lzo : BaseCompressor
     {
-        internal Lzo()
-        {
+        private uint BlockSize;
 
+        internal Lzo(uint BlockSize)
+        {
+            this.BlockSize = BlockSize;
         }
 
-        internal Lzo(byte[] Raw, long Offset) : base(Raw, Offset, 8)
+        internal Lzo(uint BlockSize, byte[] Raw, long Offset) : base(Raw, Offset, 8)
         {
-
+            this.BlockSize = BlockSize;
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace NyaFs.Filesystem.SquashFs.Compression
 
         internal override byte[] Decompress(byte[] Data)
         {
-            return NyaLZO.LZO1xDecompressor.Decompress(Data);
+            return NyaLZO.LZO1xDecompressor.Decompress(Data, BlockSize);
         }
 
         internal enum LzoAlgorithm
