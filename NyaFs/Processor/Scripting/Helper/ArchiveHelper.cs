@@ -24,6 +24,8 @@ namespace NyaFs.Processor.Scripting.Helper
                 case "bz2":
                 case "bzip2":
                     return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
+                case "zstd":
+                    return ImageFormat.Types.CompressionType.IH_COMP_ZSTD;
                 default: throw new ArgumentException($"Invalid compression format: {Format}");
             }
         }

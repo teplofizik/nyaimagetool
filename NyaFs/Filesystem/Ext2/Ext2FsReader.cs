@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NyaFs.Filesystem.Ext2
 {
-    public class Ext2Fs : RawPacket, Universal.IFilesystemReader
+    public class Ext2FsReader : RawPacket, Universal.IFilesystemReader
     {
         private uint BlockSize;
         private uint NodesPerGroup;
@@ -14,9 +14,9 @@ namespace NyaFs.Filesystem.Ext2
 
         private uint INodeSize => 128;
 
-        public Ext2Fs(byte[] Data) : base(Data) { Init(); }
+        public Ext2FsReader(byte[] Data) : base(Data) { Init(); }
 
-        public Ext2Fs(string Filename) : this(System.IO.File.ReadAllBytes(Filename)) { }
+        public Ext2FsReader(string Filename) : this(System.IO.File.ReadAllBytes(Filename)) { }
 
         internal Types.ExtSuperBlock SuperBlock => new Types.ExtSuperBlock(Raw, 0x400);
 

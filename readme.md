@@ -12,7 +12,7 @@ There is possible to add or update files in ramfs image.
 Supported at now:
 1. CPIO ASCII (RW)
 2. EXT2 (R)
-3. SquashFs [xz, gzip, lzma, lz4 compressed] (R)
+3. SquashFs (R)
 
 ## Supported compression types
 Supported at now:
@@ -20,10 +20,16 @@ Supported at now:
 2. LZMA (RW)
 3. LZ4 (RW)
 4. BZIP2 (RW)
+5. XZ (R)
+6. LZO (R)
+7. ZStd (R)
 
 LZMA compression is provided by LZMA SDK package.
 LZ4 compression is provided by FT.LZ4 package.
 BZIP2 compression is provided by SharpZipLib package.
+XZ compression is provided by SharpCompress package.
+LZO compression is provided by NyaLZO library (Decompression code is ported from lzo1x_decompress_safe.c)
+ZStd compression is provided by ZstdSharp package.
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
@@ -83,7 +89,7 @@ Load fs from compressed file (cpio or ext2 image):
 ```
 load <filename.ct> ramfs <compression>
 ```
-(compression) is "gzip", "lz4", "lzma", "bzip2"
+(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd"
 
 Load fs from cpio file:
 ```
@@ -93,7 +99,7 @@ Load fs from ext2 image:
 ```
 load <filename.ext2> ramfs ext2
 ```
-Load fs from squashfs image (xz, gzip, lzma, lz4 compressed):
+Load fs from squashfs image:
 ```
 load <filename.ext2> ramfs squashfs
 ```
@@ -107,7 +113,7 @@ Load kernel from archived image:
 ```
 load <filename.ct> kernel <compression>
 ```
-(compression) is "gzip", "lz4", "lzma", "bzip2"
+(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd"
 
 Load kernel from legacy (uImage, zImage) image:
 ```

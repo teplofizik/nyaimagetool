@@ -13,7 +13,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "fit", "ext2", "squashfs" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "zstd", "bzip2", "legacy", "fit", "ext2", "squashfs" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
                 new string[] { "dtb", "fit"  }));
@@ -130,6 +130,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gzip":
                     case "bzip2":
                     case "gz2":
+                    case "zstd":
                         {
                             var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                             var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
@@ -234,6 +235,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gzip":
                     case "bz2":
                     case "bzip2":
+                    case "zstd":
                         {
                             var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);
