@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.IO.Compression;
 
 namespace NyaFs.Filesystem.SquashFs.Compression
 {
@@ -34,14 +36,14 @@ namespace NyaFs.Filesystem.SquashFs.Compression
             set { WriteUInt32(4, value); }
         }
 
-        internal override byte[] Compress(byte[] data)
+        internal override byte[] Compress(byte[] Data)
         {
             throw new NotImplementedException();
         }
 
-        internal override byte[] Decompress(byte[] data)
+        internal override byte[] Decompress(byte[] Data)
         {
-            throw new NotImplementedException();
+            return NyaLZO.LZO1xDecompressor.Decompress(Data);
         }
 
         internal enum LzoAlgorithm
