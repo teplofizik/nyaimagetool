@@ -31,18 +31,12 @@ namespace NyaFs.Processor.Scripting.Helper
             }
         }
 
-        public static Tuple<string,string> DetectArchiveFormat(string Filename)
+        private static Tuple<string, string> DetectImageFormat(byte[] Raw)
         {
-            // Detect by extension
-            var Extension = System.IO.Path.GetExtension(Filename);
-
-            // Detect by content
-            var Raw = System.IO.File.ReadAllBytes(Filename);
-
             var FilesystemType = ImageFormat.Elements.Fs.FilesystemDetector.DetectFs(Raw);
-            if(FilesystemType != ImageFormat.Types.FsType.Unknown)
+            if (FilesystemType != ImageFormat.Types.FsType.Unknown)
             {
-                switch(FilesystemType)
+                switch (FilesystemType)
                 {
                     case ImageFormat.Types.FsType.Cpio: return new Tuple<string, string>("ramfs", "cpio");
                     case ImageFormat.Types.FsType.Ext2: return new Tuple<string, string>("ramfs", "ext2");
@@ -52,7 +46,7 @@ namespace NyaFs.Processor.Scripting.Helper
 
             // Detect FIT or DTB image...
             var Header = Raw.ReadUInt32(0);
-            if(Header == 0xedfe0dd0u)
+            if (Header == 0xedfe0dd0u)
             {
                 // DTB
                 var DevTree = new FlattenedDeviceTree.Reader.FDTReader(Raw).Read();
@@ -62,10 +56,10 @@ namespace NyaFs.Processor.Scripting.Helper
                     return new Tuple<string, string>("devtree", "dtb");
             }
             // Detect legacy image
-            if(Header == 0x56190527)
+            if (Header == 0x56190527)
             {
                 var Legacy = new ImageFormat.Types.LegacyImage(Raw);
-                if(Legacy.Correct)
+                if (Legacy.Correct)
                 {
                     switch (Legacy.Type)
                     {
@@ -79,10 +73,54 @@ namespace NyaFs.Processor.Scripting.Helper
             if (Header == 0x52444E41u)
                 return new Tuple<string, string>("all", "android");
 
-            // Detect archives
-            // ...
+            // Detect linux COFF image
+            if(Raw.ReadUInt16(0) == 0x5A4D)
+                return new Tuple<string, string>("kernel", "raw");
 
             return null;
+        }
+
+        public static Tuple<string,string> DetectImageFormat(string Filename)
+        {
+            var Data = System.IO.File.ReadAllBytes(Filename);
+            // Detect by extension
+            var Extension = System.IO.Path.GetExtension(Filename);
+            switch(Extension)
+            {
+                case "gz": return TryDecompressArchive(Data, "gzip", ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                case "zst":
+                case "zstd": return TryDecompressArchive(Data, "zstd", ImageFormat.Types.CompressionType.IH_COMP_ZSTD);
+                case "bz2":
+                case "bzip2": return TryDecompressArchive(Data, "bzip2", ImageFormat.Types.CompressionType.IH_COMP_BZIP2);
+                case "lz4": return TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
+                case "lzimg":
+                case "lzma": return TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
+            }
+
+            // Detect by content
+            return DetectImageFormat(Data);
+        }
+
+        private static Tuple<string, string> TryDecompressArchive(byte[] Data, string Name, ImageFormat.Types.CompressionType Type)
+        {
+            try
+            {
+                var Uncompressed = ImageFormat.Helper.FitHelper.GetDecompressedData(Data, Type);
+
+                var Res = DetectImageFormat(Uncompressed);
+                if(Res != null)
+                {
+                    if (Res.Item1 == "ramfs")
+                        return new Tuple<string, string>("ramfs", Name);
+                    if(Res.Item1 == "kernel")
+                        return new Tuple<string, string>("kernel", Name);
+                }
+                return null;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
         }
     }
 }

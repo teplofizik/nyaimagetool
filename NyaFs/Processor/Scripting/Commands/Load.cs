@@ -54,7 +54,7 @@ namespace NyaFs.Processor.Scripting.Commands
 
                 if(Type == "detect")
                 {
-                    var Detected = Helper.ArchiveHelper.DetectArchiveFormat(Path);
+                    var Detected = Helper.ArchiveHelper.DetectImageFormat(Path);
                     if(Detected != null)
                     {
                         Type = Detected.Item1;
