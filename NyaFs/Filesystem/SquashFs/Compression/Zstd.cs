@@ -24,14 +24,17 @@ namespace NyaFs.Filesystem.SquashFs.Compression
             set { WriteUInt32(0, value); }
         }
 
-        internal override byte[] Compress(byte[] data)
+        // https://github.com/oleg-st/ZstdSharp
+
+        internal override byte[] Compress(byte[] Data)
         {
             throw new NotImplementedException();
         }
 
-        internal override byte[] Decompress(byte[] data)
+        internal override byte[] Decompress(byte[] Data)
         {
-            throw new NotImplementedException();
+            using var decompressor = new ZstdSharp.Decompressor();
+            return decompressor.Unwrap(Data).ToArray();
         }
     }
 }
