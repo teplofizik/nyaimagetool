@@ -33,6 +33,10 @@ namespace NyaFs.Processor.Scripting.Helper
 
         public static Tuple<string,string> DetectArchiveFormat(string Filename)
         {
+            // Detect by extension
+            var Extension = System.IO.Path.GetExtension(Filename);
+
+            // Detect by content
             var Raw = System.IO.File.ReadAllBytes(Filename);
 
             var FilesystemType = ImageFormat.Elements.Fs.FilesystemDetector.DetectFs(Raw);
@@ -52,7 +56,7 @@ namespace NyaFs.Processor.Scripting.Helper
             {
                 // DTB
                 var DevTree = new FlattenedDeviceTree.Reader.FDTReader(Raw).Read();
-                if (DevTree.HasNode("default") && DevTree.HasNode("images"))
+                if (DevTree.HasNode("configurations") && DevTree.HasNode("images"))
                     return new Tuple<string, string>("all", "fit");
                 else
                     return new Tuple<string, string>("devtree", "dtb");
