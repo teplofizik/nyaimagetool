@@ -9,7 +9,7 @@ namespace NyaFsTest.Tests
     {
         public static void ReadSuperblock()
         {
-            var Fs = new NyaFs.Filesystem.Ext2.Ext2Fs("zynq_ramfs.bin");
+            var Fs = new NyaFs.Filesystem.Ext2.Ext2FsReader("zynq_ramfs.bin");
 
             Fs.Dump();
         }
@@ -17,12 +17,12 @@ namespace NyaFsTest.Tests
 
         public static void DumpFs()
         {
-            var Fs = new NyaFs.Filesystem.Ext2.Ext2Fs("ramdisk.image");
+            var Fs = new NyaFs.Filesystem.Ext2.Ext2FsReader("ramdisk.image");
 
             DumpDir(Fs, ".");
         }
 
-        private static void DumpDir(NyaFs.Filesystem.Ext2.Ext2Fs Fs, string Path)
+        private static void DumpDir(NyaFs.Filesystem.Ext2.Ext2FsReader Fs, string Path)
         {
             var Elements = Fs.ReadDir(Path);
 
