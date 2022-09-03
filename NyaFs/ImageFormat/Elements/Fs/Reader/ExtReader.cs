@@ -1,13 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace NyaFs.ImageFormat.Elements.Fs.Reader
 {
     public class ExtReader : BaseFsReader
     {
-        public ExtReader(string Filename) : this(System.IO.File.ReadAllBytes(Filename)) { }
+        public ExtReader(string Filename) : this(File.ReadAllBytes(Filename)) { }
 
-        public ExtReader(byte[] data) : base(new Filesystem.Ext2.Ext2FsReader(data)) { }
+        public ExtReader(byte[] data) : base("Ext2", new Filesystem.Ext2.Ext2FsReader(data)) { }
     }
 }

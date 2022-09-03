@@ -47,5 +47,18 @@ namespace NyaFs.FlattenedDeviceTree
 
             throw new ArgumentException($"{Path} is not found in filesystem");
         }
+
+        public bool HasNode(string Path)
+        {
+            try
+            {
+                var Node = Get(Path);
+                return Node != null;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
     }
 }

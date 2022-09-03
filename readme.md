@@ -4,8 +4,8 @@ There is a tool for editing and converting uboot images in different formats: cp
 There is possible to add or update files in ramfs image.
 
 ## Supported image formats
-1. Kernel: compressed raw, fit, raw, legacy
-2. Ramfs: cpio, ext2, compressed cpio or ext2, legacy, fit
+1. Kernel: compressed raw, fit, android, raw, legacy
+2. Ramfs: cpio, ext2, squashfs, compressed cpio or ext2, legacy, fit, android image
 3. Device tree: dtb, fit
 
 ## Supported filesystems

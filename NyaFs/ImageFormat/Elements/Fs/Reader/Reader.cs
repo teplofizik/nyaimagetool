@@ -46,7 +46,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         var Reader = new SquashFsReader(Raw);
                         Reader.ReadToFs(Dst);
 
-                        Helper.LogHelper.RamfsInfo(Dst, "SquashFs");
                         return true;
                     }
                 default:

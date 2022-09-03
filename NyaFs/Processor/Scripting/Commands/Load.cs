@@ -10,10 +10,10 @@ namespace NyaFs.Processor.Scripting.Commands
         public Load() : base("load")
         {
             AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
-                new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "raw" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "android", "raw" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "zstd", "bzip2", "legacy", "fit", "ext2", "squashfs" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "zstd", "bzip2", "legacy", "fit", "ext2", "android", "squashfs" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
                 new string[] { "dtb", "fit"  }));
@@ -28,7 +28,7 @@ namespace NyaFs.Processor.Scripting.Commands
             var A = Args.RawArgs;
 
             if (Args.ArgConfig == 3)
-                return new LoadScriptStep(A[0], "all", "fit");
+                return new LoadScriptStep(A[0], "detect", "fit");
             else
                 return new LoadScriptStep(A[0], A[1], A[2]);
         }
@@ -52,6 +52,16 @@ namespace NyaFs.Processor.Scripting.Commands
                 if (!System.IO.File.Exists(Path))
                     return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} not found!");
 
+                if(Type == "detect")
+                {
+                    var Detected = Helper.ArchiveHelper.DetectArchiveFormat(Path);
+                    if(Detected != null)
+                    {
+                        Type = Detected.Item1;
+                        Format = Detected.Item2;
+                    }
+                }
+
                 switch (Type)
                 {
                     case "ramfs":   return ReadFs(Processor);
@@ -65,23 +75,49 @@ namespace NyaFs.Processor.Scripting.Commands
 
             private ScriptStepResult ReadAll(ImageProcessor Processor)
             {
+                uint Mask = 0;
                 ScriptStepResult Res;
                 switch (Format)
                 {
-                    case "fit":
+                    case "android":
                         Res = ReadKernel(Processor);
-                        if (Res.Status != ScriptStepStatus.Ok)
-                            return Res;
+                        if (Res.Status == ScriptStepStatus.Ok)
+                            Mask |= 1;
 
                         Res = ReadFs(Processor);
-                        if (Res.Status != ScriptStepStatus.Ok)
-                            return Res;
+                        if (Res.Status == ScriptStepStatus.Ok)
+                            Mask |= 2;
+
+                        //Res = ReadDtb(Processor);
+                        //if (Res.Status != ScriptStepStatus.Ok)
+                        //    return Res;
+                        if(Mask == 0)
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Images are not loaded from Android image!");
+                        else if (Mask == 3)
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Images are loaded from Android image!");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"Several images are loaded from Android image!");
+
+                    case "fit":
+                        Res = ReadKernel(Processor);
+                        if (Res.Status == ScriptStepStatus.Ok)
+                            Mask |= 1;
+
+                        Res = ReadFs(Processor);
+                        if (Res.Status == ScriptStepStatus.Ok)
+                            Mask |= 2;
 
                         Res = ReadDtb(Processor);
-                        if (Res.Status != ScriptStepStatus.Ok)
-                            return Res;
+                        if (Res.Status == ScriptStepStatus.Ok)
+                            Mask |= 4;
 
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel, ramfs and devtree are loaded FIT image!");
+                        if (Mask == 0)
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Images are not loaded from FIT image!");
+                        else if (Mask == 7)
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"All images are loaded from FIT image!");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"Several images are loaded from FIT image!");
+
                     default:
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown image format!");
 
@@ -159,8 +195,24 @@ namespace NyaFs.Processor.Scripting.Commands
                                     return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is loaded from FIT image!");
                             }
                             else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"gz file is not loaded!");
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"FIT image file is not loaded!");
                         }
+                    case "android":
+                        {
+                            var Importer = new ImageFormat.Elements.Kernel.Reader.AndroidReader(Path);
+                            Importer.ReadToKernel(Kernel);
+                            if (Kernel.Loaded)
+                            {
+                                Processor.SetKernel(Kernel);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Kernel is loaded from Android image! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is loaded from Android image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Android image file is not loaded!");
+                        }
+
                     default:
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown kernel format!");
                 }
@@ -279,7 +331,22 @@ namespace NyaFs.Processor.Scripting.Commands
                                     return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from FIT image!");
                             }
                             else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"legacy file is not loaded!");
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"FIT image file is not loaded!");
+                        }
+                    case "android":
+                        {
+                            var Importer = new ImageFormat.Elements.Fs.Reader.AndroidReader(Path);
+                            Importer.ReadToFs(Fs);
+                            if (Fs.Loaded)
+                            {
+                                Processor.SetFs(Fs);
+                                if (OldLoaded)
+                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Filesystem is loaded from Android image! Old kernel is replaced by this.");
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from Android image!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Android image file is not loaded!");
                         }
                     case "ext2":
                         {

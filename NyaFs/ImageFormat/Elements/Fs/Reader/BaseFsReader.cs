@@ -7,9 +7,11 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
     public class BaseFsReader : Reader
     {
         Filesystem.Universal.IFilesystemReader FsReader;
+        string FsName;
 
-        public BaseFsReader(Filesystem.Universal.IFilesystemReader FsReader)
+        public BaseFsReader(string Name, Filesystem.Universal.IFilesystemReader FsReader)
         {
+            this.FsName = Name;
             this.FsReader = FsReader;
         }
 
@@ -19,10 +21,12 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// <param name="Dst"></param>
         public override void ReadToFs(LinuxFilesystem Dst)
         {
-            DumpDir(Dst.Fs.Root, ".");
+            ImportDir(Dst.Fs.Root, ".");
+
+            Helper.LogHelper.RamfsInfo(Dst, FsName);
         }
 
-        private void DumpDir(Filesystem.Universal.Items.Dir Dir, string Path)
+        private void ImportDir(Filesystem.Universal.Items.Dir Dir, string Path)
         {
             var Elements = FsReader.ReadDir(Path);
 
@@ -34,7 +38,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         {
                             var SubDir = new Filesystem.Universal.Items.Dir(E.Path, E.User, E.Group, E.HexMode);
                             Dir.Items.Add(SubDir);
-                            DumpDir(SubDir, E.Path);
+                            ImportDir(SubDir, E.Path);
                         }
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.File:

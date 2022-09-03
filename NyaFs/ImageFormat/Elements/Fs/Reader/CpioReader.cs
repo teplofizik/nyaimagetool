@@ -92,7 +92,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 }
             }
 
-            Helper.LogHelper.RamfsInfo(Dst, "CPIO");
+            Helper.LogHelper.RamfsInfo(Dst, "Cpio");
         }
 
         private void ApplyCpioParams(NyaFs.Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
