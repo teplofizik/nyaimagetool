@@ -48,5 +48,10 @@ namespace NyaFs.Filesystem.SquashFs.Types
         /// char[name_size+1] name (0x0C)
         /// </summary>
         internal string Name => ReadString(0x0C, NameSize + 1);
+
+        /// <summary>
+        /// Total size of index entry
+        /// </summary>
+        public long TotalSize => 0x0C + NameSize + 1;
     }
 }

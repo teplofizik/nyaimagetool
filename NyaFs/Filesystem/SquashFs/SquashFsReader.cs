@@ -38,8 +38,8 @@ namespace NyaFs.Filesystem.SquashFs
                 //var Root = GetRootDir();
                 //var Entries = GetDirEntries(Root);
 
-                var Etc = ReadDir("lib/modules/3.18.20/kernel/drivers/net");
-               // var Init = Read("/init");
+                //var Etc = ReadDir("lib/network/wwan");
+                // var Init = Read("/init");
             }
         }
 
@@ -180,6 +180,13 @@ namespace NyaFs.Filesystem.SquashFs
                     Metadata = ReadINodeMetadata(Ref, 0x18);
                     return new Types.Nodes.BasicIPC(Metadata);
 
+                case Types.SqInodeType.ExtendedDirectory:
+                    {
+                        Metadata = ReadINodeMetadata(Ref, 0x28);
+                        //var N = new Types.Nodes.ExtendedDirectory(Metadata);
+                        //Metadata = ReadINodeMetadata(Ref, N.INodeSize);
+                        return new Types.Nodes.ExtendedDirectory(Metadata);
+                    }
                 default: return UnknownNode;
             }
         }
@@ -240,6 +247,29 @@ namespace NyaFs.Filesystem.SquashFs
             return Res;
         }
 
+        internal Types.SqDirectoryEntry[] GetDirEntries(Types.Nodes.ExtendedDirectory Dir)
+        {
+            var Raw = ReadMetadata(Convert.ToInt64(Superblock.DirectoryTableStart) + Dir.DirBlockStart, Dir.BlockOffset, Dir.FileSize);
+            long Offset = 0;
+            var DirEntries = new List<Types.SqDirectoryEntry>();
+
+            while (Offset < Dir.FileSize - 3)
+            {
+                var DirHeader = new Types.SqDirectoryHeader(Raw, Offset);
+                Offset += DirHeader.getLength();
+
+                for (int i = 0; i < DirHeader.Count + 1; i++)
+                {
+                    var E = new Types.SqDirectoryEntry(DirHeader.INodeNumber, DirHeader.Start, Raw, Offset);
+                    DirEntries.Add(E);
+
+                    Offset += E.getLength();
+                }
+            }
+
+            return DirEntries.ToArray();
+        }
+
         internal Types.SqDirectoryEntry[] GetDirEntries(Types.Nodes.BasicDirectory Dir)
         {
             var Raw = ReadMetadata(Convert.ToInt64(Superblock.DirectoryTableStart) + Dir.DirBlockStart, Dir.BlockOffset, Dir.FileSize);
@@ -289,9 +319,15 @@ namespace NyaFs.Filesystem.SquashFs
                         if (i == Parts.Length - 1)
                             return N;
 
-                        if (I.Type == Types.SqInodeType.BasicDirectory)
+                        if (N.InodeType == Types.SqInodeType.BasicDirectory)
                         {
                             Entries = GetDirEntries(N as Types.Nodes.BasicDirectory);
+                            Found = true;
+                            break;
+                        }
+                        else if (N.InodeType == Types.SqInodeType.ExtendedDirectory)
+                        {
+                            Entries = GetDirEntries(N as Types.Nodes.ExtendedDirectory);
                             Found = true;
                             break;
                         }
@@ -371,10 +407,17 @@ namespace NyaFs.Filesystem.SquashFs
         {
             var DirNode = GetINodeByPath(Path);
 
-            if ((DirNode != null) && (DirNode.InodeType == Types.SqInodeType.BasicDirectory))
+            if (DirNode != null)
             {
                 var Res = new List<FilesystemEntry>();
-                var Entries = GetDirEntries(DirNode as Types.Nodes.BasicDirectory);
+                Types.SqDirectoryEntry[] Entries = null;
+
+                if (DirNode.InodeType == Types.SqInodeType.BasicDirectory)
+                    Entries = GetDirEntries(DirNode as Types.Nodes.BasicDirectory);
+                else if (DirNode.InodeType == Types.SqInodeType.ExtendedDirectory)
+                    Entries = GetDirEntries(DirNode as Types.Nodes.ExtendedDirectory);
+                else
+                    return null;
 
                 foreach (var E in Entries)
                 {
