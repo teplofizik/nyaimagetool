@@ -27,6 +27,8 @@ namespace NyaFs.Processor.Scripting.Helper
                     return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
                 case "zstd":
                     return ImageFormat.Types.CompressionType.IH_COMP_ZSTD;
+                case "lzo":
+                    return ImageFormat.Types.CompressionType.IH_COMP_LZO;
                 default: throw new ArgumentException($"Invalid compression format: {Format}");
             }
         }
@@ -73,9 +75,17 @@ namespace NyaFs.Processor.Scripting.Helper
             if (Header == 0x52444E41u)
                 return new Tuple<string, string>("all", "android");
 
+            var SmallMagic = (Header & 0xFFFF);
             // Detect linux COFF image
-            if(Raw.ReadUInt16(0) == 0x5A4D)
+            if (SmallMagic == 0x5A4D)
                 return new Tuple<string, string>("kernel", "raw");
+
+            // Detect archive headers:
+            {
+                var Comp = ImageFormat.Helper.FitHelper.DetectCompression(Raw);
+                if(Comp != ImageFormat.Types.CompressionType.IH_COMP_NONE)
+                    return TryDecompressArchive(Raw, ImageFormat.Helper.FitHelper.GetCompression(Comp), Comp);
+            }
 
             return null;
         }
@@ -95,6 +105,7 @@ namespace NyaFs.Processor.Scripting.Helper
                 case ".lz4": return TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
                 case ".lzimg":
                 case ".lzma": return TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
+                case ".lzo": return TryDecompressArchive(Data, "lzo", ImageFormat.Types.CompressionType.IH_COMP_LZO);
             }
 
             // Detect by content

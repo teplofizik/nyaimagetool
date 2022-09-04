@@ -10,28 +10,40 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         bool Loaded = false;
         Types.LegacyImage Image;
 
+        public LegacyReader(byte[] Raw)
+        {
+            Image = new Types.LegacyImage(Raw);
+
+            Loaded = CheckImage();
+        }
+
         public LegacyReader(string Filename)
         {
             Image = new Types.LegacyImage(Filename);
 
+            Loaded = CheckImage();
+        }
+
+        private bool CheckImage()
+        {
             if (!Image.CorrectHeader)
             {
-                Log.Error(0, $"Invalid legacy header in file {Filename}.");
-                return;
+                Log.Error(0, $"Invalid legacy header in file.");
+                return false;
             }
             if (!Image.Correct)
             {
-                Log.Error(0, $"Invalid data in file {Filename}.");
-                return;
+                Log.Error(0, $"Invalid legacy image.");
+                return false;
             }
 
-            if (Image.Type != ImageFormat.Types.ImageType.IH_TYPE_RAMDISK)
+            if (Image.Type != Types.ImageType.IH_TYPE_RAMDISK)
             {
-                Log.Error(0, $"File {Filename} is not ramdisk legacy file.");
-                return;
+                Log.Error(0, $"File is not ramdisk legacy file.");
+                return false;
             }
 
-            Loaded = true;
+            return true;
         }
 
         public void UpdateImageInfo(LinuxFilesystem Dst)

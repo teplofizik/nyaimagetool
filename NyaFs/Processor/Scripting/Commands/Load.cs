@@ -10,10 +10,11 @@ namespace NyaFs.Processor.Scripting.Commands
         public Load() : base("load")
         {
             AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
-                new string[] { "gz", "gzip", "lzma", "lz4", "legacy", "fit", "android", "raw" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "lzo", "legacy", "bzip2", "bz2", "fit", "android", "raw" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "zstd", "bzip2", "legacy", "fit", "ext2", "android", "squashfs" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "legacy", "fit", "ext2", "android", "squashfs" }));
+
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
                 new string[] { "dtb", "fit"  }));
@@ -167,6 +168,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "bzip2":
                     case "gz2":
                     case "zstd":
+                    case "lzo":
                         {
                             var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                             var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
@@ -288,6 +290,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "bz2":
                     case "bzip2":
                     case "zstd":
+                    case "lzo":
                         {
                             var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                             var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);

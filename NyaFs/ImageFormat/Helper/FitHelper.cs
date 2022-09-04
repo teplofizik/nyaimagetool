@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Extension.Array;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,6 +8,20 @@ namespace NyaFs.ImageFormat.Helper
 {
     public static class FitHelper
     {
+        public static Types.CompressionType DetectCompression(byte[] Raw)
+        {
+            var Header16 = Raw.ReadUInt16(0);
+            switch (Header16)
+            {
+                case 0x5a42: return Types.CompressionType.IH_COMP_BZIP2;
+                case 0x4C89: return Types.CompressionType.IH_COMP_LZO;
+                case 0x8b1f: return Types.CompressionType.IH_COMP_GZIP;
+                case 0x005d: return Types.CompressionType.IH_COMP_LZMA;
+                case 0x2204: return Types.CompressionType.IH_COMP_LZ4;
+                case 0xb528: return Types.CompressionType.IH_COMP_ZSTD;
+                default: return Types.CompressionType.IH_COMP_NONE;
+            }
+        }
 
         public static string GetCPUArchitecture(Types.CPU Arch)
         {
@@ -254,6 +269,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_LZ4: return "lz4";
                 case Types.CompressionType.IH_COMP_BZIP2: return "bzip2";
                 case Types.CompressionType.IH_COMP_ZSTD: return "zstd";
+                case Types.CompressionType.IH_COMP_LZO: return "lzo";
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");
@@ -270,6 +286,7 @@ namespace NyaFs.ImageFormat.Helper
                 case "lz4": return Types.CompressionType.IH_COMP_LZ4;
                 case "zstd": return Types.CompressionType.IH_COMP_ZSTD;
                 case "bzip2": return Types.CompressionType.IH_COMP_BZIP2;
+                case "lzo": return Types.CompressionType.IH_COMP_LZO;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");
@@ -287,6 +304,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_LZ4: return Compressors.Lz4.Decompress(Source);
                 case Types.CompressionType.IH_COMP_BZIP2: return Compressors.Bzip2.Decompress(Source);
                 case Types.CompressionType.IH_COMP_ZSTD: return Compressors.ZStd.Decompress(Source);
+                case Types.CompressionType.IH_COMP_LZO: return Compressors.LZO.Decompress(Source);
                 case Types.CompressionType.IH_COMP_NONE: return Source;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");

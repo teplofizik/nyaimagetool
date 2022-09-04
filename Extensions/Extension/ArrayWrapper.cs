@@ -156,7 +156,7 @@ namespace Extension.Packet
         /// </summary>
         /// <param name="Offset">Offset from start of struct to field</param>
         /// <returns>Readed uint16 value</returns>
-        protected UInt16 ReadUInt1BE6(long Offset) => Raw.ReadUInt16BE(StructOffset + Offset);
+        protected UInt16 ReadUInt16BE(long Offset) => Raw.ReadUInt16BE(StructOffset + Offset);
 
         /// <summary>
         /// Write uint32 le to array
