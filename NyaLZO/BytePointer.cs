@@ -60,41 +60,59 @@ using System.Text;
 
 namespace NyaLZO
 {
-    class BytePointer 
+    class BytePointer
     {
-       // private const int BlockSize = 1024;
-        private byte[] Data;
+        private const int BlockSize = 1024;
+        private bool DynamicSize = false;
+        private ArrayWrapper Data;
         private long Offset;
 
+        private BytePointer(ArrayWrapper Data, long Offset, bool Dynamic)
+        {
+            if (Offset < 0)
+                throw new ArgumentException("Offset is negative!");
+            if (Offset > Data.Length)
+                throw new ArgumentException("Offset is greater than data size!");
+
+            this.Data = Data;
+            this.Offset = Offset;
+            this.DynamicSize = Dynamic;
+        }
         public BytePointer(byte[] Data, long Offset)
         {
             if (Offset < 0)
                 throw new ArgumentException("Offset is negative!");
-            if(Offset > Data.Length)
+            if (Offset > Data.Length)
                 throw new ArgumentException("Offset is greater than data size!");
 
-            this.Data = Data;
+            this.Data = new ArrayWrapper(Data);
             this.Offset = Offset;
         }
 
         public BytePointer(byte[] Data)
         {
-            this.Data = Data;
+            this.Data = new ArrayWrapper(Data);
             Offset = 0;
         }
 
-
-        public static BytePointer operator + (BytePointer pointer, long Offset) => new BytePointer(pointer.Data, pointer.Offset + Offset);
-        public static BytePointer operator - (BytePointer pointer, long Offset) => new BytePointer(pointer.Data, pointer.Offset - Offset);
-        public static long operator - (BytePointer a, BytePointer b)
+        public BytePointer()
         {
-           // if (a.Data != b.Data)
-           //     throw new ArgumentException("Cannot compare pointers to different arrays");
+            this.Data = new ArrayWrapper(new byte[BlockSize]);
+            Offset = 0;
+            DynamicSize = true;
+        }
+
+        public static BytePointer operator +(BytePointer pointer, long Offset) => new BytePointer(pointer.Data, pointer.Offset + Offset, pointer.DynamicSize);
+        public static BytePointer operator -(BytePointer pointer, long Offset) => new BytePointer(pointer.Data, pointer.Offset - Offset, pointer.DynamicSize);
+        public static long operator -(BytePointer a, BytePointer b)
+        {
+            // if (a.Data != b.Data)
+            //     throw new ArgumentException("Cannot compare pointers to different arrays");
 
             return a.Offset - b.Offset;
         }
 
-        private static bool Compare(BytePointer a, BytePointer b, Func<long,long,bool> comp)
+        private static bool Compare(BytePointer a, BytePointer b, Func<long, long, bool> comp)
         {
             //if (a.Data != b.Data)
             //    throw new ArgumentException("Cannot compare pointers to different arrays");
@@ -105,7 +123,7 @@ namespace NyaLZO
         public override bool Equals(object obj)
         {
             var o = obj as BytePointer;
-            if(o != null)
+            if (o != null)
                 return (o.Data == Data) && (o.Offset == Offset);
             else
                 return false;
@@ -119,7 +137,7 @@ namespace NyaLZO
 
         public static bool operator <(BytePointer a, BytePointer b) => Compare(a, b, (oa, ob) => oa < ob);
 
-        public static bool operator > (BytePointer a, BytePointer b) => Compare(a, b, (oa, ob) => oa > ob);
+        public static bool operator >(BytePointer a, BytePointer b) => Compare(a, b, (oa, ob) => oa > ob);
 
         public static BytePointer operator ++(BytePointer pointer)
         {
@@ -133,7 +151,7 @@ namespace NyaLZO
             return pointer;
         }
 
-        public UInt16 UShortValue=> Convert.ToUInt16((this[0]) | (this[1] << 8));
+        public UInt16 UShortValue => Convert.ToUInt16((this[0]) | (this[1] << 8));
 
         public void CopyInc(BytePointer src, long Count = 1)
         {
@@ -163,28 +181,51 @@ namespace NyaLZO
         public byte this[int Index]
         {
             get { return Data[Offset + Index]; }
-            set {
+            set
+            {
                 var Idx = Offset + Index;
-                /*if(Idx < Data.Length)
+                if (DynamicSize)
                 {
-                    long NeedSize = Data.Length + BlockSize;
-                    while(NeedSize < Idx) NeedSize += BlockSize;
+                    if (Idx >= Data.Length)
+                    {
+                        long NeedSize = Data.Length + BlockSize;
+                        while (NeedSize < Idx) NeedSize += BlockSize;
 
-                    var Temp = new byte[NeedSize];
-                    Data.CopyTo(Temp, 0);
-                    Data = Temp;
-                }*/
+                        Data.Resize(NeedSize);
+                    }
+                }
 
-                Data[Idx] = value; 
+                Data[Idx] = value;
             }
         }
 
-        public byte[] Result
+        public byte[] Result => Data.Get(Offset);
+
+        private class ArrayWrapper
         {
-            get
+            private byte[] Raw;
+            internal ArrayWrapper(byte[] Data)
             {
-                byte[] Res = new byte[Offset];
-                Array.Copy(Data, Res, Offset);
+                Raw = Data;
+            }
+
+            public long Length => Raw.Length;
+
+            public byte this[long Index]
+            {
+                get { return Raw[Index]; }
+                set { Raw[Index] = value; }
+            }
+
+            public void Resize(long NewSize)
+            {
+                Array.Resize(ref Raw, Convert.ToInt32(NewSize));
+            }
+
+            public byte[] Get(long Length)
+            {
+                byte[] Res = new byte[Length];
+                Array.Copy(Raw, Res, Length);
                 return Res;
             }
         }

@@ -87,14 +87,14 @@ namespace NyaFs.Processor.Scripting.Helper
             var Extension = System.IO.Path.GetExtension(Filename);
             switch(Extension)
             {
-                case "gz": return TryDecompressArchive(Data, "gzip", ImageFormat.Types.CompressionType.IH_COMP_GZIP);
-                case "zst":
-                case "zstd": return TryDecompressArchive(Data, "zstd", ImageFormat.Types.CompressionType.IH_COMP_ZSTD);
-                case "bz2":
-                case "bzip2": return TryDecompressArchive(Data, "bzip2", ImageFormat.Types.CompressionType.IH_COMP_BZIP2);
-                case "lz4": return TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
-                case "lzimg":
-                case "lzma": return TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
+                case ".gz": return TryDecompressArchive(Data, "gzip", ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                case ".zst":
+                case ".zstd": return TryDecompressArchive(Data, "zstd", ImageFormat.Types.CompressionType.IH_COMP_ZSTD);
+                case ".bz2":
+                case ".bzip2": return TryDecompressArchive(Data, "bzip2", ImageFormat.Types.CompressionType.IH_COMP_BZIP2);
+                case ".lz4": return TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
+                case ".lzimg":
+                case ".lzma": return TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
             }
 
             // Detect by content

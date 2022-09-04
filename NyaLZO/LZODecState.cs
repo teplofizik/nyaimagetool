@@ -18,18 +18,18 @@ namespace NyaLZO
 
         LZOState decstate = LZOState.Default;
 
-        public LZODecState(byte[] Data, uint BlockSize)
+        public LZODecState(byte[] Data)
         {
             if (Data.Length < 3)
                 throw new ArgumentException("Input length is too small!");
 
             ip = new BytePointer(Data);
             ip_end = new BytePointer(Data, Data.Length);
-            op = new BytePointer(new byte[BlockSize]);
+            op = new BytePointer();
         }
 
         /// <summary>
-        /// Reimplemented lzo1x_decompress_safe
+        /// Reimplemented lzo1x_decompress_safe [not all checks]
         /// https://elixir.bootlin.com/linux/v4.8/source/lib/lzo/lzo1x_decompress_safe.c#L38
         /// </summary>
         /// <returns></returns>

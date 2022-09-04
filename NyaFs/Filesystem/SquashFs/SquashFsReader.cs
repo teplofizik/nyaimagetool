@@ -118,8 +118,8 @@ namespace NyaFs.Filesystem.SquashFs
 
                 case Types.SqCompressionType.Lzo:
                     Comp = (Superblock.Flags.HasFlag(Types.SqSuperblockFlags.COMPRESSOR_OPTIONS))
-                        ? new Compression.Lzo(Superblock.BlockSize, Raw, 0x60)
-                        : new Compression.Lzo(Superblock.BlockSize);
+                        ? new Compression.Lzo(Raw, 0x60)
+                        : new Compression.Lzo();
                     break;
 
                 case Types.SqCompressionType.Zstd:

@@ -9,9 +9,9 @@ namespace NyaLZO
     /// </summary>
     public class LZO1xDecompressor
     {
-        public static byte[] Decompress(byte[] Src, uint BlockSize)
+        public static byte[] Decompress(byte[] Src)
         {
-            var State = new LZODecState(Src, BlockSize);
+            var State = new LZODecState(Src);
 
             return State.Decompress();
         }
