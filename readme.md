@@ -90,11 +90,11 @@ Load fs from legacy image:
 ```
 load <filename.legacy> ramfs legacy
 ```
-Load fs from compressed file (cpio or ext2 image):
+Load fs from compressed file (cpio, ext2, squashfs image):
 ```
 load <filename.ct> ramfs <compression>
 ```
-(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd"
+(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd", "lzo"
 
 Load fs from cpio file:
 ```
@@ -118,7 +118,7 @@ Load kernel from archived image:
 ```
 load <filename.ct> kernel <compression>
 ```
-(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd"
+(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd", "lzo"
 
 Load kernel from legacy (uImage, zImage) image:
 ```
@@ -130,6 +130,12 @@ Load device tree from dtb:
 ```
 load <filename.dtb> devtree dtb
 ```
+
+Load device tree from compressed file (dtb image):
+```
+load <filename.ct> devtree <compression>
+```
+(compression) is "gzip", "lz4", "lzma", "bzip2", "zstd", "lzo"
 ## Commands for image saving
 To store images to legacy or FIT format, there is need to specify os/arch of these images, if they was loaded from images without such info (cpio, gz). 
 

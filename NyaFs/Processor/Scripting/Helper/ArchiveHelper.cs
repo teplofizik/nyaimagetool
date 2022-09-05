@@ -130,6 +130,8 @@ namespace NyaFs.Processor.Scripting.Helper
                         return new Tuple<string, string>("ramfs", Name);
                     if(Res.Item1 == "kernel")
                         return new Tuple<string, string>("kernel", Name);
+                    if (Res.Item1 == "devtree")
+                        return new Tuple<string, string>("devtree", Name);
                 }
                 return null;
             }

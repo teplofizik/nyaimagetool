@@ -6,11 +6,19 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
 {
     public class DtbReader : Reader
     {
+        byte[] Data;
         string Path;
 
         public DtbReader(string Path)
         {
             this.Path = Path;
+            this.Data = System.IO.File.ReadAllBytes(Path);
+        }
+
+        public DtbReader(byte[] Data)
+        {
+            this.Path = "loaded image";
+            this.Data = Data;
         }
 
         /// <summary>
@@ -19,7 +27,7 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
         /// <param name="Dst"></param>
         public override void ReadToDevTree(DeviceTree Dst)
         {
-            var Dtb = new FlattenedDeviceTree.Reader.FDTReader(Path);
+            var Dtb = new FlattenedDeviceTree.Reader.FDTReader(Data);
             if (Dtb.Correct)
             {
                 Dst.DevTree = Dtb.Read();

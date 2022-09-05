@@ -10,14 +10,14 @@ namespace NyaFs.Processor.Scripting.Commands
         public Load() : base("load")
         {
             AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
-                new string[] { "gz", "gzip", "lzma", "lz4", "lzo", "legacy", "bzip2", "bz2", "fit", "android", "raw" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "legacy", "fit", "ext2", "android", "squashfs" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs" }));
 
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
-                new string[] { "dtb", "fit"  }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "dtb", "fit"  }));
 
             AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] { new Params.FsPathScriptArgsParam() }));
 
@@ -182,6 +182,16 @@ namespace NyaFs.Processor.Scripting.Commands
                 {
                     case "dtb": return new ImageFormat.Elements.Dtb.Reader.DtbReader(Path);
                     case "fit": return new ImageFormat.Elements.Dtb.Reader.FitReader(Path);
+                    case "lz4":
+                    case "lzma":
+                    case "gz":
+                    case "gzip":
+                    case "bz2":
+                    case "bzip2":
+                    case "zstd":
+                    case "lzo":
+                        var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                        return new ImageFormat.Elements.Dtb.Reader.ArchiveReader(Path, CompressionType);
                     case "dts":
                     default:
                         return null;
