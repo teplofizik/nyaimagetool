@@ -98,7 +98,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             Item.Mode = Node.HexMode;
             Item.Major = Node.Major;
-            Item.Major = Node.Major;
+            Item.Minor = Node.Minor;
             Item.RMajor = Node.RMajor;
             Item.RMinor = Node.RMinor;
             Item.User = Node.UserId;

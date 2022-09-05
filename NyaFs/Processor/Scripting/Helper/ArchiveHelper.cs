@@ -65,7 +65,7 @@ namespace NyaFs.Processor.Scripting.Helper
                 {
                     switch (Legacy.Type)
                     {
-                        case ImageFormat.Types.ImageType.IH_TYPE_RAMDISK: return new Tuple<string, string>("ramdisk", "legacy");
+                        case ImageFormat.Types.ImageType.IH_TYPE_RAMDISK: return new Tuple<string, string>("ramfs", "legacy");
                         case ImageFormat.Types.ImageType.IH_TYPE_KERNEL: return new Tuple<string, string>("kernel", "legacy");
                         default: return null;
                     }
