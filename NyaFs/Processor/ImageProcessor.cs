@@ -19,6 +19,11 @@ namespace NyaFs.Processor
 
         public void SetDeviceTree(DeviceTree Dtb) => Blob.SetDevTree(0, Dtb);
 
+        public void Reset()
+        {
+            Blob = new ImageFormat.BaseImageBlob();
+        }
+
         public LinuxKernel GetKernel() => Blob.GetKernel(0);
 
         public LinuxFilesystem GetFs() => Blob.GetFilesystem(0);

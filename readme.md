@@ -68,11 +68,16 @@ Information about loaded images:
 info
 ```
 
+Reset program state, drop all images:
+```
+reset
+```
+
 ## Commands for image loading
 ### Composite images
-Load kernel,fs and devtree from FIT image:
+Load kernel, fs or/and devtree from image (with autodetection of image type):
 ```
-load <filename.fit>
+load <filename>
 ```
 
 Load only one image from FIT image, where imagetype is "kernel", "ramfs" or "devtree":
