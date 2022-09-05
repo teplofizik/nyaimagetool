@@ -76,8 +76,13 @@ namespace NyaFs.Processor.Scripting.Helper
                 return new Tuple<string, string>("all", "android");
 
             var SmallMagic = (Header & 0xFFFF);
+
             // Detect linux COFF image
             if (SmallMagic == 0x5A4D)
+                return new Tuple<string, string>("kernel", "raw");
+
+            // Detect linux ELF image
+            if (Header == 0x464C457F)
                 return new Tuple<string, string>("kernel", "raw");
 
             // Detect archive headers:

@@ -160,6 +160,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     if (Kernel.Loaded)
                     {
                         Processor.SetKernel(Kernel);
+                        AssumeAutoKernelParams(Kernel);
                         AssumeAutoImageParams(Processor);
                         ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
 
@@ -268,6 +269,32 @@ namespace NyaFs.Processor.Scripting.Commands
                 }
                 else
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
+            }
+
+
+            private void AssumeAutoKernelParams(ImageFormat.Elements.Kernel.LinuxKernel Kernel)
+            {
+                if(Kernel.Info.Architecture == ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                {
+                    var Type = Helper.KernelHelper.DetectImageArch(Kernel.Image);
+
+                    if(Type != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                    {
+                        Log.Write(0, $"Assumed kernel architecture: {ImageFormat.Helper.FitHelper.GetCPUArchitecture(Type)}");
+                        Kernel.Info.Architecture = Type;
+                    }
+                }
+
+                if(Kernel.Info.OperatingSystem == ImageFormat.Types.OS.IH_OS_INVALID)
+                {
+                    var Os = Helper.KernelHelper.DetectImageOs(Kernel.Image);
+
+                    if (Os != ImageFormat.Types.OS.IH_OS_INVALID)
+                    {
+                        Log.Write(0, $"Assumed kernel OS: {ImageFormat.Helper.FitHelper.GetOperatingSystem(Os)}");
+                        Kernel.Info.OperatingSystem = Os;
+                    }
+                }
             }
 
             private void AssumeAutoImageParams(ImageProcessor Processor)
