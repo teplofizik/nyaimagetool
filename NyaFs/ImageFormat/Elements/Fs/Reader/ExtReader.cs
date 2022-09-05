@@ -6,6 +6,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
     {
         public ExtReader(string Filename) : this(File.ReadAllBytes(Filename)) { }
 
-        public ExtReader(byte[] data) : base("Ext2", new Filesystem.Ext2.Ext2FsReader(data)) { }
+        public ExtReader(byte[] data) : base(Types.FsType.Ext2, new Filesystem.Ext2.Ext2FsReader(data)) { }
     }
 }

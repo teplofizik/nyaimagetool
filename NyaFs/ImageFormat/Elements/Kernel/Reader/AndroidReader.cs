@@ -22,8 +22,6 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
                 Dst.Info.Compression = Types.CompressionType.IH_COMP_NONE;
                 Dst.Info.DataLoadAddress = Image.KernelAddress;
                 Dst.Info.EntryPointAddress = Image.KernelAddress;
-
-                Helper.LogHelper.KernelInfo(Dst);
             }
         }
     }

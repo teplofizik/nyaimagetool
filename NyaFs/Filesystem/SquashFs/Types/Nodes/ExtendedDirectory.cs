@@ -101,6 +101,6 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 
         public SqMetadataRef NodeReference => new SqMetadataRef(DirBlockStart, BlockOffset);
 
-        public readonly SqDirectoryIndex[] Indexes;
+        //public readonly SqDirectoryIndex[] Indexes;
     }
 }

@@ -20,6 +20,11 @@ namespace NyaFs.ImageFormat.Elements.Fs
         public NyaFs.Filesystem.Universal.Filesystem Fs = new NyaFs.Filesystem.Universal.Filesystem();
 
         /// <summary>
+        /// Filesystem type
+        /// </summary>
+        public Types.FsType FilesystemType = Types.FsType.Unknown;
+
+        /// <summary>
         /// Image information, arch or supported os
         /// </summary>
         public Types.ImageInfo Info = new Types.ImageInfo();

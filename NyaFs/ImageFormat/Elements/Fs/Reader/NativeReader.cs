@@ -29,7 +29,8 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             ProcessDirectory(Dst.Fs.Root, Dir);
 
-            Helper.LogHelper.RamfsInfo(Dst, "native");
+            if (Dst.Info.Type == Types.ImageType.IH_TYPE_INVALID)
+                Dst.Info.Type = Types.ImageType.IH_TYPE_RAMDISK;
         }
 
         private void ProcessDirectory(Filesystem.Universal.Items.Dir DirItem, string Path)

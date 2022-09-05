@@ -30,6 +30,9 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             byte[] Raw = Helper.FitHelper.GetDecompressedData(Data, Compression);
 
+            if(Dst.Info.Type == Types.ImageType.IH_TYPE_INVALID)
+                Dst.Info.Type = Types.ImageType.IH_TYPE_RAMDISK;
+
             Dst.Info.Compression = Compression;
             DetectAndRead(Dst, Raw);
         }

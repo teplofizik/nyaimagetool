@@ -25,8 +25,6 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
                 Dst.DevTree = Dtb.Read();
                 Dst.Info.Type = Types.ImageType.IH_TYPE_FLATDT;
                 Dst.Info.Compression = Types.CompressionType.IH_COMP_NONE;
-
-                Helper.LogHelper.DevtreeInfo(Dst);
             }
             else
                 Log.Error(0, $"Invalid dtb header in {Path}");

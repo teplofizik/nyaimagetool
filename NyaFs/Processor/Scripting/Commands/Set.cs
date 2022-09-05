@@ -114,9 +114,9 @@ namespace NyaFs.Processor.Scripting.Commands
                             var Fs = Processor.GetFs();
                             if (Kernel == null)
                                 return new ScriptStepResult(ScriptStepStatus.Error, "Kernel is not loaded");
-                            if (Dt != null)
+                            if (Dt == null)
                                 return new ScriptStepResult(ScriptStepStatus.Error, "Device tree is not loaded");
-                            if (Fs != null)
+                            if (Fs == null)
                                 return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem is not loaded");
 
                             Info.Add(Kernel.Info);

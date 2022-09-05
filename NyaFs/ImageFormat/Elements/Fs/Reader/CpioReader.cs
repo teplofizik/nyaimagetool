@@ -91,11 +91,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                     }
                 }
             }
-
-            Helper.LogHelper.RamfsInfo(Dst, "Cpio");
+            Dst.FilesystemType = Types.FsType.Cpio;
         }
 
-        private void ApplyCpioParams(NyaFs.Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
+        private void ApplyCpioParams(Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
         {
             Item.Mode = Node.HexMode;
             Item.Major = Node.Major;

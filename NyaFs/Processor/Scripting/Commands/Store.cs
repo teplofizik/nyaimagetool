@@ -79,7 +79,7 @@ namespace NyaFs.Processor.Scripting.Commands
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Device tree is not loaded!");
 
                             ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
+                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
                             ImageFormat.Helper.LogHelper.DevtreeInfo(Dtb);
 
                             var Writer = new ImageFormat.Composite.FitWriter(Path);
@@ -175,50 +175,45 @@ namespace NyaFs.Processor.Scripting.Commands
                 }
             }
 
-            private ScriptStepResult StoreFs(ImageProcessor Processor)
-            {
-                var Fs = Processor.GetFs();
-                if((Fs == null) || (Fs.Loaded == false))
-                    return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem is not loaded!");
 
+            private ImageFormat.Elements.Fs.Writer.Writer GetFsWriter()
+            {
                 switch (Format)
                 {
-                    case "cpio":
-                        {
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.CpioWriter(Path);
-                            Exporter.WriteFs(Fs);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as cpio stream!");
-                        }
+                    case "legacy": return new ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
+                    case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioWriter(Path);
                     case "lz4":
                     case "lzma":
                     case "gz":
                     case "gzip":
                     case "bz2":
                     case "bzip2":
-                        {
-                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
-
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, CompressionType);
-                            Exporter.WriteFs(Fs);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as {Format} archived cpio image!");
-                        }
-                    case "legacy":
-                        {
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
-                            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
-                            if (Exporter.CheckFilesystem(Fs))
-                            {
-                                Exporter.WriteFs(Fs);
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as legacy image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Cannot store as legacy image: no enough info about target system!");
-                        }
+                        var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                        return new ImageFormat.Elements.Fs.Writer.ArchiveCpioWriter(Path, CompressionType);
                     default:
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
+                        return null;
                 }
+            }
+
+            private ScriptStepResult StoreFs(ImageProcessor Processor)
+            {
+                var Fs = Processor.GetFs();
+                if((Fs == null) || (Fs.Loaded == false))
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem is not loaded!");
+
+                var Writer = GetFsWriter();
+                if(Writer != null)
+                {
+                    if (Writer.CheckFilesystem(Fs))
+                    {
+                        Writer.WriteFs(Fs);
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is stored to file {Path} as {Format} image!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Cannot store as {Format} image: no enough info about target system!");
+                }
+                else
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
             }
         }
     }

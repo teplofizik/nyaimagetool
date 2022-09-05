@@ -101,8 +101,6 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
                 Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
                 Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
                 Dst.DevTree = new FlattenedDeviceTree.Reader.FDTReader(Dtb).Read();
-
-                Helper.LogHelper.DevtreeInfo(Dst);
             }
             else
             {

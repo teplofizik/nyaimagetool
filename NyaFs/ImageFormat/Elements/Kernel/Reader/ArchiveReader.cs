@@ -27,7 +27,6 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
             Dst.Image = Raw;
             Dst.Info.Compression = Compression;
             Dst.Info.Type = Types.ImageType.IH_TYPE_KERNEL;
-            Helper.LogHelper.KernelInfo(Dst);
         }
     }
 }

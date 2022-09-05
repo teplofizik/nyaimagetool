@@ -35,7 +35,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 if ((Fs == null) || !Fs.Loaded)
                     Log.Warning(0, "Filesystem: not loaded");
                 else
-                    ImageFormat.Helper.LogHelper.RamfsInfo(Fs, "CPIO");
+                    ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
                 
                 var Dtb = Processor.GetDevTree();
                 if ((Dtb == null) || !Dtb.Loaded)

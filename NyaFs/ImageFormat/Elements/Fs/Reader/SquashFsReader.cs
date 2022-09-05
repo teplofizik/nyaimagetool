@@ -12,6 +12,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
 
         }
 
-        public SquashFsReader(byte[] Data) : base("SquashFs", new Filesystem.SquashFs.SquashFsReader(Data)) { }
+        public SquashFsReader(byte[] Data) : base(Types.FsType.SquashFs, new Filesystem.SquashFs.SquashFsReader(Data)) { }
     }
 }

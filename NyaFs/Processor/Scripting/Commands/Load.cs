@@ -89,10 +89,11 @@ namespace NyaFs.Processor.Scripting.Commands
                         if (Res.Status == ScriptStepStatus.Ok)
                             Mask |= 2;
 
+                        AssumeAutoImageParams(Processor);
                         //Res = ReadDtb(Processor);
                         //if (Res.Status != ScriptStepStatus.Ok)
                         //    return Res;
-                        if(Mask == 0)
+                        if (Mask == 0)
                             return new ScriptStepResult(ScriptStepStatus.Error, $"Images are not loaded from Android image!");
                         else if (Mask == 3)
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Images are loaded from Android image!");
@@ -125,42 +126,14 @@ namespace NyaFs.Processor.Scripting.Commands
                 }
             }
 
-            private ScriptStepResult ReadKernel(ImageProcessor Processor)
+            private ImageFormat.Elements.Kernel.Reader.Reader GetKernelReader()
             {
-                var OldLoaded = Processor.GetKernel()?.Loaded ?? false;
-                var Kernel = new ImageFormat.Elements.Kernel.LinuxKernel();
                 switch (Format)
                 {
-                    case "raw":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_NONE);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Raw kernel image is loaded as kernel! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Raw kernel image is loaded as kernel!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"kernel file is not loaded!");
-                        }
-                    case "legacy":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Legacy image is loaded as kernel! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Legacy image is loaded as kernel!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Legacy file is not loaded!");
-                        }
+                    case "raw": return new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_NONE);
+                    case "legacy": return new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);
+                    case "fit": return new ImageFormat.Elements.Kernel.Reader.FitReader(Path);
+                    case "android": return new ImageFormat.Elements.Kernel.Reader.AndroidReader(Path);
                     case "lzma":
                     case "lz4":
                     case "gz":
@@ -169,54 +142,48 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gz2":
                     case "zstd":
                     case "lzo":
-                        {
-                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} compressed image is loaded as kernel! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} compressed image is loaded as kernel!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"{Format} compressed file is not loaded!");
-                        }
-                    case "fit":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.FitReader(Path);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Kernel is loaded from FIT image! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is loaded from FIT image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"FIT image file is not loaded!");
-                        }
-                    case "android":
-                        {
-                            var Importer = new ImageFormat.Elements.Kernel.Reader.AndroidReader(Path);
-                            Importer.ReadToKernel(Kernel);
-                            if (Kernel.Loaded)
-                            {
-                                Processor.SetKernel(Kernel);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Kernel is loaded from Android image! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Kernel is loaded from Android image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Android image file is not loaded!");
-                        }
-
+                        var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                        return new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
                     default:
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown kernel format!");
+                        return null;
+                }
+            }
+
+            private ScriptStepResult ReadKernel(ImageProcessor Processor)
+            {
+                var OldLoaded = Processor.GetKernel()?.Loaded ?? false;
+                var Kernel = new ImageFormat.Elements.Kernel.LinuxKernel();
+                var Reader = GetKernelReader();
+                if(Reader != null)
+                {
+                    Reader.ReadToKernel(Kernel);
+                    if (Kernel.Loaded)
+                    {
+                        Processor.SetKernel(Kernel);
+                        AssumeAutoImageParams(Processor);
+                        ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+
+                        if (OldLoaded)
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} kernel image is loaded as kernel! Old kernel is replaced by this.");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} kernel image is loaded as kernel!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel image file is not loaded!");
+                }
+                else
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown kernel format!");
+            }
+
+            private ImageFormat.Elements.Dtb.Reader.Reader GetDtbReader()
+            {
+                switch (Format)
+                {
+                    case "dtb": return new ImageFormat.Elements.Dtb.Reader.DtbReader(Path);
+                    case "fit": return new ImageFormat.Elements.Dtb.Reader.FitReader(Path);
+                    case "dts":
+                    default:
+                        return null;
                 }
             }
 
@@ -224,65 +191,34 @@ namespace NyaFs.Processor.Scripting.Commands
             {
                 var OldLoaded = Processor.GetDevTree()?.Loaded ?? false;
                 var Dtb = new DeviceTree();
-                switch (Format)
+                var Reader = GetDtbReader();
+                if(Reader != null)
                 {
-                    case "dtb":
-                        {
-                            var Importer = new ImageFormat.Elements.Dtb.Reader.DtbReader(Path);
-                            Importer.ReadToDevTree(Dtb);
-                            Processor.SetDeviceTree(Dtb);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Dtb is loaded!");
-                        }
-                    case "fit":
-                        {
-                            var Importer = new ImageFormat.Elements.Dtb.Reader.FitReader(Path);
-                            Importer.ReadToDevTree(Dtb);
-                            Processor.SetDeviceTree(Dtb);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Devtree is loaded from Fit image!");
-                        }
-                    case "dts":
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Dts is not supported now!");
-                    default:
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown devtree format!");
+                    Reader.ReadToDevTree(Dtb);
+                    if (Dtb.Loaded)
+                    {
+                        Processor.SetDeviceTree(Dtb);
+                        AssumeAutoImageParams(Processor);
+                        ImageFormat.Helper.LogHelper.DevtreeInfo(Dtb);
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Device tree is loaded from {Format} file!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"Device tree is not loaded!");
                 }
+                else
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown devtree format!");
             }
 
-            private ScriptStepResult ReadFs(ImageProcessor Processor)
+            private ImageFormat.Elements.Fs.Reader.Reader GetFsReader()
             {
-                var OldLoaded = Processor.GetFs()?.Loaded ?? false;
-                var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
                 switch (Format)
                 {
-                    case "squashfs":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.SquashFsReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"squashfs image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"squashfs is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"squashfs image is not loaded!");
-                        }
-                    case "cpio":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.CpioReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if(OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"cpio image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"cpio is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Cpio is not loaded!");
-                        }
+                    case "squashfs": return new ImageFormat.Elements.Fs.Reader.SquashFsReader(Path);
+                    case "legacy": return new ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
+                    case "cpio": return new ImageFormat.Elements.Fs.Reader.CpioReader(Path);
+                    case "fit": return new ImageFormat.Elements.Fs.Reader.FitReader(Path);
+                    case "android": return new ImageFormat.Elements.Fs.Reader.AndroidReader(Path);
+                    case "ext2": return new ImageFormat.Elements.Fs.Reader.ExtReader(Path);
                     case "lz4":
                     case "lzma":
                     case "gz":
@@ -291,84 +227,161 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "bzip2":
                     case "zstd":
                     case "lzo":
-                        {
-                            var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} compressed image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} compressed image is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"{Format} file is not loaded!");
-                        }
-                    case "legacy":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Cpio is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"legacy file is loaded as filesystem!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"legacy file is not loaded!");
-                        }
-                    case "fit":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.FitReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Fit is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from FIT image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"FIT image file is not loaded!");
-                        }
-                    case "android":
-                        {
-                            var Importer = new ImageFormat.Elements.Fs.Reader.AndroidReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Filesystem is loaded from Android image! Old kernel is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from Android image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Android image file is not loaded!");
-                        }
-                    case "ext2":
-                        {
-                            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.ExtReader(Path);
-                            Importer.ReadToFs(Fs);
-                            if (Fs.Loaded)
-                            {
-                                Processor.SetFs(Fs);
-                                if (OldLoaded)
-                                    return new ScriptStepResult(ScriptStepStatus.Warning, $"Ext2 image is loaded as filesystem! Old filesystem is replaced by this.");
-                                else
-                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Filesystem is loaded from ext2 image!");
-                            }
-                            else
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"legacy file is not loaded!");
-                        }
+                        var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
+                        return new ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);
                     default:
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
+                        return null;
                 }
+            }
+
+            private ScriptStepResult ReadFs(ImageProcessor Processor)
+            {
+                var OldLoaded = Processor.GetFs()?.Loaded ?? false;
+                var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
+                var Reader = GetFsReader();
+                if(Reader != null)
+                {
+                    Reader.ReadToFs(Fs);
+                    if (Fs.Loaded)
+                    {
+                        Processor.SetFs(Fs);
+                        AssumeAutoImageParams(Processor);
+                        if (Fs.FilesystemType != ImageFormat.Types.FsType.Cpio)
+                        {
+                            Fs.FilesystemType = ImageFormat.Types.FsType.Cpio;
+                            Log.Warning(0, "Filesystem is switched to cpio as only supported for packing.");
+                            if (Fs.Info.Compression == ImageFormat.Types.CompressionType.IH_COMP_NONE)
+                            {
+                                Fs.Info.Compression = ImageFormat.Types.CompressionType.IH_COMP_GZIP;
+                                Log.Warning(0, "Compression is switched to gzip.");
+                            }
+                        }
+                        ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
+
+                        if (OldLoaded)
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"{Format} image is loaded as filesystem! Old filesystem is replaced by this.");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"{Format} is loaded as filesystem!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Format} image is not loaded!");
+                }
+                else
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
+            }
+
+            private void AssumeAutoImageParams(ImageProcessor Processor)
+            {
+                var Blob = Processor.GetBlob();
+                var Arch = FindExistArch(Blob);
+                if(Arch != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                {
+                    var K = Processor.GetKernel();
+                    if(K != null)
+                    {
+                        if (K.Info.Architecture == ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                            K.Info.Architecture = Arch;
+                    }
+                    var Fs = Processor.GetFs();
+                    if (Fs != null)
+                    {
+                        if (Fs.Info.Architecture == ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                            Fs.Info.Architecture = Arch;
+                    }
+                    var Dtb = Processor.GetDevTree();
+                    if (Dtb != null)
+                    {
+                        if (Dtb.Info.Architecture == ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                            Dtb.Info.Architecture = Arch;
+                    }
+                }
+                var Os = FindExistOS(Blob);
+                if(Os != ImageFormat.Types.OS.IH_OS_INVALID)
+                {
+                    var K = Processor.GetKernel();
+                    if (K != null)
+                    {
+                        if (K.Info.OperatingSystem == ImageFormat.Types.OS.IH_OS_INVALID)
+                            K.Info.OperatingSystem = Os;
+                    }
+                    var Fs = Processor.GetFs();
+                    if (Fs != null)
+                    {
+                        if (Fs.Info.OperatingSystem == ImageFormat.Types.OS.IH_OS_INVALID)
+                            Fs.Info.OperatingSystem = Os;
+                    }
+                }
+            }
+
+            ImageFormat.Types.CPU FindExistArch(ImageFormat.BaseImageBlob Blob)
+            {
+                ImageFormat.Types.CPU arch = ImageFormat.Types.CPU.IH_ARCH_INVALID;
+                if (Blob.IsProvidedKernel)
+                {
+                    var K = Blob.GetKernel();
+                    if (K.Info.Architecture != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                        arch = K.Info.Architecture;
+                }
+                if (Blob.IsProvidedFs)
+                {
+                    var Fs = Blob.GetFilesystem();
+                    if (Fs.Info.Architecture != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                    {
+                        if (arch != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                        {
+                            // Is detected os info differs to kernel
+                            if (arch != Fs.Info.Architecture)
+                                return ImageFormat.Types.CPU.IH_ARCH_INVALID;
+                        }
+                        else
+                            arch = Fs.Info.Architecture;
+                    }
+                }
+                if (Blob.IsProvidedDTB)
+                {
+                    var Dtb = Blob.GetDevTree();
+                    if (Dtb.Info.Architecture != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                    {
+                        if (arch != ImageFormat.Types.CPU.IH_ARCH_INVALID)
+                        {
+                            // Is detected os info differs to dtb
+                            if (arch != Dtb.Info.Architecture)
+                                return ImageFormat.Types.CPU.IH_ARCH_INVALID;
+                        }
+                        else
+                            arch = Dtb.Info.Architecture;
+                    }
+                }
+
+                return arch;
+            }
+
+            ImageFormat.Types.OS FindExistOS(ImageFormat.BaseImageBlob Blob)
+            {
+                ImageFormat.Types.OS os = ImageFormat.Types.OS.IH_OS_INVALID;
+                if (Blob.IsProvidedKernel)
+                {
+                    var K = Blob.GetKernel();
+                    if (K.Info.OperatingSystem != ImageFormat.Types.OS.IH_OS_INVALID)
+                        os = K.Info.OperatingSystem;
+                }
+                if(Blob.IsProvidedFs)
+                {
+                    var Fs = Blob.GetFilesystem();
+                    if (Fs.Info.OperatingSystem != ImageFormat.Types.OS.IH_OS_INVALID)
+                    {
+                        if (os != ImageFormat.Types.OS.IH_OS_INVALID)
+                        {
+                            // Is FS os info differs to kernel
+                            if (os != Fs.Info.OperatingSystem)
+                                return ImageFormat.Types.OS.IH_OS_INVALID;
+                        }
+                        else
+                            os = Fs.Info.OperatingSystem;
+                    }
+                }
+
+                return os;
             }
         }
     }

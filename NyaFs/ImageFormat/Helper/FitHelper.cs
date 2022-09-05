@@ -8,6 +8,30 @@ namespace NyaFs.ImageFormat.Helper
 {
     public static class FitHelper
     {
+        public static string GetFilesystemType(Types.FsType Fs)
+        {
+            switch(Fs)
+            {
+                case Types.FsType.Cpio: return "cpio";
+                case Types.FsType.Ext2: return "ext2";
+                case Types.FsType.SquashFs: return "squashfs";
+                case Types.FsType.Unknown:
+                default:
+                    return "unknown";
+            }
+        }
+
+        public static Types.FsType GetFilesystemType(string Fs)
+        {
+            switch (Fs)
+            {
+                case "cpio": return Types.FsType.Cpio;
+                case "ext2": return Types.FsType.Ext2;
+                case "squashfs": return Types.FsType.SquashFs;
+                default: return Types.FsType.Unknown;
+            }
+        }
+
         public static Types.CompressionType DetectCompression(byte[] Raw)
         {
             var Header16 = Raw.ReadUInt16(0);

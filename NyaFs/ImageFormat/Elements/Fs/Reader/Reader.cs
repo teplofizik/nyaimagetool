@@ -37,8 +37,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                     {
                         var Reader = new ExtReader(Raw);
                         Reader.ReadToFs(Dst);
-
-                        Helper.LogHelper.RamfsInfo(Dst, "Ext2");
                         return true;
                     }
                 case Types.FsType.SquashFs:

@@ -7,11 +7,11 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
     public class BaseFsReader : Reader
     {
         Filesystem.Universal.IFilesystemReader FsReader;
-        string FsName;
+        Types.FsType FsType;
 
-        public BaseFsReader(string Name, Filesystem.Universal.IFilesystemReader FsReader)
+        public BaseFsReader(Types.FsType FsType, Filesystem.Universal.IFilesystemReader FsReader)
         {
-            this.FsName = Name;
+            this.FsType = FsType;
             this.FsReader = FsReader;
         }
 
@@ -23,7 +23,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         {
             ImportDir(Dst.Fs.Root, ".");
 
-            Helper.LogHelper.RamfsInfo(Dst, FsName);
+            if (Dst.Info.Type == Types.ImageType.IH_TYPE_INVALID)
+                Dst.Info.Type = Types.ImageType.IH_TYPE_RAMDISK;
+
+            Dst.FilesystemType = FsType;
         }
 
         private void ImportDir(Filesystem.Universal.Items.Dir Dir, string Path)
