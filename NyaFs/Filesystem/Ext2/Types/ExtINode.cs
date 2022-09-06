@@ -7,14 +7,16 @@ namespace NyaFs.Filesystem.Ext2.Types
 {
     internal class ExtINode : ArrayWrapper
     {
+        public readonly uint Index;
+
         /// <summary>
         /// Wrapper for INode struct
         /// </summary>
         /// <param name="Data"></param>
         /// <param name="Offset"></param>
-        public ExtINode(byte[] Data, long Offset) : base(Data, Offset, 0x80) // ext2, ext3 => 128 bytes
+        public ExtINode(uint Index, byte[] Data, long Offset) : base(Data, Offset, 0x80) // ext2, ext3 => 128 bytes
         {
-
+            this.Index = Index;
         }
 
         /// <summary>
@@ -23,9 +25,9 @@ namespace NyaFs.Filesystem.Ext2.Types
         /// <param name="Data"></param>
         /// <param name="Offset"></param>
         /// <param name="Size"></param>
-        public ExtINode(byte[] Data, long Offset, long Size) : base(Data, Offset, Size)
+        public ExtINode(uint Index, byte[] Data, long Offset, long Size) : base(Data, Offset, Size)
         {
-
+            this.Index = Index;
         }
 
         public override string ToString()
@@ -256,6 +258,15 @@ namespace NyaFs.Filesystem.Ext2.Types
         {
             get { return ReadArray(0x28, SizeLo); }
             set { WriteArray(0x28, value, SizeLo); }
+        }
+
+        public void SetText(string Target)
+        {
+            if (Target.Length > 60)
+                throw new ArgumentException("Target length is more than 60 bytes");
+
+            WriteString(0x28, Target, Target.Length);
+            SizeLo = Convert.ToUInt32(Target.Length);
         }
 
         /// <summary>

@@ -42,18 +42,6 @@ namespace NyaFs.Filesystem.Universal
             }
         }
 
-        private string GetParentDirPath(string Path)
-        {
-            int Pos = Path.LastIndexOf('/');
-            if (Pos >= 0)
-            {
-                var Res = Path.Substring(0, Pos);
-                return (Res.Length > 0) ? Res : "/";
-            }
-            else
-                return "/";
-        }
-
         public Items.Dir GetDirectory(string Path)
         {
             var Element = GetElement(Path);
@@ -67,7 +55,7 @@ namespace NyaFs.Filesystem.Universal
             if (Path.Length == 0)
                 throw new ArgumentException($"{Path} is empty");
 
-            var Parent = GetParentDirPath(Path);
+            var Parent = Helper.FsHelper.GetParentDirPath(Path);
             return GetElement(Parent) as Items.Dir;
         }
 

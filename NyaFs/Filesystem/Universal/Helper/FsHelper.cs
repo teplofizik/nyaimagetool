@@ -10,6 +10,27 @@ namespace NyaFs.Filesystem.Universal.Helper
         
         internal static uint ConvertToUnixTimestamp(DateTime timestamp) => Convert.ToUInt32(((DateTimeOffset)timestamp).ToUnixTimeSeconds());
 
+        internal static string GetName(string Path)
+        {
+            int Pos = Path.LastIndexOf('/');
+            if (Pos >= 0)
+                return Path.Substring(Pos + 1);
+            else
+                return Path;
+        }
+
+        internal static string GetParentDirPath(string Path)
+        {
+            int Pos = Path.LastIndexOf('/');
+            if (Pos >= 0)
+            {
+                var Res = Path.Substring(0, Pos);
+                return (Res.Length > 0) ? Res : "/";
+            }
+            else
+                return "/";
+        }
+
         internal static string CombinePath(string Base, string Name)
         {
             if ((Base == "/") || (Base == ".")) return Name;

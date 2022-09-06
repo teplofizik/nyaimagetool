@@ -1,4 +1,5 @@
-﻿using Extension.Packet;
+﻿using Extension.Array;
+using Extension.Packet;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +16,15 @@ namespace NyaFs.Filesystem.Ext2.Types
         public ExtDirectoryEntry(byte[] Data, long Offset) : base(Data, Offset, 255) // ext2, ext3 => 128 bytes
         {
 
+        }
+
+        public ExtDirectoryEntry(uint INode, ExtINodeType Type, string Name) : base(new byte[8 + Name.Length.GetAligned(4)], 0, 8 + Name.Length.GetAligned(4))
+        {
+            this.INode = INode;
+            RecordLength = Convert.ToUInt32(getLength());
+            NameLength = Convert.ToUInt32(Name.Length);
+            NodeType = Type;
+            WriteString(8, Name, Name.Length);
         }
 
         /// <summary>
