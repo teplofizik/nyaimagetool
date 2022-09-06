@@ -181,7 +181,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 switch (Format)
                 {
                     case "legacy": return new ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
-                    case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioWriter(Path);
+                    case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioFsWriter(Path);
                     case "lz4":
                     case "lzma":
                     case "gz":

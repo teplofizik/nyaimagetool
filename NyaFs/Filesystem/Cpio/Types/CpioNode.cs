@@ -26,10 +26,8 @@ namespace NyaFs.Filesystem.Cpio.Types
                         byte[] Data, 
                         DateTime ModTime, 
                         uint Mode,
-                        uint RMajor = 0,
-                        uint RMinor = 0,
-                        uint Major = 8,
-                        uint Minor = 1) 
+                        uint User = 0,
+                        uint Group = 0) 
             : base(CalcPacketSize(Path, Data.Length))
         {
             var PathBytes = UTF8Encoding.UTF8.GetBytes(Path);
@@ -39,15 +37,15 @@ namespace NyaFs.Filesystem.Cpio.Types
             SetAsciiValue(6, 8, MaxNodeId); // INode []
             SetAsciiValue(14, 8, Mode); // Mode  [0x41ed dir, 0x81a4 file]
 
-            SetAsciiValue(22, 8, 0); // UserId
-            SetAsciiValue(30, 8, 0); // GroupId
+            SetAsciiValue(22, 8, User); // UserId
+            SetAsciiValue(30, 8, Group); // GroupId
             SetAsciiValue(38, 8, 1); // NumLink ???
             SetAsciiValue(46, 8, GetUnixTimestamp(ModTime)); // ModificationTime
             SetAsciiValue(54, 8, Convert.ToUInt32(Data.Length)); // FileSize
-            SetAsciiValue(62, 8, Major); // Major
-            SetAsciiValue(70, 8, Minor); // Minor
-            SetAsciiValue(78, 8, RMajor); // RMajor
-            SetAsciiValue(86, 8, RMinor); // RMinor
+            SetAsciiValue(62, 8, 0); // Major
+            SetAsciiValue(70, 8, 0); // Minor
+            SetAsciiValue(78, 8, 0); // RMajor
+            SetAsciiValue(86, 8, 0); // RMinor
             SetAsciiValue(94, 8, Convert.ToUInt32(PathBytes.Length + 1)); // NameSize
             WriteArray(110, PathBytes, PathBytes.Length);
             WriteArray(HeaderWithPathSize, Data, Data.Length);
@@ -95,14 +93,8 @@ namespace NyaFs.Filesystem.Cpio.Types
         public UInt32 INode => GetAsciiValue(6, 8);
         public UInt32 Mode
         {
-            get
-            {
-                return GetAsciiValue(14, 8);
-            }
-            set
-            {
-                SetAsciiValue(14, 8, value);
-            }
+            get {  return GetAsciiValue(14, 8); }
+            set { SetAsciiValue(14, 8, value); }
         }
 
         public UInt32 HexMode
@@ -165,49 +157,26 @@ namespace NyaFs.Filesystem.Cpio.Types
 
         public UInt32 UserId
         {
-            get
-            {
-                return GetAsciiValue(22, 8);
-            }
-            set
-            {
-                SetAsciiValue(22, 8, value);
-            }
+            get { return GetAsciiValue(22, 8); }
+            set { SetAsciiValue(22, 8, value); }
         }
+
         public UInt32 GroupId
         {
-            get
-            {
-                return GetAsciiValue(30, 8);
-            }
-            set
-            {
-                SetAsciiValue(30, 8, value);
-            }
+            get { return GetAsciiValue(30, 8); }
+            set {  SetAsciiValue(30, 8, value); }
         }
 
         public UInt32 NumLink
         {
-            get
-            {
-                return GetAsciiValue(38, 8);
-            }
-            set
-            {
-                SetAsciiValue(38, 8, value);
-            }
+            get { return GetAsciiValue(38, 8); }
+            set { SetAsciiValue(38, 8, value); }
         }
 
         public UInt32 ModificationTime
         {
-            get
-            {
-                return GetAsciiValue(46, 8);
-            }
-            set
-            {
-                SetAsciiValue(46, 8, value);
-            }
+            get { return GetAsciiValue(46, 8); }
+            set { SetAsciiValue(46, 8, value); }
         }
 
         /// <summary>
@@ -220,8 +189,17 @@ namespace NyaFs.Filesystem.Cpio.Types
         }
 
 
-        public UInt32 Major => GetAsciiValue(62, 8);
-        public UInt32 Minor => GetAsciiValue(70, 8);
+        public UInt32 Major
+        {
+            get { return GetAsciiValue(62, 8); }
+            set { SetAsciiValue(62, 8, value); }
+        }
+
+        public UInt32 Minor
+        {
+            get { return GetAsciiValue(70, 8); }
+            set { SetAsciiValue(70, 8, value); }
+        }
 
         /// <summary>
         /// only valid for chr and blk special files

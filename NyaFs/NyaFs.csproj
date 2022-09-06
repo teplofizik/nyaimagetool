@@ -9,7 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CpioLib\CpioLib.csproj" />
+    <Compile Remove="ImageFormat\Elements\Fs\Reader\CpioReader.cs" />
+    <Compile Remove="ImageFormat\Elements\Fs\Writer\CpioWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\NyaLZO\NyaLZO.csproj" />
   </ItemGroup>
 

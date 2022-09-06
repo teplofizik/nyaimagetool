@@ -101,7 +101,7 @@ namespace NyaFs.ImageFormat.Composite
 
             {
                 var FS = Blob.GetFilesystem(0);
-                var Writer = new ImageFormat.Elements.Fs.Writer.CpioWriter();
+                var Writer = new ImageFormat.Elements.Fs.Writer.CpioFsWriter();
                 Writer.WriteFs(FS);
                 var Raw = Writer.RawStream;
                 var Data = Helper.FitHelper.GetCompressedData(Raw, FS.Info.Compression);

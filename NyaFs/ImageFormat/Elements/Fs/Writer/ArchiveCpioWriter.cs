@@ -23,7 +23,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
 
         public override void WriteFs(LinuxFilesystem Fs)
         {
-            var CpWriter = new CpioWriter();
+            var CpWriter = new CpioFsWriter(); // TODO
             CpWriter.WriteFs(Fs);
 
             var Data = Helper.FitHelper.GetCompressedData(CpWriter.RawStream, Compression);

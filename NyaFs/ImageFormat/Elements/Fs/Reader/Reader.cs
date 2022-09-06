@@ -28,7 +28,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             {
                 case Types.FsType.Cpio:
                     {
-                        var Reader = new CpioReader(Raw);
+                        var Reader = new CpioFsReader(Raw);
                         Reader.ReadToFs(Dst);
 
                         return true;

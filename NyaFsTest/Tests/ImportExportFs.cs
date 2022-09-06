@@ -22,7 +22,7 @@ namespace NyaFsTest.Tests
             var Fn = "example.cpio";
 
             var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
-            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.CpioReader(Fn);
+            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.CpioFsReader(Fn);
             Importer.ReadToFs(Fs);
 
             Fs.Dump();
@@ -75,7 +75,7 @@ namespace NyaFsTest.Tests
 
             Fs.Dump();
 
-            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.CpioWriter(Dst);
+            var Exporter = new NyaFs.ImageFormat.Elements.Fs.Writer.CpioFsWriter(Dst);
             Exporter.WriteFs(Fs);
         }
         public static void TestImportRamFsCpioExportGzCpio()

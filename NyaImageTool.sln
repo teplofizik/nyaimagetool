@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CpioLib", "CpioLib\CpioLib.csproj", "{CC75113A-1450-4EF6-B85C-C769F57C350F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{578CE3A5-682A-466E-982F-DF676D6C78FE} = {578CE3A5-682A-466E-982F-DF676D6C78FE}
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Extensions.csproj", "{578CE3A5-682A-466E-982F-DF676D6C78FE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFs", "NyaFs\NyaFs.csproj", "{17442459-436D-4B9E-8B4F-44D935B48A6E}"
@@ -39,18 +34,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|x64.Build.0 = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Debug|x86.Build.0 = Debug|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|x64.ActiveCfg = Release|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|x64.Build.0 = Release|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|x86.ActiveCfg = Release|Any CPU
-		{CC75113A-1450-4EF6-B85C-C769F57C350F}.Release|x86.Build.0 = Release|Any CPU
 		{578CE3A5-682A-466E-982F-DF676D6C78FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{578CE3A5-682A-466E-982F-DF676D6C78FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{578CE3A5-682A-466E-982F-DF676D6C78FE}.Debug|x64.ActiveCfg = Debug|Any CPU

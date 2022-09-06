@@ -17,7 +17,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
         {
             if (IsImageInfoCorrect(Fs.Info))
             {
-                var CpWriter = new CpioWriter();
+                var CpWriter = new CpioFsWriter();
                 CpWriter.WriteFs(Fs);
 
                 var Info = Fs.Info.Clone();
