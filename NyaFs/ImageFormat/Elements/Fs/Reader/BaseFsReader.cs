@@ -53,15 +53,8 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.SymLink:
                         {
-                            var Target = UTF8Encoding.UTF8.GetString(FsReader.Read(E.Path));
-                            var Link = new Filesystem.Universal.Items.SymLink(E.Path, E.User, E.Group, E.HexMode, Target);
+                            var Link = new Filesystem.Universal.Items.SymLink(E.Path, E.User, E.Group, E.HexMode, FsReader.ReadLink(E.Path));
                             Dir.Items.Add(Link);
-                        }
-                        break;
-                    case Filesystem.Universal.Types.FilesystemItemType.Character:
-                        {
-                            var Node = new Filesystem.Universal.Items.Node(E.Path, E.User, E.Group, E.HexMode);
-                            Dir.Items.Add(Node);
                         }
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.Fifo:
@@ -70,9 +63,21 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                             Dir.Items.Add(Fifo);
                         }
                         break;
+                    case Filesystem.Universal.Types.FilesystemItemType.Character:
+                        {
+                            var DevInfo = FsReader.ReadDevice(E.Path);
+                            var Char = new Filesystem.Universal.Items.Char(E.Path, E.User, E.Group, E.HexMode);
+                            Char.Major = DevInfo.Major;
+                            Char.Minor = DevInfo.Minor;
+                            Dir.Items.Add(Char);
+                        }
+                        break;
                     case Filesystem.Universal.Types.FilesystemItemType.Block:
                         {
+                            var DevInfo = FsReader.ReadDevice(E.Path);
                             var Block = new Filesystem.Universal.Items.Block(E.Path, E.User, E.Group, E.HexMode);
+                            Block.Major = DevInfo.Major;
+                            Block.Minor = DevInfo.Minor;
                             Dir.Items.Add(Block);
                         }
                         break;

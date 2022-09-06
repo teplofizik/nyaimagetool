@@ -226,7 +226,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 {
                     case "squashfs": return new ImageFormat.Elements.Fs.Reader.SquashFsReader(Path);
                     case "legacy": return new ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
-                    case "cpio": return new ImageFormat.Elements.Fs.Reader.CpioReader(Path);
+                    case "cpio": return new ImageFormat.Elements.Fs.Reader.CpioFsReader(Path);
                     case "fit": return new ImageFormat.Elements.Fs.Reader.FitReader(Path);
                     case "android": return new ImageFormat.Elements.Fs.Reader.AndroidReader(Path);
                     case "ext2": return new ImageFormat.Elements.Fs.Reader.ExtReader(Path);

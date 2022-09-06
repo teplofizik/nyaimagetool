@@ -65,7 +65,11 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                             }
                         case CpioLib.Types.CpioModeFileType.C_ISCHR: // NOD
                             {
-                                var Node = new Filesystem.Universal.Items.Node(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                var Node = new Filesystem.Universal.Items.Char(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                Node.Major = I.Major;
+                                Node.Minor = I.Minor;
+                                Node.RMajor = I.RMajor;
+                                Node.RMinor = I.RMinor;
                                 ApplyCpioParams(Node, I);
                                 Dir.Items.Add(Node);
                                 //Console.WriteLine($"Added node {I.Path}");
@@ -74,6 +78,10 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                         case CpioLib.Types.CpioModeFileType.C_ISBLK: // Block
                             {
                                 var Block = new Filesystem.Universal.Items.Block(I.Path, I.UserId, I.GroupId, I.HexMode);
+                                Block.Major = I.Major;
+                                Block.Minor = I.Minor;
+                                Block.RMajor = I.RMajor;
+                                Block.RMinor = I.RMinor;
                                 ApplyCpioParams(Block, I);
                                 Dir.Items.Add(Block);
                                 break;
@@ -97,10 +105,6 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         private void ApplyCpioParams(Filesystem.Universal.FilesystemItem Item, CpioLib.Types.CpioNode Node)
         {
             Item.Mode = Node.HexMode;
-            Item.Major = Node.Major;
-            Item.Minor = Node.Minor;
-            Item.RMajor = Node.RMajor;
-            Item.RMinor = Node.RMinor;
             Item.User = Node.UserId;
             Item.Group = Node.GroupId;
 

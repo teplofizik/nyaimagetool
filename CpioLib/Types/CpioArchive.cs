@@ -170,9 +170,9 @@ namespace CpioLib.Types
             return B;
         }
 
-        public CpioFifo AddFifo(string Filename, uint RMajor, uint RMinor)
+        public CpioFifo AddFifo(string Filename)
         {
-            var F = new CpioFifo(Filename, RMajor, RMinor);
+            var F = new CpioFifo(Filename);
             Files.Add(F);
             return F;
         }

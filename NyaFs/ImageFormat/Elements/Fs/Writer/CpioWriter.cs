@@ -65,19 +65,21 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.Character:
                         {
-                            var N = Archive.AddNod(I.Filename, I.RMajor, I.RMinor);
+                            var C = I as Filesystem.Universal.Items.Char;
+                            var N = Archive.AddNod(I.Filename, C.RMajor, C.RMinor);
                             SetParamsToCpioNode(I, N);
                         }
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.Block:
                         {
-                            var N = Archive.AddBlock(I.Filename, I.RMajor, I.RMinor);
+                            var B = I as Filesystem.Universal.Items.Char;
+                            var N = Archive.AddBlock(I.Filename, B.RMajor, B.RMinor);
                             SetParamsToCpioNode(I, N);
                         }
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.Fifo:
                         {
-                            var N = Archive.AddFifo(I.Filename, I.RMajor, I.RMinor);
+                            var N = Archive.AddFifo(I.Filename);
                             SetParamsToCpioNode(I, N);
                         }
                         break;

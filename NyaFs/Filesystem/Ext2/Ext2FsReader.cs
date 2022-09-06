@@ -1,8 +1,10 @@
 ﻿using Extension.Array;
 using Extension.Packet;
+using NyaFs.Filesystem.Universal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace NyaFs.Filesystem.Ext2
 {
@@ -49,26 +51,77 @@ namespace NyaFs.Filesystem.Ext2
             }
         }
 
+        /// <summary>
+        /// Read file by path
+        /// </summary>
+        /// <param name="Path">Path to file</param>
+        /// <returns>Content of file or null if file is not exists</returns>
         public byte[] Read(string Path)
         {
             var Node = GetINodeByPath(Path);
 
             if (Node != null)
             {
-                switch (Node.NodeType)
-                {
-                    case Types.ExtINodeType.REG:
-                    case Types.ExtINodeType.LINK:
-                        return GetINodeContent(Node);
-                    default:
-                        return null;
-                }
+                if (Node.NodeType == Types.ExtINodeType.REG)
+                    return GetINodeContent(Node);
+                else
+                    return null;
             }
             else
                 return null;
         }
 
-        public Universal.FilesystemEntry[] ReadDir(string Path)
+        /// <summary>
+        /// Read device information
+        /// </summary>
+        /// <param name="Path">Path to device</param>
+        /// <returns>Device numbers (major/minor)</returns>
+        public Universal.Types.DeviceInfo ReadDevice(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                if ((Node.NodeType == Types.ExtINodeType.CHAR) || (Node.NodeType == Types.ExtINodeType.BLOCK))
+                {
+                    var Raw = Node.Block[0];
+                    var Major = Raw & 0xff;
+                    var Minor = (Raw >> 8) & 0xFf;
+                    return new Universal.Types.DeviceInfo(Major, Minor); // TODO
+                }
+                else
+                    return null;
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Read link content by path
+        /// </summary>
+        /// <param name="Path">Path to symlink</param>
+        /// <returns>Link</returns>
+        public string ReadLink(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                if (Node.NodeType == Types.ExtINodeType.LINK)
+                    return UTF8Encoding.UTF8.GetString(GetINodeContent(Node));
+                else
+                    return null;
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Read directory content
+        /// </summary>
+        /// <param name="Path">Path to directory</param>
+        /// <returns>Array of entries</returns>
+        public FilesystemEntry[] ReadDir(string Path)
         {
             var DirNode = GetINodeByPath(Path);
 

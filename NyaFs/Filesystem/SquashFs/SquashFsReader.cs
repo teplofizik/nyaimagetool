@@ -342,26 +342,6 @@ namespace NyaFs.Filesystem.SquashFs
             return null;
         }
 
-        public byte[] Read(string Path)
-        {
-            var Node = GetINodeByPath(Path);
-
-            if (Node != null)
-            {
-                switch (Node.InodeType)
-                {
-                    case Types.SqInodeType.BasicFile:
-                        return GetINodeContent(Node as Types.Nodes.BasicFile);
-                    case Types.SqInodeType.BasicSymlink:
-                        return (Node as Types.Nodes.BasicSymLink).TargetPath;
-                    default:
-                        return null;
-                }
-            }
-            else
-                return null;
-        }
-
         private byte[] GetINodeContent(Types.Nodes.BasicFile N)
         {
             // The offset from the start of the archive where the data blocks are stored
@@ -371,7 +351,7 @@ namespace NyaFs.Filesystem.SquashFs
             long Offset = 0;
             long SrcOffset = N.BlocksStart;
 
-            for(int i = 0; i < BlockSizes.Length; i++)
+            for (int i = 0; i < BlockSizes.Length; i++)
             {
                 var FragData = ReadArray(Convert.ToInt64(SrcOffset), BlockSizes[i]);
                 var UncompressedData = Comp.Decompress(FragData);
@@ -381,7 +361,7 @@ namespace NyaFs.Filesystem.SquashFs
                 SrcOffset += BlockSizes[i];
             }
 
-            if(N.FragmentBlockIndex != 0xffffffff)
+            if (N.FragmentBlockIndex != 0xffffffff)
             {
                 var Frag = FragmentEntries[N.FragmentBlockIndex];
                 var FragData = ReadArray(Convert.ToInt64(Frag.Start), Frag.Size);
@@ -403,6 +383,89 @@ namespace NyaFs.Filesystem.SquashFs
             return IdTable[UidId];
         }
 
+        /// <summary>
+        /// Read file by path
+        /// </summary>
+        /// <param name="Path">Path to file</param>
+        /// <returns>Content of file or null if file is not exists</returns>
+        public byte[] Read(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                switch (Node.InodeType)
+                {
+                    case Types.SqInodeType.BasicFile:
+                        return GetINodeContent(Node as Types.Nodes.BasicFile);
+                    case Types.SqInodeType.ExtendedFile:
+                        return null; // TODO
+                    default:
+                        return null;
+                }
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Read device information
+        /// </summary>
+        /// <param name="Path">Path to device</param>
+        /// <returns>Device numbers (major/minor)</returns>
+        public Universal.Types.DeviceInfo ReadDevice(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                switch (Node.InodeType)
+                {
+                    case Types.SqInodeType.BasicBlockDevice:
+                    case Types.SqInodeType.BasicCharDevice:
+                        {
+                            var Block = Node as Types.Nodes.BasicDevice;
+                            return new Universal.Types.DeviceInfo(Block.Major, Block.Minor);
+                        }
+                    case Types.SqInodeType.ExtendedBlockDevice:
+                    case Types.SqInodeType.ExtendedCharDevice:
+                        return null; // TODO
+                    default:
+                        return null;
+                }
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Read link content by path
+        /// </summary>
+        /// <param name="Path">Path to symlink</param>
+        /// <returns>Link</returns>
+        public string ReadLink(string Path)
+        {
+            var Node = GetINodeByPath(Path);
+
+            if (Node != null)
+            {
+                switch (Node.InodeType)
+                {
+                    case Types.SqInodeType.BasicSymlink:
+                        return (Node as Types.Nodes.BasicSymLink).Target;
+                    default:
+                        return null;
+                }
+            }
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Read directory content
+        /// </summary>
+        /// <param name="Path">Path to directory</param>
+        /// <returns>Array of entries</returns>
         public FilesystemEntry[] ReadDir(string Path)
         {
             var DirNode = GetINodeByPath(Path);

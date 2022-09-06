@@ -41,6 +41,11 @@ namespace NyaFs.Processor.Scripting
             Add(new Commands.Fs.Rm());
             Add(new Commands.Fs.Chmod());
             Add(new Commands.Fs.Chown());
+
+            // mknod
+            // mkfifo
+            // mkblk
+            // mksock 
         }
     }
 

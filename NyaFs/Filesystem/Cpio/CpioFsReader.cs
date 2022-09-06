@@ -47,18 +47,71 @@ namespace NyaFs.Filesystem.Cpio
                 return Path;
         }
 
-        byte[] IFilesystemReader.Read(string Path)
+        /// <summary>
+        /// Read device information
+        /// </summary>
+        /// <param name="Path">Path to device</param>
+        /// <returns>Device numbers (major/minor)</returns>
+        public Universal.Types.DeviceInfo ReadDevice(string Path)
         {
             foreach (var N in Nodes)
             {
                 if (UnifyPath(N.Path) == UnifyPath(Path))
-                    return N.Content;
+                {
+                    if ((N.FileType == Types.CpioModeFileType.C_ISCHR) ||
+                        (N.FileType == Types.CpioModeFileType.C_ISBLK))
+                        return new Universal.Types.DeviceInfo(N.Major, N.Minor);
+                    else
+                        return null;
+                }
             }
 
             return null;
         }
 
-        FilesystemEntry[] IFilesystemReader.ReadDir(string Path)
+        /// <summary>
+        /// Read link content by path
+        /// </summary>
+        /// <param name="Path">Path to symlink</param>
+        /// <returns>Link</returns>
+        public string ReadLink(string Path)
+        {
+            foreach (var N in Nodes)
+            {
+                if (UnifyPath(N.Path) == UnifyPath(Path))
+                {
+                    if (N.FileType == Types.CpioModeFileType.C_ISREG)
+                        return UTF8Encoding.UTF8.GetString(N.Content);
+                    else
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Read file by path
+        /// </summary>
+        /// <param name="Path">Path to file</param>
+        /// <returns>Content of file or null if file is not exists</returns>
+        public byte[] Read(string Path)
+        {
+            foreach (var N in Nodes)
+            {
+                if (UnifyPath(N.Path) == UnifyPath(Path))
+                {
+                    if (N.FileType == Types.CpioModeFileType.C_ISREG)
+                        return N.Content;
+                    else
+                        return null;
+                }
+            }
+
+            return null;
+        }
+
+        public FilesystemEntry[] ReadDir(string Path)
         {
             var Res = new List<FilesystemEntry>();
             Path = UnifyPath(Path);

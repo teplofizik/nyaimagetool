@@ -6,12 +6,10 @@ namespace CpioLib.Types.Nodes
 {
     public class CpioFifo : CpioNode
     {
-        public CpioFifo(string Path, uint Major, uint Minor) : base(Path,
+        public CpioFifo(string Path) : base(Path,
                                                                    new byte[] { },
                                                                    DateTime.Now,
-                                                                   0x1180,
-                                                                   Major,
-                                                                   Minor)
+                                                                   0x1180)
         {
 
         }

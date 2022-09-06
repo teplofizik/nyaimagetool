@@ -49,5 +49,7 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
             get { return ReadArray(0x18, TargetSize); }
             set { WriteArray(0x18, value, TargetSize); }
         }
+
+        public string Target => UTF8Encoding.UTF8.GetString(TargetPath);
     }
 }

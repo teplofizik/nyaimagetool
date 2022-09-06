@@ -46,11 +46,6 @@ namespace NyaFs.Filesystem.Universal
             }
         }
 
-        public uint Major = 8;
-        public uint Minor = 1;
-        public uint RMajor = 0;
-        public uint RMinor = 0;
-
         public virtual long Size => 0;
 
         public DateTime Created = DateTime.UnixEpoch;
