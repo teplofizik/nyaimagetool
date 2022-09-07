@@ -74,7 +74,7 @@ namespace NyaFs.Filesystem.Ext2.Types
         /// 0xA000  S_IFLNK(Symbolic link)
         /// 0xC000  S_IFSOCK(Socket)
         /// </summary>
-        public ExtINodeType NodeType => (ExtINodeType)(Mode & 0xF000);
+        public ExtINodeType NodeType =>  (ExtINodeType)(Mode & 0xF000); 
 
         /// <summary>
         /// Filesystem node type
@@ -283,6 +283,14 @@ namespace NyaFs.Filesystem.Ext2.Types
                 for(int i = 0; i < 15; i++)
                     WriteUInt32(0x28 + i * 4, value[i]); 
             }
+        }
+
+        public void UpdateBlockByIndex(uint Index, uint Block)
+        {
+            if (Index < 15)
+                WriteUInt32(0x28 + Index * 4, Block);
+            else
+                throw new ArgumentOutOfRangeException("Index must be in range from 0 to 14");
         }
 
         /// <summary>

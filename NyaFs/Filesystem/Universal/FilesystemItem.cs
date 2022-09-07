@@ -8,7 +8,7 @@ namespace NyaFs.Filesystem.Universal
     {
         private static string PreprocessFilename(string Filename)
         {
-            if (Filename.Length > 0)
+            if (Filename.Length > 1)
             {
                 if ((Filename[0] == '\\') || (Filename[0] == '/'))
                     return Filename.Substring(1);

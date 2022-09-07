@@ -21,7 +21,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         /// <param name="Dst"></param>
         public override void ReadToFs(LinuxFilesystem Dst)
         {
-            ImportDir(Dst.Fs.Root, ".");
+            ImportDir(Dst.Fs.Root, "/");
 
             if (Dst.Info.Type == Types.ImageType.IH_TYPE_INVALID)
                 Dst.Info.Type = Types.ImageType.IH_TYPE_RAMDISK;

@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Filesystem\Ext2\Ext2FsBuilder.cs" />
     <Compile Remove="ImageFormat\Elements\Fs\Reader\CpioReader.cs" />
     <Compile Remove="ImageFormat\Elements\Fs\Writer\CpioWriter.cs" />
   </ItemGroup>
@@ -21,10 +20,6 @@
 
   <ItemGroup>
     <Folder Include="Processor\Scripting\Commands\Kernel\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Filesystem\Ext2\Ext2FsBuilder.cs" />
   </ItemGroup>
 
   <ItemGroup>

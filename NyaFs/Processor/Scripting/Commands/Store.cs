@@ -12,7 +12,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 new string[] { "raw", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs",
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "ext2" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree",
                 new string[] { "dtb" }));
@@ -182,6 +182,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 {
                     case "legacy": return new ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
                     case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioFsWriter(Path);
+                    case "ext2": return new ImageFormat.Elements.Fs.Writer.Ext2FsWriter(Path);
                     case "lz4":
                     case "lzma":
                     case "gz":

@@ -123,7 +123,7 @@ namespace NyaFs.Filesystem.Ext2
 
         internal Types.ExtINode GetINodeByPath(string Path)
         {
-            if (Path == ".") return GetRootDir();
+            if ((Path == ".") || (Path == "/")) return GetRootDir();
             if (Path.Length == 0)
                 throw new ArgumentException($"{Path} is empty");
 

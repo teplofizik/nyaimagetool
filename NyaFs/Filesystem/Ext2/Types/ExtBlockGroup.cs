@@ -7,10 +7,14 @@ namespace NyaFs.Filesystem.Ext2.Types
 {
     public class ExtBlockGroup : ArrayWrapper
     {
-        public ExtBlockGroup(byte[] Data, long Offset) : base(Data, Offset, 0x20)
-        {
+        public readonly uint Id;
 
+        public ExtBlockGroup(byte[] Data, uint Id, long Offset) : base(Data, Offset, 0x20)
+        {
+            this.Id = Id;
         }
+
+        public uint GetLocalNodeIndex(uint NodeId, uint NodesPerGroup) => NodeId - NodesPerGroup * Id;
 
         /// <summary>
         /// Lower 32-bits of location of block bitmap.

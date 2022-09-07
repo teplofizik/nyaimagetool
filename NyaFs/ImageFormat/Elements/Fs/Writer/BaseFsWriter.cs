@@ -37,12 +37,12 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
 
         private void ProcessDirectory(Filesystem.Universal.Items.Dir Dir)
         {
+            Builder.Directory(Dir.Filename, Dir.User, Dir.Group, Dir.Mode);
             foreach (var I in Dir.Items)
             {
                 switch (I.ItemType)
                 {
                     case Filesystem.Universal.Types.FilesystemItemType.Directory:
-                        Builder.Directory(I.Filename, I.User, I.Group, I.Mode);
                         ProcessDirectory(I as Filesystem.Universal.Items.Dir);
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.File:

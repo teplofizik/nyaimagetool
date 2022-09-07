@@ -18,7 +18,7 @@ namespace NyaFs.Filesystem.Universal
         /// <summary>
         /// Root filesystem directory
         /// </summary>
-        public Items.Dir Root = new Items.Dir(".", 0, 0, 0x755);
+        public Items.Dir Root = new Items.Dir("/", 0, 0, 493); // 755
 
         /// <summary>
         /// Is image loaded?
