@@ -7,8 +7,8 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
     public class Ext2FsWriter : BaseFsWriter
     {
         // TODO: FS size detector
-        public Ext2FsWriter() : base(new Filesystem.Ext2.Ext2FsBuilder(0x2000000)) { }
+        public Ext2FsWriter() : base(new Filesystem.Ext2.Ext2FsBuilder(0x3000000)) { }
 
-        public Ext2FsWriter(string Filename) : base(new Filesystem.Ext2.Ext2FsBuilder(0x2000000), Filename) { }
+        public Ext2FsWriter(string Filename) : base(new Filesystem.Ext2.Ext2FsBuilder(0x3000000), Filename) { }
     }
 }

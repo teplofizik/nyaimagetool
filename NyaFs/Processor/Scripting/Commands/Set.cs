@@ -17,7 +17,7 @@ namespace NyaFs.Processor.Scripting.Commands
         {
             public SetScriptArgsConfig() : base(0, new ScriptArgsParam[] {
                     new Params.EnumScriptArgsParam("type", new string[] { "kernel", "devtree", "ramfs", "all" }),
-                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry", "compression" }),
+                    new Params.EnumScriptArgsParam("param", new string[] { "os", "arch", "type", "name", "load", "entry", "compression", "filesystem" }),
                     new Params.StringScriptArgsParam("value")
                 })
             {
@@ -42,10 +42,10 @@ namespace NyaFs.Processor.Scripting.Commands
                         return false;
                     }
 
-                    var AllowedParams = new string[] { "os", "arch", "type", "name", "load", "entry", "compression" };
+                    var AllowedParams = new string[] { "os", "arch", "type", "name", "load", "entry", "compression", "filesystem" };
                     if (!AllowedParams.Contains(Args[1]))
                     {
-                        Log.Error(0, "Invalid parameter name. Must be one of: os, arch, type, name, load, entry, compression");
+                        Log.Error(0, "Invalid parameter name. Must be one of: os, arch, type, name, load, entry, compression, filesystem");
                         return false;
                     }
                 }
@@ -131,6 +131,25 @@ namespace NyaFs.Processor.Scripting.Commands
                 // Ok. Image info is selected. Now update it.
                 switch (Param)
                 {
+                    case "filesystem":
+                        {
+                            if(Type != "ramfs")
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot set filesystem type to non-ramfs image!");
+
+                            var Fs = Processor.GetFs();
+                            if (Value == "cpio")
+                            {
+                                Fs.FilesystemType = ImageFormat.Types.FsType.Cpio;
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: cpio!");
+                            }
+                            else if (Value == "ext2")
+                            {
+                                Fs.FilesystemType = ImageFormat.Types.FsType.Ext2;
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: ext2!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Unsupported filesystem type: {Value}");
+                        }
                     case "compression":
                         {
                             try

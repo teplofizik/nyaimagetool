@@ -101,9 +101,10 @@ namespace NyaFs.ImageFormat.Composite
 
             {
                 var FS = Blob.GetFilesystem(0);
-                var Writer = new ImageFormat.Elements.Fs.Writer.CpioFsWriter();
-                Writer.WriteFs(FS);
-                var Raw = Writer.RawStream;
+                var FsWriter = Elements.Fs.Writer.Writer.GetRawFilesystemWriter(FS);
+                FsWriter.WriteFs(FS);
+
+                var Raw = FsWriter.RawStream;
                 var Data = Helper.FitHelper.GetCompressedData(Raw, FS.Info.Compression);
                 var RamDisk = new FlattenedDeviceTree.Types.Node("ramdisk@default");
 

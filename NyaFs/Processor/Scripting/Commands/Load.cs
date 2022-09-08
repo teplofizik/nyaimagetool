@@ -257,16 +257,16 @@ namespace NyaFs.Processor.Scripting.Commands
                     {
                         Processor.SetFs(Fs);
                         AssumeAutoImageParams(Processor);
-                        if (Fs.FilesystemType != ImageFormat.Types.FsType.Cpio)
-                        {
-                            Fs.FilesystemType = ImageFormat.Types.FsType.Cpio;
-                            Log.Warning(0, "Filesystem is switched to cpio as only supported for packing.");
-                            if (Fs.Info.Compression == ImageFormat.Types.CompressionType.IH_COMP_NONE)
-                            {
-                                Fs.Info.Compression = ImageFormat.Types.CompressionType.IH_COMP_GZIP;
-                                Log.Warning(0, "Compression is switched to gzip.");
-                            }
-                        }
+                        //if (Fs.FilesystemType != ImageFormat.Types.FsType.Cpio)
+                        //{
+                            // Fs.FilesystemType = ImageFormat.Types.FsType.Cpio;
+                            // Log.Warning(0, "Filesystem is switched to cpio as only supported for packing.");
+                            // if (Fs.Info.Compression == ImageFormat.Types.CompressionType.IH_COMP_NONE)
+                            // {
+                            //     Fs.Info.Compression = ImageFormat.Types.CompressionType.IH_COMP_GZIP;
+                            //     Log.Warning(0, "Compression is switched to gzip.");
+                            // }
+                        //}
                         ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
 
                         if (OldLoaded)

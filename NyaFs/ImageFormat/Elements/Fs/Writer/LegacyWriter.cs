@@ -17,13 +17,13 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
         {
             if (IsImageInfoCorrect(Fs.Info))
             {
-                var CpWriter = new CpioFsWriter();
-                CpWriter.WriteFs(Fs);
+                var FsWriter = GetRawFilesystemWriter(Fs);
+                FsWriter.WriteFs(Fs);
 
                 var Info = Fs.Info.Clone();
                 Info.Type = ImageFormat.Types.ImageType.IH_TYPE_RAMDISK;
 
-                var Image = new Types.LegacyImage(Info, Info.Compression, Helper.FitHelper.GetCompressedData(CpWriter.RawStream, Info.Compression));
+                var Image = new Types.LegacyImage(Info, Info.Compression, Helper.FitHelper.GetCompressedData(FsWriter.RawStream, Info.Compression));
                 System.IO.File.WriteAllBytes(Filename, Image.getPacket());
             }
         }
