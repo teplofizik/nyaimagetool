@@ -16,8 +16,13 @@ namespace NyaFs.Filesystem.Ext2
 
         private List<BuilderDirectory> Dirs = new List<BuilderDirectory>();
 
+        private uint[] BlockMap;
+
         public Ext2FsBuilder(uint DiskBlockSize) : base(new byte[DiskBlockSize])
         {
+            BlockMap = new uint[DiskBlockSize / 32];
+            BlockMap.Fill(0u);
+
             this.DiskBlockSize = DiskBlockSize;
             Fill(0x00);
 
@@ -25,6 +30,22 @@ namespace NyaFs.Filesystem.Ext2
             InitBlockGroups();
             InitBlockBitmapTables();
             InitINodeBitmapTables();
+        }
+
+        private bool IsBlockFree(uint Block)
+        {
+            uint MapIndex = Block / 32;
+            int MapBit = Convert.ToInt32(Block % 32);
+
+            return (BlockMap[MapIndex] & (1u << MapBit)) == 0;
+        }
+
+        private void MarkBlockBusy(uint Block)
+        {
+            uint MapIndex = Block / 32;
+            int MapBit = Convert.ToInt32(Block % 32);
+
+            BlockMap[MapIndex] |= (1u << MapBit);
         }
 
         public void InitSuperblock()
@@ -54,12 +75,16 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.RevLevel = 0;
             Superblock.RootBlocksCount = 0x666;
             Superblock.State = 1;
+
+            MarkBlockBusy(0);
+            MarkBlockBusy(1);
         }
 
         private void InitBlockGroups()
         {
             MaxBlockGroupCount = Convert.ToUInt32(getLength() / Superblock.BlockSize / Superblock.BlocksPerGroup);
 
+            MarkBlockBusy(2);
             for (uint i = 0; i < MaxBlockGroupCount; i++)
             {
                 var BG = GetBlockGroup(i);
@@ -69,6 +94,15 @@ namespace NyaFs.Filesystem.Ext2
                 BG.INodeTableLo = 0x05 + i * 0x2000;
                 BG.UsedDirsCountLo = 0;
                 BG.FreeINodesCountLo = Superblock.InodesPerGroup;
+
+                MarkBlockBusy(0x01 + i * 0x2000); // Metadata?..
+                MarkBlockBusy(0x02 + i * 0x2000); // Metadata?..
+                MarkBlockBusy(BG.BlockBitmapLo);
+                MarkBlockBusy(BG.INodeBitmapLo);
+                for (uint inb = 0; inb < Superblock.InodesPerGroup / (0x400 / 0x80); inb++)
+                {
+                    MarkBlockBusy(BG.INodeTableLo + inb);
+                }
             }
         }
 
@@ -295,18 +329,10 @@ namespace NyaFs.Filesystem.Ext2
         uint GetNewBlock()
         {
             var Index = DataBlockIndex++;
+            while (!IsBlockFree(Index)) { Index = DataBlockIndex++; }
+
             var BG = GetBlockGroupByNodeId(Index);
-
-            /*
-            var BlockOffset = Index * Superblock.BlockSize;
-            if(BlockOffset >= getLength())
-            {
-                Array.Resize(ref Raw, Convert.ToInt32(Raw.Length + DiskBlockSize));
-
-                // TODO: Update BlockGroupTable, Superblock
-            }
-            */
-
+            Superblock.FreeBlocksCount--;
             {
                 // Mark block as used
                 var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
@@ -319,13 +345,15 @@ namespace NyaFs.Filesystem.Ext2
                 RawBitmapValue |= Convert.ToByte(1 << BitOffset);
                 WriteByte(ByteOffset, RawBitmapValue);
             }
+
+            MarkBlockBusy(Index);
             return Index;
         }
 
 
         void AddBlockToNode(Types.ExtINode Node, uint Block)
         {
-            var Index = Node.BlocksLo / 2;
+            var Index = Node.BlocksCount;
             if(Index < 12)
             {
                 Node.UpdateBlockByIndex(Index, Block);
@@ -335,7 +363,10 @@ namespace NyaFs.Filesystem.Ext2
                 uint Offset = Index - 12;
                 // One-level indirect table
                 if (Offset == 0)
+                {
                     Node.UpdateBlockByIndex(12, GetNewBlock());// Create new block...
+                    Node.BlocksLo += 2;
+                }
 
                 uint IndBlock = Node.Block[12];
                 FillDirectBlockTable(IndBlock, Offset, Block);
@@ -346,10 +377,13 @@ namespace NyaFs.Filesystem.Ext2
 
                 // Second-level indirect table
                 if (Offset == 0)
+                {
                     Node.UpdateBlockByIndex(13, GetNewBlock());// Create new block...
+                    Node.BlocksLo += 2;
+                }
 
                 uint IndBlock = Node.Block[13];
-                FillIndirectBlockTable(IndBlock, Offset, 1, Block);
+                FillIndirectBlockTable(Node, IndBlock, Offset, 1, Block);
             }
             else
             {
@@ -357,12 +391,16 @@ namespace NyaFs.Filesystem.Ext2
 
                 // Third-level indirect table
                 if (Offset == 0)
+                {
                     Node.UpdateBlockByIndex(14, GetNewBlock());// Create new block...
+                    Node.BlocksLo += 2;
+                }
 
                 uint IndBlock = Node.Block[14];
-                FillIndirectBlockTable(IndBlock, Offset, 2, Block);
+                FillIndirectBlockTable(Node, IndBlock, Offset, 2, Block);
             }
 
+            Node.BlocksCount++;
             Node.BlocksLo += 2;
         }
 
@@ -376,7 +414,7 @@ namespace NyaFs.Filesystem.Ext2
             return Res;
         }
 
-        void FillIndirectBlockTable(uint IndirectBlock, uint Offset, uint Level, uint Block)
+        void FillIndirectBlockTable(Types.ExtINode N, uint IndirectBlock, uint Offset, uint Level, uint Block)
         {
             long BlockOffset = IndirectBlock * Superblock.BlockSize;
             uint BlocksInIndex = GetBlockInIUndirectTableIndex(Level);
@@ -389,12 +427,13 @@ namespace NyaFs.Filesystem.Ext2
             {
                 IndBlock = GetNewBlock();
                 WriteUInt32(BlockOffset + Index * 4, IndBlock);
+                N.BlocksLo += 2;
             }
             else
                 IndBlock = ReadUInt32(BlockOffset + Index * 4);
 
             if (Level > 1)
-                FillIndirectBlockTable(IndBlock, NestedBlockOffset, Level - 1, Block);
+                FillIndirectBlockTable(N, IndBlock, NestedBlockOffset, Level - 1, Block);
             else
                 FillDirectBlockTable(IndBlock, NestedBlockOffset, Block);
         }
@@ -438,6 +477,8 @@ namespace NyaFs.Filesystem.Ext2
             }
 
             public List<Types.ExtDirectoryEntry> Entries = new List<Types.ExtDirectoryEntry>();
+
+            public override string ToString() => $"{Node.Index}: {Path} {Content.Length:x04}";
 
             public byte[] Content
             {

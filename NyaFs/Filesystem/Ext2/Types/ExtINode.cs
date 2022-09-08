@@ -8,6 +8,7 @@ namespace NyaFs.Filesystem.Ext2.Types
     internal class ExtINode : ArrayWrapper
     {
         public readonly uint Index;
+        public uint BlocksCount = 0;
 
         /// <summary>
         /// Wrapper for INode struct
@@ -17,6 +18,8 @@ namespace NyaFs.Filesystem.Ext2.Types
         public ExtINode(uint Index, byte[] Data, long Offset) : base(Data, Offset, 0x80) // ext2, ext3 => 128 bytes
         {
             this.Index = Index;
+
+            BlocksCount = BlocksLo / 2;
         }
 
         /// <summary>
