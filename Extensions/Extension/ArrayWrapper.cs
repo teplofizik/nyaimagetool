@@ -47,6 +47,15 @@ namespace Extension.Packet
         /// Определяет длину отдаваемого пакета
         /// </summary>
         /// <returns></returns>
+        public virtual int getOffset()
+        {
+            return Convert.ToInt32(StructOffset);
+        }
+
+        /// <summary>
+        /// Определяет длину отдаваемого пакета
+        /// </summary>
+        /// <returns></returns>
         public virtual int getLength()
         {
             return Convert.ToInt32(StructSize);

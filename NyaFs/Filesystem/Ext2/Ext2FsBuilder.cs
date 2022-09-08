@@ -3,6 +3,7 @@ using Extension.Packet;
 using NyaFs.Filesystem.Universal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NyaFs.Filesystem.Ext2
@@ -125,7 +126,7 @@ namespace NyaFs.Filesystem.Ext2
             foreach(var D in Dirs)
             {
                 SetNodeBlockContent(D.Node, D.Content);
-                D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count + 2);
+                D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count);
             }
             return getPacket();
         }
@@ -182,7 +183,7 @@ namespace NyaFs.Filesystem.Ext2
             if (Parent != null)
             {
                 var N = NodeGetter();
-                Parent.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), N.NodeType, Universal.Helper.FsHelper.GetName(Path)));
+                Parent.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, Universal.Helper.FsHelper.GetName(Path)));
 
                 var BG = GetBlockGroupByNodeId(N.Index);
                 if(N.NodeType == Types.ExtINodeType.DIR)
@@ -190,7 +191,11 @@ namespace NyaFs.Filesystem.Ext2
                     BG.UsedDirsCountLo++;
                     BG.FreeINodesCountLo--;
 
-                    Dirs.Add(new BuilderDirectory(Path, N));
+                    var D = new BuilderDirectory(Path, N);
+                    Dirs.Add(D);
+
+                    D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, "."));
+                    D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(Parent.Node.Index), Types.ExtINodeType.NONE, ".."));
                 }
             }
             else
@@ -211,6 +216,7 @@ namespace NyaFs.Filesystem.Ext2
             AddNestedNode(Path, () =>
             {
                 var N = CreateNewINode(Types.ExtINodeType.BLOCK, User, Group, Mode);
+                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 N.Block[0] = (Major & 0xFF) | ((Minor & 0xFF) << 8);
                 return N;
             });
@@ -230,6 +236,7 @@ namespace NyaFs.Filesystem.Ext2
             AddNestedNode(Path, () =>
             {
                 var N = CreateNewINode(Types.ExtINodeType.CHAR, User, Group, Mode);
+                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 N.Block[0] = (Major & 0xFF) | ((Minor & 0xFF) << 8);
                 return N;
             });
@@ -249,7 +256,12 @@ namespace NyaFs.Filesystem.Ext2
                 if (Dirs.Count == 0)
                 {
                     var N = CreateNewINode(Types.ExtINodeType.DIR, User, Group, Mode);
-                    Dirs.Add(new BuilderDirectory(Path, N));
+                    Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                    var D = new BuilderDirectory(Path, N);
+                    Dirs.Add(D);
+
+                    D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, "."));
+                    D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, ".."));
 
                     INodeIndex += 12; // skip reserved items
                 }
@@ -257,7 +269,12 @@ namespace NyaFs.Filesystem.Ext2
                     throw new ArgumentException("Cannot create new root node");
             }
             else
-                AddNestedNode(Path, () => CreateNewINode(Types.ExtINodeType.DIR, User, Group, Mode));
+                AddNestedNode(Path, () =>
+                {
+                    var N = CreateNewINode(Types.ExtINodeType.DIR, User, Group, Mode);
+                    Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                    return N;
+                });
         }
 
         /// <summary>
@@ -269,7 +286,12 @@ namespace NyaFs.Filesystem.Ext2
         /// <param name="Mode">Access mode</param>
         public void Fifo(string Path, uint User, uint Group, uint Mode)
         {
-            AddNestedNode(Path, () => CreateNewINode(Types.ExtINodeType.FIFO, User, Group, Mode));
+            AddNestedNode(Path, () =>
+            {
+                var N = CreateNewINode(Types.ExtINodeType.FIFO, User, Group, Mode);
+                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                return N;
+            });
         }
 
         /// <summary>
@@ -287,6 +309,7 @@ namespace NyaFs.Filesystem.Ext2
                 var N = CreateNewINode(Types.ExtINodeType.REG, User, Group, Mode);
                 SetNodeBlockContent(N, Content);
 
+                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 return N;
             });
         }
@@ -322,6 +345,7 @@ namespace NyaFs.Filesystem.Ext2
                 else
                     SetNodeBlockContent(N, UTF8Encoding.UTF8.GetBytes(Target));
 
+                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 return N;
             });
         }
@@ -484,15 +508,35 @@ namespace NyaFs.Filesystem.Ext2
             {
                 get
                 {
+                    var Res = new List<byte>();
                     var Temp = new List<byte>();
-                    foreach(var E in Entries)
+                    int PrevSize = 0;
+                    byte[] TempBlock = new byte[0x400];
+                    for (int i = 0; i < Entries.Count; i++)
+                    {
+                        var E = Entries[i];
+                        if(Temp.Count + E.getLength() > TempBlock.Length)
+                        {
+                            TempBlock.WriteArray(0, Temp.ToArray(), Temp.Count);
+                            var Last = new Types.ExtDirectoryEntry(TempBlock, PrevSize);
+                            Last.RecordLength += Convert.ToUInt32(TempBlock.Length - Temp.Count);
+
+                            Res.AddRange(TempBlock);
+                            Temp.Clear();
+                        }
+
+                        PrevSize = Temp.Count;
                         Temp.AddRange(E.getPacket());
+                    }
+                    if (Temp.Count > 0)
+                    {
+                        TempBlock.WriteArray(0, Temp.ToArray(), Temp.Count);
+                        var Last = new Types.ExtDirectoryEntry(TempBlock, PrevSize);
+                        Last.RecordLength += Convert.ToUInt32(TempBlock.Length - Temp.Count);
 
-                    var TargetSize = Math.Max(0x400, Temp.Count.GetAligned(0x400));
-
-                    var Res = new byte[TargetSize];
-                    Res.WriteArray(0, Temp.ToArray(), Temp.Count);
-                    return Res;
+                        Res.AddRange(TempBlock);
+                    }
+                    return Res.ToArray();
                 }
             }
         }
