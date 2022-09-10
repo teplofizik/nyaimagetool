@@ -39,14 +39,16 @@ namespace NyaFs.Filesystem.Ext2
 
         private bool IsBlockFree(uint Block)
         {
+            Block = Block - 1;
             uint MapIndex = Block / 32;
             int MapBit = Convert.ToInt32(Block % 32);
 
             return (BlockMap[MapIndex] & (1u << MapBit)) == 0;
         }
 
-        private void MarkBlockBusy(uint Block)
+        private void MarkBlockBusy(uint Block, bool MarkInBG = true)
         {
+            Block = Block - 1;
             uint MapIndex = Block / 32;
             int MapBit = Convert.ToInt32(Block % 32);
             bool IsFree = (BlockMap[MapIndex] & (1u << MapBit)) == 0;
@@ -55,7 +57,8 @@ namespace NyaFs.Filesystem.Ext2
             {
                 BlockMap[MapIndex] |= (1u << MapBit);
 
-                MarkBlockAsUsedInBlockGroup(Block);
+                if(MarkInBG)
+                    MarkBlockAsUsedInBlockGroup(Block);
             }
         }
 
@@ -114,7 +117,7 @@ namespace NyaFs.Filesystem.Ext2
                     MarkBlockBusy(BG.INodeTableLo + inb);
                 }
             }
-            MarkBlockBusy(0);
+            //MarkBlockBusy(0);
         }
 
         private void InitBlockBitmapTables()
