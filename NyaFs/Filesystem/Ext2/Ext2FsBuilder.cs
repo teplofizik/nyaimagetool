@@ -13,7 +13,7 @@ namespace NyaFs.Filesystem.Ext2
         uint DiskBlockSize;
         uint INodeIndex = 2;
         uint MaxBlockGroupCount = 0;
-        uint DataBlockIndex = 0x13E;
+        uint DataBlockIndex = 0x1;
 
         private List<BuilderDirectory> Dirs = new List<BuilderDirectory>();
 
@@ -45,17 +45,20 @@ namespace NyaFs.Filesystem.Ext2
         {
             uint MapIndex = Block / 32;
             int MapBit = Convert.ToInt32(Block % 32);
+            bool IsFree = (BlockMap[MapIndex] & (1u << MapBit)) == 0;
 
-            BlockMap[MapIndex] |= (1u << MapBit);
+            if (IsFree)
+            {
+                BlockMap[MapIndex] |= (1u << MapBit);
 
-            MarkBlockAsUsedInBlockGroup(Block);
+                MarkBlockAsUsedInBlockGroup(Block);
+            }
         }
 
         public void InitSuperblock()
         {
             Superblock.LogBlockSize = 0; // BlockSize => 0x400
             Superblock.LogClusterSize = 0;
-            Superblock.BlocksCount = Convert.ToUInt32(getLength() / Superblock.BlockSize);
             Superblock.BlocksPerGroup = 0x2000; // TODO: 8 * Superblock.BlockSize (bitmap bits count)
             Superblock.CheckInterval = 0x9a7ec800;
             Superblock.ClustersPerGroup = 0x2000;
@@ -82,8 +85,10 @@ namespace NyaFs.Filesystem.Ext2
         {
             MaxBlockGroupCount = Convert.ToUInt32(getLength() / Superblock.BlockSize / Superblock.BlocksPerGroup);
 
+            Superblock.BlocksCount = Superblock.BlocksPerGroup * MaxBlockGroupCount;
             Superblock.INodesCount = Superblock.InodesPerGroup * MaxBlockGroupCount;
             Superblock.FreeINodeCount = Superblock.INodesCount;
+            Superblock.FreeBlocksCount = Superblock.BlocksCount;
 
             for (uint i = 0; i < MaxBlockGroupCount; i++)
             {
@@ -371,12 +376,14 @@ namespace NyaFs.Filesystem.Ext2
 
         void MarkBlockAsUsedInBlockGroup(uint Index)
         {
-            var BG = GetBlockGroupByNodeId(Index);
+            var BG = GetBlockGroupByBlockId(Index);
 
             // Mark block as used
             var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
             var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
+
             BG.FreeBlocksCountLo--;
+            Superblock.FreeBlocksCount--;
 
             var ByteOffset = BlockBitmapTableOffset + Idx / 8;
             var BitOffset = Convert.ToInt32(Idx % 8);
@@ -391,8 +398,7 @@ namespace NyaFs.Filesystem.Ext2
             var Index = DataBlockIndex++;
             while (!IsBlockFree(Index)) { Index = DataBlockIndex++; }
 
-            var BG = GetBlockGroupByNodeId(Index);
-            Superblock.FreeBlocksCount--;
+            var BG = GetBlockGroupByBlockId(Index);
             MarkBlockBusy(Index);
             return Index;
         }

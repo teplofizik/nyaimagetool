@@ -24,8 +24,9 @@ namespace NyaFs.Filesystem.Ext2
         /// <returns></returns>
         internal Types.ExtBlockGroup GetBlockGroup(uint Id) => new Types.ExtBlockGroup(Raw, Id, 0x800 + Id * 0x20);
 
-        internal Types.ExtBlockGroup GetBlockGroupByNodeId(uint Id) => new Types.ExtBlockGroup(Raw, (Id / Superblock.InodesPerGroup), 0x800 + (Id / Superblock.InodesPerGroup) * 0x20);
-            
+        internal Types.ExtBlockGroup GetBlockGroupByNodeId(uint Id) => GetBlockGroup(Id / Superblock.InodesPerGroup);
+        internal Types.ExtBlockGroup GetBlockGroupByBlockId(uint Id) => GetBlockGroup(Id / Superblock.BlocksPerGroup);
+
         internal Types.ExtINode GetINode(uint Id)
         {
             var BGIndex = (Id - 1) / Superblock.InodesPerGroup;
