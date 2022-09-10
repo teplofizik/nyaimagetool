@@ -64,8 +64,7 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.DefaultReservedUid = 0x00;
             Superblock.Errors = 0x00;
             Superblock.FirstDataBlock = 0x01;
-            Superblock.FreeBlocksCount = Superblock.BlocksCount - 1;
-            Superblock.FreeINodeCount = Superblock.INodesCount;
+            Superblock.FreeBlocksCount = Superblock.BlocksCount;
             Superblock.InodesPerGroup = 0x9c8;
             Superblock.LastCheckTime = DateTime.Now;
             Superblock.WTime = 0;
@@ -83,6 +82,9 @@ namespace NyaFs.Filesystem.Ext2
         {
             MaxBlockGroupCount = Convert.ToUInt32(getLength() / Superblock.BlockSize / Superblock.BlocksPerGroup);
 
+            Superblock.INodesCount = Superblock.InodesPerGroup * MaxBlockGroupCount;
+            Superblock.FreeINodeCount = Superblock.INodesCount;
+
             for (uint i = 0; i < MaxBlockGroupCount; i++)
             {
                 var BG = GetBlockGroup(i);
@@ -92,6 +94,7 @@ namespace NyaFs.Filesystem.Ext2
                 BG.INodeTableLo = 0x05 + i * 0x2000;
                 BG.UsedDirsCountLo = 0;
                 BG.FreeINodesCountLo = Superblock.InodesPerGroup;
+                BG.FreeBlocksCountLo = Superblock.BlocksPerGroup;
 
                 MarkBlockBusy(0x01 + i * 0x2000); // Metadata?..
                 MarkBlockBusy(0x02 + i * 0x2000); // Metadata?..
@@ -103,11 +106,11 @@ namespace NyaFs.Filesystem.Ext2
                 }
             }
 
-            Superblock.INodesCount = Superblock.InodesPerGroup * MaxBlockGroupCount;
-
             MarkBlockBusy(0);
             MarkBlockBusy(1);
             MarkBlockBusy(2);
+
+            for (uint i = 1; i < 11; i++) MarkINodeAsUsed(i);
         }
 
         private void InitBlockBitmapTables()
@@ -147,6 +150,29 @@ namespace NyaFs.Filesystem.Ext2
             return null;
         }
 
+        private void MarkINodeAsUsed(uint Index)
+        {
+            Index = Index - 1;
+            var BG = GetBlockGroupByNodeId(Index);
+            var INodeBitmapTableOffset = BG.INodeBitmapLo * Superblock.BlockSize;
+            var Idx = BG.GetLocalNodeIndex(Index, Superblock.InodesPerGroup);
+
+            var ByteOffset = INodeBitmapTableOffset + Idx / 8;
+            var BitOffset = Convert.ToInt32(Idx % 8);
+
+            var RawBitmapValue = ReadByte(ByteOffset);
+            bool IsFree = (RawBitmapValue & (1 << BitOffset)) == 0;
+            RawBitmapValue |= Convert.ToByte(1 << BitOffset);
+            WriteByte(ByteOffset, RawBitmapValue);
+
+            if (IsFree)
+            {
+                // 1-10 is reserved INodes [2 == root dir]
+                BG.FreeINodesCountLo--;
+                Superblock.FreeINodeCount--;
+            }
+        }
+
         private Types.ExtINode CreateNewINode(Types.ExtINodeType Type, uint User, uint Group, uint Mode)
         {
             var Index = INodeIndex++;
@@ -162,21 +188,8 @@ namespace NyaFs.Filesystem.Ext2
             INode.Block.Fill(0u);
             INode.LinksCount = 1;
 
-            {
-                // Mark inode as used
-                var BG = GetBlockGroupByNodeId(Index);
-                var INodeBitmapTableOffset = BG.INodeBitmapLo * Superblock.BlockSize;
-                var Idx = BG.GetLocalNodeIndex(Index, Superblock.InodesPerGroup);
+            MarkINodeAsUsed(Index);
 
-                var ByteOffset = INodeBitmapTableOffset + Idx / 8;
-                var BitOffset = Convert.ToInt32(Idx % 8);
-
-                var RawBitmapValue = ReadByte(ByteOffset);
-                RawBitmapValue |= Convert.ToByte(1 << BitOffset);
-                WriteByte(ByteOffset, RawBitmapValue);
-            }
-
-            Superblock.FreeINodeCount--;
             return INode;
         }
 
@@ -192,7 +205,6 @@ namespace NyaFs.Filesystem.Ext2
                 if(N.NodeType == Types.ExtINodeType.DIR)
                 {
                     BG.UsedDirsCountLo++;
-                    BG.FreeINodesCountLo--;
 
                     var D = new BuilderDirectory(Path, N);
                     Dirs.Add(D);
@@ -262,6 +274,9 @@ namespace NyaFs.Filesystem.Ext2
                     Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                     var D = new BuilderDirectory(Path, N);
                     Dirs.Add(D);
+
+                    var BG = GetBlockGroupByNodeId(N.Index);
+                        BG.UsedDirsCountLo++;
 
                     D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, "."));
                     D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, ".."));
@@ -361,6 +376,7 @@ namespace NyaFs.Filesystem.Ext2
             // Mark block as used
             var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
             var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
+            BG.FreeBlocksCountLo--;
 
             var ByteOffset = BlockBitmapTableOffset + Idx / 8;
             var BitOffset = Convert.ToInt32(Idx % 8);
