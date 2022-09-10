@@ -33,8 +33,6 @@ namespace NyaFs.Filesystem.Ext2
             InitINodeBitmapTables();
 
             DuplicateSuperblocks();
-
-            DumpBG();
         }
 
         private bool IsBlockFree(uint Block)
@@ -84,7 +82,7 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.MTime = 0;
             Superblock.RevLevel = 0;
             Superblock.RootBlocksCount = 0x666;
-            Superblock.State = 1;
+            Superblock.State = 0;
         }
 
         private void InitBlockGroups()
@@ -124,7 +122,7 @@ namespace NyaFs.Filesystem.Ext2
                     WriteByte(BlockBitmapTableOffset + Idx, 0xFF);
 
                 // Mark as free
-                for (uint Idx = 0; Idx < Superblock.BlocksPerGroup; Idx++)
+                for (uint Idx = 0; Idx < BG.FreeBlocksCountLo; Idx++)
                 {
                     var ByteOffset = BlockBitmapTableOffset + Idx / 8;
                     var BitOffset = Convert.ToInt32(Idx % 8);
@@ -180,15 +178,9 @@ namespace NyaFs.Filesystem.Ext2
 
                 WriteArray(Offset + 0x400, SBRaw, 0x400);
                 WriteArray(Offset + 0x800, BGRaw, 0x400);
-            }
-        }
 
-        void DumpBG()
-        {
-            for (uint i = 0; i < MaxBlockGroupCount; i++)
-            {
-                var BG = GetBlockGroup(i);
-                System.Diagnostics.Debug.WriteLine($"BG {i}: FB:{BG.FreeBlocksCountLo} FI:{BG.FreeINodesCountLo}");
+                var SB = new Types.ExtSuperBlock(Raw, Offset + 0x400);
+                SB.BlockGroup = i;
             }
         }
 
@@ -205,7 +197,6 @@ namespace NyaFs.Filesystem.Ext2
             }
 
             DuplicateSuperblocks();
-            DumpBG();
 
             return getPacket();
         }
