@@ -31,6 +31,10 @@ namespace NyaFs.Filesystem.Ext2
             InitBlockGroups();
             InitBlockBitmapTables();
             InitINodeBitmapTables();
+
+            DuplicateSuperblocks();
+
+            DumpBG();
         }
 
         private bool IsBlockFree(uint Block)
@@ -70,7 +74,7 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.FreeBlocksCount = Superblock.BlocksCount;
             Superblock.InodesPerGroup = 0x9c8;
             Superblock.LastCheckTime = DateTime.Now;
-            Superblock.WTime = 0;
+            Superblock.WriteTime = DateTime.Now;
             Superblock.Magic = 0xef53;
             Superblock.MaxMountCount = 20;
             Superblock.MinorRevisionLevel = 0;
@@ -101,8 +105,8 @@ namespace NyaFs.Filesystem.Ext2
                 BG.FreeINodesCountLo = Superblock.InodesPerGroup;
                 BG.FreeBlocksCountLo = Superblock.BlocksPerGroup;
 
-                MarkBlockBusy(0x01 + i * 0x2000); // Metadata?..
-                MarkBlockBusy(0x02 + i * 0x2000); // Metadata?..
+                MarkBlockBusy(0x01 + i * 0x2000); // Copy of superblock
+                MarkBlockBusy(0x02 + i * 0x2000); // Copy of blockgroup
                 MarkBlockBusy(BG.BlockBitmapLo);
                 MarkBlockBusy(BG.INodeBitmapLo);
                 for (uint inb = 0; inb < Superblock.InodesPerGroup / (0x400 / 0x80); inb++)
@@ -110,14 +114,12 @@ namespace NyaFs.Filesystem.Ext2
                     MarkBlockBusy(BG.INodeTableLo + inb);
                 }
             }
-
             MarkBlockBusy(0);
-            MarkBlockBusy(1);
-            MarkBlockBusy(2);
         }
 
         private void InitBlockBitmapTables()
         {
+
         }
 
         private void InitINodeBitmapTables()
@@ -142,10 +144,31 @@ namespace NyaFs.Filesystem.Ext2
                     RawBitmapValue &= Convert.ToByte(~(1 << BitOffset) & 0xFF);
                     WriteByte(ByteOffset, RawBitmapValue);
                 }
-
             }
 
             for (uint i = 1; i < 11; i++) MarkINodeAsUsed(i);
+        }
+
+        private void DuplicateSuperblocks()
+        {
+            byte[] SBRaw = ReadArray(0x400, 0x400);
+            byte[] BGRaw = ReadArray(0x800, 0x400);
+            for (uint i = 1; i < MaxBlockGroupCount; i++)
+            {
+                long Offset = i * 0x2000 * 0x400;
+
+                WriteArray(Offset + 0x400, SBRaw, 0x400);
+                WriteArray(Offset + 0x800, BGRaw, 0x400);
+            }
+        }
+
+        void DumpBG()
+        {
+            for (uint i = 0; i < MaxBlockGroupCount; i++)
+            {
+                var BG = GetBlockGroup(i);
+                System.Diagnostics.Debug.WriteLine($"BG {i}: FB:{BG.FreeBlocksCountLo} FI:{BG.FreeINodesCountLo}");
+            }
         }
 
         /// <summary>
@@ -159,6 +182,10 @@ namespace NyaFs.Filesystem.Ext2
                 SetNodeBlockContent(D.Node, D.Content);
                 D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count(E => GetINode(E.INode).FsNodeType == Universal.Types.FilesystemItemType.Directory));
             }
+
+            DuplicateSuperblocks();
+            DumpBG();
+
             return getPacket();
         }
 
@@ -402,7 +429,7 @@ namespace NyaFs.Filesystem.Ext2
             var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
             var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
 
-            System.Diagnostics.Debug.WriteLine($"Block {Index}: BG {BG.Id}-{Idx}");
+            //System.Diagnostics.Debug.WriteLine($"Block {Index}: BG {BG.Id}-{Idx}");
 
             var ByteOffset = BlockBitmapTableOffset + Idx / 8;
             var BitOffset = Convert.ToInt32(Idx % 8);
