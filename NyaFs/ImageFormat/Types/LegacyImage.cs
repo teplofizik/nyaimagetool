@@ -23,7 +23,7 @@ namespace NyaFs.ImageFormat.Types
 			OperatingSystem = Info.OperatingSystem;
 			DataLoadAddress = Info.DataLoadAddress;
 			EntryPointAddress = Info.EntryPointAddress;
-			Compression = CompressionType.IH_COMP_GZIP;
+			this.Compression = Compression;
 
 			WriteArray(0x40, Data, Data.Length);
 
