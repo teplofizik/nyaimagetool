@@ -55,7 +55,7 @@ namespace NyaFs.Filesystem.Ext2
             {
                 BlockMap[MapIndex] |= (1u << MapBit);
 
-                if(MarkInBG)
+                if (MarkInBG)
                     MarkBlockAsUsedInBlockGroup(Block);
             }
         }
@@ -190,7 +190,7 @@ namespace NyaFs.Filesystem.Ext2
         /// <returns></returns>
         public byte[] GetFilesystemImage()
         {
-            foreach(var D in Dirs)
+            foreach (var D in Dirs)
             {
                 SetNodeBlockContent(D.Node, D.Content);
                 D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count(E => GetINode(E.INode).FsNodeType == Universal.Types.FilesystemItemType.Directory));
@@ -205,9 +205,9 @@ namespace NyaFs.Filesystem.Ext2
         {
             var Parent = Universal.Helper.FsHelper.GetParentDirPath(Path);
 
-            foreach(var D in Dirs)
+            foreach (var D in Dirs)
             {
-                if(D.Path == Parent)
+                if (D.Path == Parent)
                     return D;
             }
 
@@ -266,7 +266,7 @@ namespace NyaFs.Filesystem.Ext2
                 Parent.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, Universal.Helper.FsHelper.GetName(Path)));
 
                 var BG = GetBlockGroupByNodeId(N.Index);
-                if(N.NodeType == Types.ExtINodeType.DIR)
+                if (N.NodeType == Types.ExtINodeType.DIR)
                 {
                     BG.UsedDirsCountLo++;
 
@@ -340,14 +340,14 @@ namespace NyaFs.Filesystem.Ext2
                     Dirs.Add(D);
 
                     var BG = GetBlockGroupByNodeId(N.Index);
-                        BG.UsedDirsCountLo++;
+                    BG.UsedDirsCountLo++;
 
                     D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, "."));
                     D.Entries.Add(new Types.ExtDirectoryEntry(Convert.ToUInt32(N.Index), Types.ExtINodeType.NONE, ".."));
 
                     INodeIndex += 12; // skip reserved items
                 }
-                else 
+                else
                     throw new ArgumentException("Cannot create new root node");
             }
             else
@@ -422,7 +422,7 @@ namespace NyaFs.Filesystem.Ext2
             {
                 var N = CreateNewINode(Types.ExtINodeType.LINK, User, Group, Mode);
 
-                if(Target.Length <= 60)
+                if (Target.Length <= 60)
                     N.SetText(Target);
                 else
                     SetNodeBlockContent(N, UTF8Encoding.UTF8.GetBytes(Target));
@@ -472,11 +472,11 @@ namespace NyaFs.Filesystem.Ext2
         void AddBlockToNode(Types.ExtINode Node, uint Block)
         {
             var Index = Node.BlocksCount;
-            if(Index < 12)
+            if (Index < 12)
             {
                 Node.UpdateBlockByIndex(Index, Block);
             }
-            else if(Index < 12 + (Superblock.BlockSize / 4))
+            else if (Index < 12 + (Superblock.BlockSize / 4))
             {
                 uint Offset = Index - 12;
                 // One-level indirect table
@@ -609,7 +609,7 @@ namespace NyaFs.Filesystem.Ext2
                     for (int i = 0; i < Entries.Count; i++)
                     {
                         var E = Entries[i];
-                        if(Temp.Count + E.getLength() > TempBlock.Length)
+                        if (Temp.Count + E.getLength() > TempBlock.Length)
                         {
                             TempBlock.WriteArray(0, Temp.ToArray(), Temp.Count);
                             var Last = new Types.ExtDirectoryEntry(TempBlock, PrevSize);

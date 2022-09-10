@@ -7,8 +7,8 @@ namespace NyaFs.Filesystem.Ext2.Types
 {
     internal class ExtINode : ArrayWrapper
     {
-        public readonly uint Index;
         public uint BlocksCount = 0;
+        public readonly uint Index;
 
         /// <summary>
         /// Wrapper for INode struct
@@ -77,7 +77,7 @@ namespace NyaFs.Filesystem.Ext2.Types
         /// 0xA000  S_IFLNK(Symbolic link)
         /// 0xC000  S_IFSOCK(Socket)
         /// </summary>
-        public ExtINodeType NodeType =>  (ExtINodeType)(Mode & 0xF000); 
+        public ExtINodeType NodeType => (ExtINodeType)(Mode & 0xF000);
 
         /// <summary>
         /// Filesystem node type

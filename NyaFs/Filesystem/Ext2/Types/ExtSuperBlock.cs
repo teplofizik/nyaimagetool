@@ -162,8 +162,8 @@ namespace NyaFs.Filesystem.Ext2.Types
         /// </summary>
         public uint WTime
         {
-            get { return ReadUInt32(0x30); }
-            set { WriteUInt32(0x30, value); }
+            get { return ReadUInt32(0x2C); }
+            set { WriteUInt32(0x2C, value); }
         }
 
         /// <summary>
@@ -324,11 +324,11 @@ namespace NyaFs.Filesystem.Ext2.Types
             set { WriteUInt16(0x52, value); }
         }
 
-        // ext2: 0x68 74 CC 73 3B 
-        // ext2: 0x6c 6C 44 44 AE 
-        // ext2: 0x70 AE 20 23 9F 
-        // ext2: 0x74 0F 21 C0 CB
-
+        // These fields are for EXT4_DYNAMIC_REV superblocks only.
+        // Note: the difference between the compatible feature set and the incompatible feature set is that if there is a bit set in the incompatible 
+        // feature set that the kernel doesn't know about, it should refuse to mount the filesystem.
+        // e2fsck's requirements are more strict; if it doesn't know about a feature in either the compatible or incompatible feature set, 
+        // it must abort and not try to meddle with things it doesn't understand...
 
         /// <summary>
         /// First non-reserved inode.
@@ -467,5 +467,24 @@ namespace NyaFs.Filesystem.Ext2.Types
             set { WriteString(0x78, value, 0x10); }
         }
 
+        /// <summary>
+        /// Directory where filesystem was last mounted.
+        /// char s_last_mounted[64] (0x88)
+        /// </summary>
+        public string LastMountedDir
+        {
+            get { return ReadString(0x88, 0x40); }
+            set { WriteString(0x88, value, 0x40); }
+        }
+
+        /// <summary>
+        /// For compression (Not used in e2fsprogs/Linux)
+        /// s_algorithm_usage_bitmap (0xC8)
+        /// </summary>
+        public uint AlgorithmUsageBitmap
+        {
+            get { return ReadUInt32(0xC8); }
+            set { WriteUInt32(0xC8, value); }
+        }
     }
 }

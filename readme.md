@@ -11,7 +11,7 @@ There is possible to add or update files in ramfs image.
 ## Supported filesystems
 Supported at now:
 1. CPIO ASCII (RW)
-2. EXT2 (R)
+2. EXT2 (RW)
 3. SquashFs (R)
 
 ## Supported compression types
@@ -74,12 +74,12 @@ reset
 ```
 
 ## Commands for image loading
-### Composite images
-Load kernel, fs or/and devtree from image (with autodetection of image type):
+Default load command (type and image format autodetect):
 ```
 load <filename>
 ```
 
+### Composite images
 Load only one image from FIT image, where imagetype is "kernel", "ramfs" or "devtree":
 ```
 load <filename.fit> <imagetype> fit
@@ -106,7 +106,7 @@ load <filename.ext2> ramfs ext2
 ```
 Load fs from squashfs image:
 ```
-load <filename.ext2> ramfs squashfs
+load <filename.sqfs> ramfs squashfs
 ```
 
 ### Kernel image
@@ -150,11 +150,16 @@ Store fs as legacy image:
 ```
 store <filename.legacy> ramfs legacy
 ```
-Store fs as compressed cpio archive:
+Store fs as compressed cpio/ext2 archive:
 ```
-store <filename.cpio.ct> ramfs <compression>
+store <filename.fs.ct> ramfs <compression>
 ```
 (compression) is "gzip", "lz4", "lzma", "bzip2"
+
+Store fs as ext2 image:
+```
+store <filename.ext2> ramfs ext2
+```
 
 Store fs as cpio file:
 ```
@@ -190,6 +195,12 @@ export <path>
 ```
 
 ## Commands for modify image parameters:
+Update filesystem type:
+```
+set ramfs filesystem <fs>
+```
+(fs) is one of 'ext2' or 'cpio'.
+
 Update target OS for image:
 ```
 set <imagetype> os <ostype>

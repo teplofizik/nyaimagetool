@@ -163,6 +163,5 @@ namespace NyaFs.Filesystem.Ext2
                     return GetINodeBlockContent(Node);
             }
         }
-
     }
 }
