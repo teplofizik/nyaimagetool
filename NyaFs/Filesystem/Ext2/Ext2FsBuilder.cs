@@ -74,7 +74,6 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.DefaultReservedUid = 0x00;
             Superblock.Errors = 0x00;
             Superblock.FirstDataBlock = 0x01;
-            Superblock.FreeBlocksCount = Superblock.BlocksCount;
             Superblock.InodesPerGroup = 0x9c8;
             Superblock.LastCheckTime = DateTime.Now;
             Superblock.WriteTime = DateTime.Now;
@@ -92,37 +91,56 @@ namespace NyaFs.Filesystem.Ext2
         {
             MaxBlockGroupCount = Convert.ToUInt32(getLength() / Superblock.BlockSize / Superblock.BlocksPerGroup);
 
-            Superblock.BlocksCount = Superblock.BlocksPerGroup * MaxBlockGroupCount;
+            Superblock.BlocksCount = Convert.ToUInt32((Raw.Length - 0x400) / Superblock.BlockSize);
             Superblock.INodesCount = Superblock.InodesPerGroup * MaxBlockGroupCount;
             Superblock.FreeINodeCount = Superblock.INodesCount;
-            Superblock.FreeBlocksCount = Superblock.BlocksCount;
+            Superblock.FreeBlocksCount = Superblock.BlocksCount - 1;
 
+            UInt32 Blocks = Superblock.BlocksCount;
             for (uint i = 0; i < MaxBlockGroupCount; i++)
             {
                 var BG = GetBlockGroup(i);
+                var BGBlock = (Blocks > Superblock.BlocksPerGroup) ? Superblock.BlocksPerGroup : Blocks;
+                Blocks -= BGBlock;
 
                 BG.BlockBitmapLo = 0x03 + i * 0x2000;
                 BG.INodeBitmapLo = 0x04 + i * 0x2000;
                 BG.INodeTableLo = 0x05 + i * 0x2000;
                 BG.UsedDirsCountLo = 0;
                 BG.FreeINodesCountLo = Superblock.InodesPerGroup;
-                BG.FreeBlocksCountLo = Superblock.BlocksPerGroup;
+                BG.FreeBlocksCountLo = (i < MaxBlockGroupCount - 1) ? BGBlock : BGBlock - 1;
+            }
+        }
+
+        private void InitBlockBitmapTables()
+        {
+            for (uint i = 0; i < MaxBlockGroupCount; i++)
+            {
+                var BG = GetBlockGroup(i);
+                uint BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
+
+                // Fill all as busy (padding)
+                for (uint Idx = 0; Idx < Superblock.BlockSize; Idx++)
+                    WriteByte(BlockBitmapTableOffset + Idx, 0xFF);
+
+                // Mark as free
+                for (uint Idx = 0; Idx < Superblock.BlocksPerGroup; Idx++)
+                {
+                    var ByteOffset = BlockBitmapTableOffset + Idx / 8;
+                    var BitOffset = Convert.ToInt32(Idx % 8);
+
+                    var RawBitmapValue = ReadByte(ByteOffset);
+                    RawBitmapValue &= Convert.ToByte(~(1 << BitOffset) & 0xFF);
+                    WriteByte(ByteOffset, RawBitmapValue);
+                }
 
                 MarkBlockBusy(0x01 + i * 0x2000); // Copy of superblock
                 MarkBlockBusy(0x02 + i * 0x2000); // Copy of blockgroup
                 MarkBlockBusy(BG.BlockBitmapLo);
                 MarkBlockBusy(BG.INodeBitmapLo);
                 for (uint inb = 0; inb < Superblock.InodesPerGroup / (0x400 / 0x80); inb++)
-                {
                     MarkBlockBusy(BG.INodeTableLo + inb);
-                }
             }
-            //MarkBlockBusy(0);
-        }
-
-        private void InitBlockBitmapTables()
-        {
-
         }
 
         private void InitINodeBitmapTables()
