@@ -114,18 +114,38 @@ namespace NyaFs.Filesystem.Ext2
             MarkBlockBusy(0);
             MarkBlockBusy(1);
             MarkBlockBusy(2);
-
-            for (uint i = 1; i < 11; i++) MarkINodeAsUsed(i);
         }
 
         private void InitBlockBitmapTables()
         {
-            // Zero = Free
         }
 
         private void InitINodeBitmapTables()
         {
-            // Zero = Free
+            for (uint i = 0; i < MaxBlockGroupCount; i++)
+            {
+                var BG = GetBlockGroup(i);
+
+                uint INodeBitmapTableOffset = BG.INodeBitmapLo * Superblock.BlockSize;
+
+                // Fill all as busy (padding)
+                for (uint Idx = 0; Idx < Superblock.BlockSize; Idx++)
+                    WriteByte(INodeBitmapTableOffset + Idx, 0xFF);
+
+                // Mark as free
+                for (uint Idx = 0; Idx < Superblock.InodesPerGroup; Idx++)
+                {
+                    var ByteOffset = INodeBitmapTableOffset + Idx / 8;
+                    var BitOffset = Convert.ToInt32(Idx % 8);
+
+                    var RawBitmapValue = ReadByte(ByteOffset);
+                    RawBitmapValue &= Convert.ToByte(~(1 << BitOffset) & 0xFF);
+                    WriteByte(ByteOffset, RawBitmapValue);
+                }
+
+            }
+
+            for (uint i = 1; i < 11; i++) MarkINodeAsUsed(i);
         }
 
         /// <summary>
@@ -167,12 +187,12 @@ namespace NyaFs.Filesystem.Ext2
 
             var RawBitmapValue = ReadByte(ByteOffset);
             bool IsFree = (RawBitmapValue & (1 << BitOffset)) == 0;
-            RawBitmapValue |= Convert.ToByte(1 << BitOffset);
-            WriteByte(ByteOffset, RawBitmapValue);
 
             if (IsFree)
             {
-                // 1-10 is reserved INodes [2 == root dir]
+                RawBitmapValue |= Convert.ToByte(1 << BitOffset);
+                WriteByte(ByteOffset, RawBitmapValue);
+
                 BG.FreeINodesCountLo--;
                 Superblock.FreeINodeCount--;
             }
@@ -382,15 +402,21 @@ namespace NyaFs.Filesystem.Ext2
             var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
             var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
 
-            BG.FreeBlocksCountLo--;
-            Superblock.FreeBlocksCount--;
+            System.Diagnostics.Debug.WriteLine($"Block {Index}: BG {BG.Id}-{Idx}");
 
             var ByteOffset = BlockBitmapTableOffset + Idx / 8;
             var BitOffset = Convert.ToInt32(Idx % 8);
 
             var RawBitmapValue = ReadByte(ByteOffset);
-            RawBitmapValue |= Convert.ToByte(1 << BitOffset);
-            WriteByte(ByteOffset, RawBitmapValue);
+            var IsFree = (RawBitmapValue & (1 << BitOffset)) == 0;
+            if (IsFree)
+            {
+                RawBitmapValue |= Convert.ToByte(1 << BitOffset);
+                WriteByte(ByteOffset, RawBitmapValue);
+
+                BG.FreeBlocksCountLo--;
+                Superblock.FreeBlocksCount--;
+            }
         }
 
         uint GetNewBlock()
