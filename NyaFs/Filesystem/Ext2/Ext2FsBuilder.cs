@@ -47,6 +47,8 @@ namespace NyaFs.Filesystem.Ext2
             int MapBit = Convert.ToInt32(Block % 32);
 
             BlockMap[MapIndex] |= (1u << MapBit);
+
+            MarkBlockAsUsedInBlockGroup(Block);
         }
 
         public void InitSuperblock()
@@ -63,7 +65,6 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.Errors = 0x00;
             Superblock.FirstDataBlock = 0x01;
             Superblock.FreeBlocksCount = Superblock.BlocksCount - 1;
-            Superblock.INodesCount = 0x2720; // TODO: Calc
             Superblock.FreeINodeCount = Superblock.INodesCount;
             Superblock.InodesPerGroup = 0x9c8;
             Superblock.LastCheckTime = DateTime.Now;
@@ -76,16 +77,12 @@ namespace NyaFs.Filesystem.Ext2
             Superblock.RevLevel = 0;
             Superblock.RootBlocksCount = 0x666;
             Superblock.State = 1;
-
-            MarkBlockBusy(0);
-            MarkBlockBusy(1);
         }
 
         private void InitBlockGroups()
         {
             MaxBlockGroupCount = Convert.ToUInt32(getLength() / Superblock.BlockSize / Superblock.BlocksPerGroup);
 
-            MarkBlockBusy(2);
             for (uint i = 0; i < MaxBlockGroupCount; i++)
             {
                 var BG = GetBlockGroup(i);
@@ -105,6 +102,12 @@ namespace NyaFs.Filesystem.Ext2
                     MarkBlockBusy(BG.INodeTableLo + inb);
                 }
             }
+
+            Superblock.INodesCount = Superblock.InodesPerGroup * MaxBlockGroupCount;
+
+            MarkBlockBusy(0);
+            MarkBlockBusy(1);
+            MarkBlockBusy(2);
         }
 
         private void InitBlockBitmapTables()
@@ -126,7 +129,7 @@ namespace NyaFs.Filesystem.Ext2
             foreach(var D in Dirs)
             {
                 SetNodeBlockContent(D.Node, D.Content);
-                D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count);
+                D.Node.LinksCount = Convert.ToUInt32(D.Entries.Count(E => GetINode(E.INode).FsNodeType == Universal.Types.FilesystemItemType.Directory));
             }
             return getPacket();
         }
@@ -350,6 +353,23 @@ namespace NyaFs.Filesystem.Ext2
             });
         }
 
+
+        void MarkBlockAsUsedInBlockGroup(uint Index)
+        {
+            var BG = GetBlockGroupByNodeId(Index);
+
+            // Mark block as used
+            var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
+            var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
+
+            var ByteOffset = BlockBitmapTableOffset + Idx / 8;
+            var BitOffset = Convert.ToInt32(Idx % 8);
+
+            var RawBitmapValue = ReadByte(ByteOffset);
+            RawBitmapValue |= Convert.ToByte(1 << BitOffset);
+            WriteByte(ByteOffset, RawBitmapValue);
+        }
+
         uint GetNewBlock()
         {
             var Index = DataBlockIndex++;
@@ -357,19 +377,6 @@ namespace NyaFs.Filesystem.Ext2
 
             var BG = GetBlockGroupByNodeId(Index);
             Superblock.FreeBlocksCount--;
-            {
-                // Mark block as used
-                var BlockBitmapTableOffset = BG.BlockBitmapLo * Superblock.BlockSize;
-                var Idx = BG.GetLocalNodeIndex(Index, Superblock.BlocksPerGroup);
-
-                var ByteOffset = BlockBitmapTableOffset + Idx / 8;
-                var BitOffset = Convert.ToInt32(Idx % 8);
-
-                var RawBitmapValue = ReadByte(ByteOffset);
-                RawBitmapValue |= Convert.ToByte(1 << BitOffset);
-                WriteByte(ByteOffset, RawBitmapValue);
-            }
-
             MarkBlockBusy(Index);
             return Index;
         }
