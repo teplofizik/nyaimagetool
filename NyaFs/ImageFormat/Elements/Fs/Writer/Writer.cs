@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Extension.Array;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -34,12 +35,15 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             }
         }
 
+        internal static uint DetectFixDiskSize(LinuxFilesystem Fs, uint BlockSize) =>Convert.ToUInt32(Fs.GetContentSize() * 1.5).GetAligned(BlockSize);
+
         internal static Writer GetRawFilesystemWriter(LinuxFilesystem Fs)
         {
             switch(Fs.FilesystemType)
             {
                 case Types.FsType.Cpio: return new CpioFsWriter();
-                case Types.FsType.Ext2: return new Ext2FsWriter();
+                case Types.FsType.Ext2: 
+                    return new Ext2FsWriter(DetectFixDiskSize(Fs, 0x800000));
                 default: throw new InvalidOperationException($"Unsupported filesystem: {Fs.FilesystemType}");
             }
         }

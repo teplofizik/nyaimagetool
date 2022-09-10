@@ -295,7 +295,7 @@ namespace NyaFs.Filesystem.Ext2
             AddNestedNode(Path, () =>
             {
                 var N = CreateNewINode(Types.ExtINodeType.BLOCK, User, Group, Mode);
-                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 N.Block[0] = (Major & 0xFF) | ((Minor & 0xFF) << 8);
                 return N;
             });
@@ -315,7 +315,7 @@ namespace NyaFs.Filesystem.Ext2
             AddNestedNode(Path, () =>
             {
                 var N = CreateNewINode(Types.ExtINodeType.CHAR, User, Group, Mode);
-                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 N.Block[0] = (Major & 0xFF) | ((Minor & 0xFF) << 8);
                 return N;
             });
@@ -335,7 +335,7 @@ namespace NyaFs.Filesystem.Ext2
                 if (Dirs.Count == 0)
                 {
                     var N = CreateNewINode(Types.ExtINodeType.DIR, User, Group, Mode);
-                    Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                    //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                     var D = new BuilderDirectory(Path, N);
                     Dirs.Add(D);
 
@@ -354,7 +354,7 @@ namespace NyaFs.Filesystem.Ext2
                 AddNestedNode(Path, () =>
                 {
                     var N = CreateNewINode(Types.ExtINodeType.DIR, User, Group, Mode);
-                    Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                    //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                     return N;
                 });
         }
@@ -371,7 +371,7 @@ namespace NyaFs.Filesystem.Ext2
             AddNestedNode(Path, () =>
             {
                 var N = CreateNewINode(Types.ExtINodeType.FIFO, User, Group, Mode);
-                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 return N;
             });
         }
@@ -391,7 +391,7 @@ namespace NyaFs.Filesystem.Ext2
                 var N = CreateNewINode(Types.ExtINodeType.REG, User, Group, Mode);
                 SetNodeBlockContent(N, Content);
 
-                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 return N;
             });
         }
@@ -427,7 +427,7 @@ namespace NyaFs.Filesystem.Ext2
                 else
                     SetNodeBlockContent(N, UTF8Encoding.UTF8.GetBytes(Target));
 
-                Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
+                //Log.Write(0, $"INode {N.Index}: {N.FsNodeType} offset {N.getOffset():x08} {Path}");
                 return N;
             });
         }

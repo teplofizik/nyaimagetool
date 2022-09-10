@@ -26,8 +26,9 @@ namespace NyaFs.ImageFormat.Helper
             Log.Write(1, $"       Compression: {FitHelper.GetCompression(Fs.Info.Compression)}");
             Log.Write(1, $"              Type: {FitHelper.GetType(Fs.Info.Type)}");
             Log.Write(1, $"        Filesystem: {FsType}");
-
+            Log.Write(1, $"      Content size: {Fs.GetContentSize()}");
         }
+
         public static void DevtreeInfo(Elements.Dtb.DeviceTree Dtb)
         {
             Log.Ok(1, "Device tree:");

@@ -176,13 +176,13 @@ namespace NyaFs.Processor.Scripting.Commands
             }
 
 
-            private ImageFormat.Elements.Fs.Writer.Writer GetFsWriter()
+            private ImageFormat.Elements.Fs.Writer.Writer GetFsWriter(ImageFormat.Elements.Fs.LinuxFilesystem Fs)
             {
                 switch (Format)
                 {
                     case "legacy": return new ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
                     case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioFsWriter(Path);
-                    case "ext2": return new ImageFormat.Elements.Fs.Writer.Ext2FsWriter(Path);
+                    case "ext2": return new ImageFormat.Elements.Fs.Writer.Ext2FsWriter(ImageFormat.Elements.Fs.Writer.Writer.DetectFixDiskSize(Fs, 0x800000), Path);
                     case "lz4":
                     case "lzma":
                     case "gz":
@@ -202,7 +202,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 if((Fs == null) || (Fs.Loaded == false))
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem is not loaded!");
 
-                var Writer = GetFsWriter();
+                var Writer = GetFsWriter(Fs);
                 if(Writer != null)
                 {
                     if (Writer.CheckFilesystem(Fs))

@@ -45,5 +45,28 @@ namespace NyaFs.ImageFormat.Elements.Fs
         public FilesystemItem GetElement(string Path) => Fs.GetElement(Path);
 
         public void Delete(string Path) => Fs.Delete(Path);
+
+        public long GetContentSize() => GetDirSize(Fs.Root);
+
+        private long GetDirSize(Filesystem.Universal.Items.Dir Dir)
+        {
+            long Res = 0;
+
+            foreach (var I in Dir.Items)
+            {
+                switch(I.ItemType)
+                {
+                    case Filesystem.Universal.Types.FilesystemItemType.File:
+                    case Filesystem.Universal.Types.FilesystemItemType.SymLink:
+                        Res += I.Size;
+                        break;
+                    case Filesystem.Universal.Types.FilesystemItemType.Directory:
+                        Res += GetDirSize(I as Filesystem.Universal.Items.Dir);
+                        break;
+                }
+            }
+
+            return Res;
+        }
     }
 }
