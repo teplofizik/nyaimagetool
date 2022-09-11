@@ -8,6 +8,19 @@ namespace NyaFs.Filesystem.SquashFs.Types
     // https://dr-emann.github.io/squashfs/
     internal class SqSuperblock : ArrayWrapper
     {
+        public SqSuperblock() : base(new byte[0x60], 0, 0x60)
+        {
+            Fill(0);
+            Magic = 0x73717368;
+            ModificationTime = Filesystem.Universal.Helper.FsHelper.ConvertToUnixTimestamp(DateTime.Now);
+            BlockSize = 0x20000;
+            BlockLog = 0x11;
+            Flags = SqSuperblockFlags.DUPLICATES;
+
+            VersionMajor = 0x04;
+            VersionMinor = 0x00;
+        }
+
         public SqSuperblock(byte[] Data, long Offset) : base(Data, Offset, 0x60)
         {
 
@@ -91,7 +104,7 @@ namespace NyaFs.Filesystem.SquashFs.Types
 
         /// <summary>
         /// Superblock Flags
-        /// u16 block_log (0x18)
+        /// u16 flags (0x18)
         /// </summary>
         public SqSuperblockFlags Flags
         {

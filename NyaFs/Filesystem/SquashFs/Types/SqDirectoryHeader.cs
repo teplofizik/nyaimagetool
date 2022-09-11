@@ -7,6 +7,13 @@ namespace NyaFs.Filesystem.SquashFs.Types
 {
     class SqDirectoryHeader : ArrayWrapper
     {
+        public SqDirectoryHeader(uint Count, uint Start, uint INode) : base(new byte[0x0c], 0, 0x0C)
+        {
+            this.Count = Count - 1;
+            this.Start = Start;
+            this.INodeNumber = INode;
+        }
+
         public SqDirectoryHeader(byte[] Data, long Offset) : base(Data, Offset, 0x0C)
         {
 

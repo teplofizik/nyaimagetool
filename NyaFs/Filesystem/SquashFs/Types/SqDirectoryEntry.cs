@@ -11,6 +11,22 @@ namespace NyaFs.Filesystem.SquashFs.Types
         private uint InodeBase;
         private long Block;
 
+        private static int GetDirEntrySize(string Name) => 0x08 + Name.Length;
+
+        public SqDirectoryEntry(uint InodeBase, long Block, SqInodeType Type, uint Offset, uint InodeOffset, string Filename) : base(new byte[GetDirEntrySize(Filename)], 0, GetDirEntrySize(Filename))
+        {
+            this.InodeBase = InodeBase;
+            this.Block = Block;
+
+            this.Offset = Offset;
+            this.InodeOffset = InodeOffset;
+            this.Type = Type;
+
+            NameSize = Convert.ToUInt32(Filename.Length - 1);
+
+            WriteString(0x08, Filename, Filename.Length);
+        }
+
         public SqDirectoryEntry(uint InodeBase, long Block, byte[] Data, long Offset) : base(Data, Offset, 0x08 + 1 + Data.ReadUInt16(Offset + 6))
         {
             this.InodeBase = InodeBase;
@@ -47,6 +63,9 @@ namespace NyaFs.Filesystem.SquashFs.Types
             set { WriteUInt16(0x04, Convert.ToUInt32(value)); }
         }
 
+        /// <summary>
+        /// Universal linux filesystem entry type
+        /// </summary>
         internal Universal.Types.FilesystemItemType FsNodeType
         {
             get
@@ -82,6 +101,9 @@ namespace NyaFs.Filesystem.SquashFs.Types
             set { WriteUInt16(0x06, value); }
         }
 
+        /// <summary>
+        /// INode number
+        /// </summary>
         internal uint Inode => InodeBase + InodeOffset;
 
         /// <summary>
