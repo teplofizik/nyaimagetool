@@ -7,6 +7,15 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 {
     class BasicIPC : SqInode
     {
+        public BasicIPC(SqInodeType Type, uint Mode, uint User, uint Group, uint LinkCount) : base(0x14)
+        {
+            InodeType = Type;
+            Permissions = Mode;
+            GidIndex = Group;
+            UidIndex = User;
+
+            HardLinkCount = LinkCount;
+        }
 
         public BasicIPC(byte[] Data) : base(Data, 0x14)
         {

@@ -43,7 +43,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     {
                         System.IO.Directory.CreateDirectory(Path);
                     }
-                    catch(Exception E)
+                    catch(Exception)
                     {
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Could not make target directory for filesystem export!");
                     }

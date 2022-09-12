@@ -14,5 +14,6 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             this.Major = Major;
             this.Minor = Minor;
         }
+        public override Types.SqInode GetINode() => new Types.Nodes.BasicDevice(Types.SqInodeType.BasicCharDevice, Mode, UId, GId, Major, Minor);
     }
 }

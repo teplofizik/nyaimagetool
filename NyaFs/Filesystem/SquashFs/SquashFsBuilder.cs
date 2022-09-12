@@ -4,6 +4,7 @@ using NyaFs.Filesystem.Universal;
 using NyaFs.ImageFormat.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NyaFs.Filesystem.SquashFs
@@ -35,8 +36,14 @@ namespace NyaFs.Filesystem.SquashFs
 
         private List<Builder.Node> Nodes = new List<Builder.Node>();
 
+        /// <summary>
+        /// Export metablocks
+        /// </summary>
+        private List<uint> ExportBlocks = new List<uint>();
+
         public SquashFsBuilder(CompressionType Type)
         {
+            Superblock.Flags |= Types.SqSuperblockFlags.UNCOMPRESSED_INODES;
             InitCompressor(Type);
         }
 
@@ -75,25 +82,23 @@ namespace NyaFs.Filesystem.SquashFs
             }
         }
 
-        private byte[] CompressBlock(byte[] Data)
+        private uint GetIdIndex(uint Id)
         {
-            var Compressed = Comp.Compress(Data);
-
-            if (Compressed.Length >= Data.Length)
+            for(int i = 0; i < IdTable.Count; i++)
             {
-                var Res = new byte[Data.Length + 2];
-                Res.WriteUInt16(0, Convert.ToUInt32(Data.Length) | 0x8000);
-                Res.WriteArray(2, Data, Data.Length);
-
-                return Res;
+                if (IdTable[i] == Id)
+                    return Convert.ToUInt32(i);
             }
-            else
-            {
-                var Res = new byte[Compressed.Length + 2];
-                Res.WriteUInt16(0, Convert.ToUInt32(Compressed.Length));
-                Res.WriteArray(2, Compressed, Compressed.Length);
 
-                return Res;
+            throw new ArgumentException("Unknown user/group id!");
+        }
+
+        private void PreprocessNodes()
+        {
+            foreach (var N in Nodes)
+            {
+                N.UId = GetIdIndex(N.User);
+                N.GId = GetIdIndex(N.Group);
             }
         }
 
@@ -135,9 +140,10 @@ namespace NyaFs.Filesystem.SquashFs
 
         private void AppendFragmentTable(List<byte> Dst)
         {
-            Superblock.FragmentTableStart = Convert.ToUInt64(Dst.Count);
-            Builder.FragmentBlock FragmentBlock = new Builder.FragmentBlock(Dst.Count, Superblock.BlockSize);
+            Builder.MetadataWriter Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
+            List<Types.SqFragmentBlockEntry> Fragments = new List<Types.SqFragmentBlockEntry>();
 
+            // Write fragment content
             foreach (var N in Nodes)
             {
                 if (N.Type == Types.SqInodeType.BasicFile)
@@ -145,99 +151,153 @@ namespace NyaFs.Filesystem.SquashFs
                     var F = N as Builder.Nodes.File;
                     var Fragment = F.GetFragment();
 
-                    if (Fragment.Length > 0)
+                    if ((Fragment != null) && (Fragment.Length > 0))
                     {
-                        long Offset = 0;
-                        F.FragmentRef = FragmentBlock.Write(Fragment, ref Offset);
+                        F.FragmentIndex = Fragments.Count;
+                        F.FragmentRef = Writer.Write(Fragment);
 
-                        while (Offset <= Fragment.Length)
-                        {
-                            if (FragmentBlock.IsFilled)
-                            {
-                                Dst.AddRange(CompressBlock(FragmentBlock.Data));
-
-                                FragmentBlock = new Builder.FragmentBlock(Dst.Count, Superblock.BlockSize);
-                            }
-
-                            FragmentBlock.Write(Fragment, ref Offset);
-                        }
+                        Fragments.Add(new Types.SqFragmentBlockEntry(F.FragmentRef.MetadataOffset, Convert.ToUInt32(Fragment.Length), false));
                     }
                 }
             }
+            Writer.Flush();
 
-            if (FragmentBlock.DataSize > 0)
-                Dst.AddRange(CompressBlock(FragmentBlock.Data));
+            List<uint> TablesList = new List<uint>();
+            Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
+            uint LastTable = Convert.ToUInt32(Dst.Count);
+            TablesList.Add(LastTable);
+            foreach (var F in Fragments)
+            {
+                var FragmentRef = Writer.Write(F.getPacket());
+
+                if (FragmentRef.MetadataOffset != LastTable)
+                {
+                    LastTable = Convert.ToUInt32(FragmentRef.MetadataOffset);
+                    TablesList.Add(LastTable);
+                }
+            }
+
+            Writer.Flush();
+
+            // Write fragment tables list
+            Superblock.FragmentTableStart = Convert.ToUInt64(Dst.Count);
+
+            var Temp = new byte[8];
+            foreach (var T in TablesList)
+            {
+                Temp.WriteUInt64(0, T);
+                Dst.AddRange(Temp);
+            }
         }
 
         private void AppendIdTable(List<byte> Dst)
         {
+            uint MdAddress = Convert.ToUInt32(Dst.Count);
+            var Table = new Builder.IdTable(IdTable.ToArray());
+            Dst.AddRange(Table.Data);
+
             Superblock.IdTableStart = Convert.ToUInt64(Dst.Count);
 
-            var Table = new Builder.IdTable(IdTable.ToArray());
-            Dst.AddRange(Table.getPacket());
+            byte[] Temp = new byte[8];
+            Temp.WriteUInt64(0, MdAddress);
+            Dst.AddRange(Temp);
         }
 
         private void AppendDirectoryTable(List<byte> Dst)
         {
             Superblock.DirectoryTableStart = Convert.ToUInt64(Dst.Count);
 
-            var DirTable = new Builder.FragmentBlock(0, Superblock.BlockSize);
+            Builder.MetadataWriter Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
             foreach (var N in Nodes)
             {
                 if (N.Type == Types.SqInodeType.BasicDirectory)
                 {
                     var D = N as Builder.Nodes.Dir;
 
-                    var Data = D.GetEntries();
-                    long Offset = 0;
-                    D.EntriesRef = DirTable.Write(Data, ref Offset);
-
-                    while (Offset <= Data.Length)
-                    {
-                        if (DirTable.IsFilled)
-                        {
-                            Dst.AddRange(CompressBlock(DirTable.Data));
-
-                            DirTable = new Builder.FragmentBlock(Dst.Count, Superblock.BlockSize);
-                        }
-
-                        DirTable.Write(Data, ref Offset);
-                    }
+                    D.EntriesRef = Writer.Write(D.GetEntries());
                 }
             }
+
+            Writer.Flush();
+
+            // Update dirs data refs
+            foreach (var N in Nodes)
+            {
+                if (N.Type == Types.SqInodeType.BasicDirectory)
+                {
+                    var D = N as Builder.Nodes.Dir;
+
+                    // Fix reference
+                    var DE = new Types.Nodes.BasicDirectory(ReadUncompressedMetadata(Dst, Superblock.INodeTableStart, D.Ref, 0x20));
+
+                    DE.DirBlockStart = Convert.ToUInt32(D.EntriesRef.MetadataOffset);
+                    DE.BlockOffset = Convert.ToUInt32(D.EntriesRef.UnpackedOffset);
+
+                    WriteUncompressedMetadata(Dst, Superblock.INodeTableStart, D.Ref, DE.getPacket());
+                }
+            }
+        }
+        private byte[] ReadUncompressedMetadata(List<byte> Dst, ulong Start, Builder.MetadataRef Ref, uint Length)
+        {
+            int Offset = Convert.ToInt32(Start + Ref.MetadataOffset + 2 + Ref.UnpackedOffset);
+            var Res = new byte[Length];
+            for (int i = 0; i < Length; i++)
+                Res[i] = Dst[Offset + i];
+
+            return Res;
+        }
+
+        private void WriteUncompressedMetadata(List<byte> Dst, ulong Start, Builder.MetadataRef Ref, byte[] Data)
+        {
+            int Offset = Convert.ToInt32(Start + Ref.MetadataOffset + 2 + Ref.UnpackedOffset);
+            for (int i = 0; i < Data.Length; i++)
+                Dst[Offset + i] = Data[i];
         }
 
         private void AppendINodeTable(List<byte> Dst)
         {
             Superblock.INodeTableStart = Convert.ToUInt64(Dst.Count);
 
-            var NodeTable = new Builder.FragmentBlock(0, Superblock.BlockSize);
+            Builder.MetadataWriter Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, null);
             foreach (var N in Nodes)
             {
                 var Node = N.GetINode();
                 var Data = Node.getPacket();
 
-                long Offset = 0;
-                N.Ref = NodeTable.Write(Data, ref Offset);
+                N.Ref = Writer.Write(Data);
+            }
 
-                while (Offset <= Data.Length)
+            Writer.Flush();
+
+            // Add export data [inode table]
+            Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
+            uint Base = Convert.ToUInt32(Dst.Count);
+            ExportBlocks.Add(Base);
+            foreach (var N in Nodes)
+            {
+                var Ref = Writer.Write(N.Ref.BytesValue);
+
+                if(Ref.MetadataOffset != Base)
                 {
-                    if (NodeTable.IsFilled)
-                    {
-                        Dst.AddRange(CompressBlock(NodeTable.Data));
-
-                        NodeTable = new Builder.FragmentBlock(Dst.Count, Superblock.BlockSize);
-                    }
-
-                    NodeTable.Write(Data, ref Offset);
+                    Base = Convert.ToUInt32(Dst.Count);
+                    ExportBlocks.Add(Base);
                 }
             }
+
+            Writer.Flush();
         }
 
         private void AppendExportTable(List<byte> Dst)
         {
             Superblock.ExportTableStart = Convert.ToUInt64(Dst.Count);
 
+            byte[] Temp = new byte[4];
+            for (int i = 0; i < ExportBlocks.Count; i++)
+            {
+                Temp.WriteUInt32(0, ExportBlocks[i]);
+
+                Dst.AddRange(Temp);
+            }
         }
 
         /// <summary>
@@ -248,29 +308,16 @@ namespace NyaFs.Filesystem.SquashFs
         {
             var SB = new Types.SqSuperblock(Image, 0);
 
+            var RootDirRef = Nodes.First().Ref;
+
+            SB.RootINodeRef = RootDirRef.SqRef;
+            SB.IdCount = Convert.ToUInt32(IdTable.Count);
+            SB.INodeCount = Convert.ToUInt32(Nodes.Count);
             SB.IdTableStart = Superblock.IdTableStart;
             SB.FragmentTableStart = Superblock.FragmentTableStart;
             SB.ExportTableStart = Superblock.ExportTableStart;
             SB.INodeTableStart = Superblock.INodeTableStart;
             SB.DirectoryTableStart = Superblock.DirectoryTableStart;
-
-        }
-
-        public byte[] GetFilesystemImage()
-        {
-            var Res = new List<byte>();
-            Res.AddRange(Superblock.getPacket());
-
-            AppendData(Res);
-            AppendINodeTable(Res);
-            AppendDirectoryTable(Res);
-            AppendFragmentTable(Res);
-            AppendExportTable(Res);
-            AppendIdTable(Res);
-
-            var Image = Res.ToArray();
-            UpdateSuperBlock(Image);
-            return Image;
         }
 
         private Builder.Nodes.Dir GetParentDirectory(string Path)
@@ -298,52 +345,126 @@ namespace NyaFs.Filesystem.SquashFs
         private void AddNestedNode(string Path, Func<Builder.Node> NodeGetter)
         {
             var Parent = GetParentDirectory(Path);
-            if (Parent != null)
+            if ((Parent != null) || (Path == "/"))
             {
                 var N = NodeGetter();
+                N.Index = Convert.ToUInt32(Nodes.Count + 1);
 
                 PreprocessId(N.User, N.Group);
 
-                Parent.AddEntry(new Builder.DirectoryEntry(Universal.Helper.FsHelper.GetName(Path), N));
+                if(N.Type == Types.SqInodeType.BasicDirectory)
+                {
+                    var D = N as Builder.Nodes.Dir;
+                    D.Parent = (Parent != null) ? Parent.Index : 1;
+                }
+
+                if (Parent != null)
+                    Parent.AddEntry(new Builder.DirectoryEntry(Universal.Helper.FsHelper.GetName(Path), N));
+
                 Nodes.Add(N);
             }
             else
                 throw new InvalidOperationException($"Cannot add entry with path {Path}: no parent dir.");
         }
 
-        public void Block(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode)
+        /// <summary>
+        /// Get builded filesystem image
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetFilesystemImage()
         {
+            var Res = new List<byte>();
+            Res.AddRange(Superblock.getPacket());
+
+            PreprocessNodes();
+            AppendData(Res);
+            AppendFragmentTable(Res);
+            AppendINodeTable(Res);
+            AppendDirectoryTable(Res);
+            AppendExportTable(Res);
+            AppendIdTable(Res);
+
+            var Image = Res.ToArray();
+
+            UpdateSuperBlock(Image);
+            return Image;
+        }
+
+
+        /// <summary>
+        /// Create block device
+        /// </summary>
+        /// <param name="Path">Path to block device</param>
+        /// <param name="Major">Major number</param>
+        /// <param name="Minor">Minor number</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void Block(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode) => 
             AddNestedNode(Path, () => new Builder.Nodes.Block(Path, Mode, User, Group, Major, Minor));
-        }
 
-        public void Char(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create char device
+        /// </summary>
+        /// <param name="Path">Path to char device</param>
+        /// <param name="Major">Major number</param>
+        /// <param name="Minor">Minor number</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void Char(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.Char(Path, Mode, User, Group, Major, Minor));
-        }
 
-        public void Directory(string Path, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create directory
+        /// </summary>
+        /// <param name="Path">Path to directory (parent dir must exists)</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void Directory(string Path, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.Dir(Path, Mode, User, Group));
-        }
 
-        public void Fifo(string Path, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create fifo
+        /// </summary>
+        /// <param name="Path">Path to fifo</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void Fifo(string Path, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.Fifo(Path, Mode, User, Group));
-        }
 
-        public void File(string Path, byte[] Content, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create file
+        /// </summary>
+        /// <param name="Path">Path to file</param>
+        /// <param name="Content">File content</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void File(string Path, byte[] Content, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.File(Path, Mode, User, Group, Superblock.BlockSize, Content));
-        }
 
-        public void Socket(string Path, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create socket
+        /// </summary>
+        /// <param name="Path">Path to socket</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void Socket(string Path, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.Socket(Path, Mode, User, Group));
-        }
 
-        public void SymLink(string Path, string Target, uint User, uint Group, uint Mode)
-        {
+        /// <summary>
+        /// Create symlink
+        /// </summary>
+        /// <param name="Path">Path to symlink</param>
+        /// <param name="Target">Target path</param>
+        /// <param name="User">Owner user</param>
+        /// <param name="Group">Owner group</param>
+        /// <param name="Mode">Access mode</param>
+        public void SymLink(string Path, string Target, uint User, uint Group, uint Mode) =>
             AddNestedNode(Path, () => new Builder.Nodes.SymLink(Path, Mode, User, Group, Target));
-        }
     }
 }

@@ -9,7 +9,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         public string Filename;
         public Types.SqInodeType Type => Node.Type;
 
-        public MetadataRef NodeRef;
+        public MetadataRef NodeRef => Node.Ref;
 
         public Node Node = null;
 

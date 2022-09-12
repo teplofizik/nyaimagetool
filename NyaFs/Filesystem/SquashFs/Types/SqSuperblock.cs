@@ -12,7 +12,7 @@ namespace NyaFs.Filesystem.SquashFs.Types
         {
             Fill(0);
             Magic = 0x73717368;
-            ModificationTime = Filesystem.Universal.Helper.FsHelper.ConvertToUnixTimestamp(DateTime.Now);
+            ModificationTime = Universal.Helper.FsHelper.ConvertToUnixTimestamp(DateTime.Now);
             BlockSize = 0x20000;
             BlockLog = 0x11;
             Flags = SqSuperblockFlags.DUPLICATES;

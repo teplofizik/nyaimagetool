@@ -8,6 +8,24 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
     {
         uint BlockSize;
 
+        private static int CalcNodeLength(uint[] BlocksSizes) => 0x20 + BlocksSizes.Length * 4;
+
+        public BasicFile(uint Mode, uint User, uint Group, uint BlocksStart, uint FileSize, uint FragmentBlockIndex, uint FragmentBlockOffset, uint[] BlocksSizes) : base(CalcNodeLength(BlocksSizes))
+        {
+            InodeType = SqInodeType.BasicFile;
+            Permissions = Mode;
+            GidIndex = Group;
+            UidIndex = User;
+            this.BlocksStart = BlocksStart;
+
+            this.FragmentBlockIndex = FragmentBlockIndex;
+            this.FragmentBlockOffset = FragmentBlockOffset;
+            this.FileSize = FileSize;
+            for(int i = 0; i < BlocksSizes.Length; i++)
+                WriteUInt32(0x20 + i * 4, BlocksSizes[i]);
+        }
+
+
         public BasicFile(byte[] Data, uint BlockSize) : base(Data, 0x20)
         {
             this.BlockSize = BlockSize;
@@ -46,7 +64,7 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
         /// If this file does not end with a fragment, the value of this field is undefined (probably zero)
         /// u32 block_offset (0x18)
         /// </summary>
-        public uint BlockOffset
+        public uint FragmentBlockOffset
         {
             get { return ReadUInt32(0x18); }
             set { WriteUInt32(0x18, value); }
@@ -80,7 +98,5 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
         /// u32 block_sizes[BlockCount]
         /// </summary>
         public uint[] BlockSizes => ReadUInt32Array(0x20, BlockCount);
-
-        public SqMetadataRef NodeReference => new SqMetadataRef(BlocksStart, BlockOffset);
     }
 }

@@ -23,6 +23,13 @@ namespace Extension.Packet
             StructSize = Size;
         }
 
+        public ArrayWrapper(long Size)
+        {
+            Raw = new byte[Size];
+            StructOffset = 0;
+            StructSize = Size;
+        }
+
         /// <summary>
         /// Go to next element (as c pointer)
         /// </summary>

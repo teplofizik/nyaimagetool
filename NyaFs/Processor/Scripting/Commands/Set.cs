@@ -159,7 +159,7 @@ namespace NyaFs.Processor.Scripting.Commands
                                 Array.ForEach(Info.ToArray(), I => I.Compression = Comp);
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"Set compression ok: {Value}!");
                             }
-                            catch(Exception E)
+                            catch(Exception)
                             {
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown compression: {Value}!");
                             }

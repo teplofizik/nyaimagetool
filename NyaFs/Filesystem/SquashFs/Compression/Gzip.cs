@@ -52,7 +52,13 @@ namespace NyaFs.Filesystem.SquashFs.Compression
 
         internal override byte[] Compress(byte[] data)
         {
-            throw new NotImplementedException();
+            using (var uncompressedStream = new MemoryStream(data))
+            using (var zipStream = new SharpCompress.Compressors.Deflate.ZlibStream(uncompressedStream, SharpCompress.Compressors.CompressionMode.Compress))
+            using (var resultStream = new MemoryStream())
+            {
+                zipStream.CopyTo(resultStream);
+                return resultStream.ToArray();
+            }
         }
 
         internal override byte[] Decompress(byte[] data)

@@ -7,6 +7,19 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 {
     class BasicSymLink : SqInode
     {
+        private static int CalcNodeLength(string Target) => 0x18 + Target.Length;
+
+        public BasicSymLink(uint Mode, uint User, uint Group, uint HardLinkCount, string Target) : base(CalcNodeLength(Target))
+        {
+            InodeType = SqInodeType.BasicSymlink;
+            Permissions = Mode;
+            GidIndex = Group;
+            UidIndex = User;
+            this.HardLinkCount = HardLinkCount;
+
+            TargetSize = Convert.ToUInt32(Target.Length);
+            WriteString(0x18, Target, Target.Length);
+        }
 
         public BasicSymLink(byte[] Data) : base(Data, 0x18 + Data.ReadUInt32(0x14))
         {

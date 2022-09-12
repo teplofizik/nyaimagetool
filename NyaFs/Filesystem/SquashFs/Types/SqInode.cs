@@ -8,6 +8,12 @@ namespace NyaFs.Filesystem.SquashFs.Types
 {
     class SqInode : RawPacket
     {
+        public SqInode(long Size) : base(Size)
+        {
+
+        }
+
+
         public SqInode(byte[] Data, long Size) : base(Data)
         {
 

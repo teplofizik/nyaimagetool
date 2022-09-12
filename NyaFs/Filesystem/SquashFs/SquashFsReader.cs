@@ -298,12 +298,11 @@ namespace NyaFs.Filesystem.SquashFs
             if (Path.Length == 0)
                 throw new ArgumentException($"{Path} is empty");
 
-            if (Path[0] == '/') Path = Path.Substring(1);
-
-            var Parts = Path.Split("/");
-
             var Root = GetRootDir();
-            if (Path == ".") return Root;
+            if ((Path == ".") || (Path == "/")) return Root;
+
+            if (Path[0] == '/') Path = Path.Substring(1);
+            var Parts = Path.Split("/");
 
             var Entries = GetDirEntries(Root);
             for (int i = 0; i < Parts.Length; i++)
@@ -345,7 +344,7 @@ namespace NyaFs.Filesystem.SquashFs
         private byte[] GetINodeContent(Types.Nodes.BasicFile N)
         {
             // The offset from the start of the archive where the data blocks are stored
-            var BlockOffset = N.BlockOffset;
+            var BlockOffset = N.FragmentBlockOffset;
             var BlockSizes = N.BlockSizes;
             var Res = new byte[N.FileSize];
             long Offset = 0;
@@ -367,7 +366,7 @@ namespace NyaFs.Filesystem.SquashFs
                 var FragData = ReadArray(Convert.ToInt64(Frag.Start), Frag.Size);
                 var UncompressedData = Comp.Decompress(FragData);
 
-                var OwnData = UncompressedData.ReadArray(N.BlockOffset, N.FragmentSize);
+                var OwnData = UncompressedData.ReadArray(N.FragmentBlockOffset, N.FragmentSize);
                 Res.WriteArray(Offset, OwnData, OwnData.Length);
             }
             return Res;

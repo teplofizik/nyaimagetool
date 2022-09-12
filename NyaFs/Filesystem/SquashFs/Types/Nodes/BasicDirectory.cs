@@ -6,6 +6,21 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 {
     class BasicDirectory : SqInode
     {
+        public BasicDirectory(uint Mode, uint User, uint Group, uint DirBlockStart, uint DirBlockOffset, uint HardLinkCount, uint DirEntriesFullSize, uint ParentINodeNumber) : base(0x20)
+        {
+            InodeType = SqInodeType.BasicDirectory;
+            Permissions = Mode;
+            GidIndex = Group;
+            UidIndex = User;
+
+            this.DirBlockStart = DirBlockStart;
+
+            FileSize = DirEntriesFullSize + 3;
+            BlockOffset = DirBlockOffset;
+            this.HardLinkCount = HardLinkCount;
+            this.ParentINodeNumber = ParentINodeNumber;
+        }
+
         public BasicDirectory(byte[] Data) : base(Data, 0x20)
         {
 

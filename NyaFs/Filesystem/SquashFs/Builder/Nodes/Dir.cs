@@ -10,6 +10,8 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
         public MetadataRef EntriesRef;
         public List<DirectoryEntry> Entries = new List<DirectoryEntry>();
 
+        public uint Parent = 0;
+
         public Dir(string Path, uint User, uint Group, uint Mode) : base(Types.SqInodeType.BasicDirectory, Path, User, Group, Mode)
         {
 
@@ -31,7 +33,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             foreach(var E in Entries)
             {
                 var DE = new Types.SqDirectoryEntry(Header.INodeNumber, 
-                                                    E.NodeRef.MetadataOffset, 
+                                                    Convert.ToInt64(E.NodeRef.MetadataOffset), 
                                                     E.Type, 
                                                     Convert.ToUInt32(E.NodeRef.UnpackedOffset), 
                                                     E.Node.Index - Header.INodeNumber, 
@@ -42,5 +44,12 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
 
             return Res.ToArray();
         }
+
+        public override Types.SqInode GetINode() => new Types.Nodes.BasicDirectory(Mode, UId, GId,
+            Convert.ToUInt32(EntriesRef?.MetadataOffset ?? 0),
+            Convert.ToUInt32(EntriesRef?.UnpackedOffset ?? 0),
+            Convert.ToUInt32(Entries.Count + 2),
+            Convert.ToUInt32(GetEntries().Length),
+            Parent);
     }
 }

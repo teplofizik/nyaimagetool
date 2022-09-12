@@ -7,9 +7,9 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 {
     class BasicDevice : SqInode
     {
-        public BasicDevice(uint Mode, uint User, uint Group, uint Major, uint Minor) : base(new byte[0x18], 0x18)
+        public BasicDevice(SqInodeType Type, uint Mode, uint User, uint Group, uint Major, uint Minor) : base(0x18)
         {
-            InodeType = SqInodeType.BasicBlockDevice;
+            InodeType = Type;
             Permissions = Mode;
             GidIndex = Group;
             UidIndex = User;

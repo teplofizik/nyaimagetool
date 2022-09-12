@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Extension.Array;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
     {
         byte[] Content;
         long Filled = 0;
-        long BlockOffset;
+        long BlockOffset = 0;
 
         public FragmentBlock(long Offset, uint Size)
         {
@@ -16,7 +17,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             Content = new byte[Size];
         }
 
-        public byte[] Data => Content;
+        public byte[] Data => Content.ReadArray(0, Filled);
 
         public long DataSize => Filled;
 
@@ -28,27 +29,26 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         /// <returns>Reference to fragment</returns>
         public MetadataRef Write(byte[] Data, ref long Offset)
         {
-            var Res = new MetadataRef(BlockOffset, Filled);
+            var Res = new MetadataRef(Convert.ToUInt64(BlockOffset), Convert.ToUInt64(Filled));
             var Size = Data.Length - Offset;
 
-            var FreeSpace = Content.Length - BlockOffset;
-
+            var FreeSpace = Content.Length - Filled;
             if (Size > FreeSpace)
             {
-                Array.Copy(Data, Offset, Content, BlockOffset, FreeSpace);
-                BlockOffset += FreeSpace;
+                Array.Copy(Data, Offset, Content, Filled, FreeSpace);
+                Filled += FreeSpace;
                 Offset += FreeSpace;
             }
             else
             {
-                Array.Copy(Data, Offset, Content, BlockOffset, Size);
-                BlockOffset += Size;
+                Array.Copy(Data, Offset, Content, Filled, Size);
+                Filled += Size;
                 Offset += Size;
             }
 
             return Res;
         }
 
-        public bool IsFilled => BlockOffset == Content.Length;
+        public bool IsFilled => Filled == Content.Length;
     }
 }
