@@ -271,8 +271,8 @@ namespace NyaFs.Filesystem.SquashFs
         }
 
         internal Types.SqDirectoryEntry[] GetDirEntries(Types.Nodes.BasicDirectory Dir)
-        {
-            var Raw = ReadMetadata(Convert.ToInt64(Superblock.DirectoryTableStart) + Dir.DirBlockStart, Dir.BlockOffset, Dir.FileSize);
+        { 
+            var Raw = ReadMetadata(Convert.ToInt64(Superblock.DirectoryTableStart) + Dir.DirBlockStart, Dir.BlockOffset, Dir.FileSize - 3);
             long Offset = 0;
             var DirEntries = new List<Types.SqDirectoryEntry>();
 
