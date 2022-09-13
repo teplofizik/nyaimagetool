@@ -10,7 +10,7 @@ namespace NyaFs.Filesystem.SquashFs.Types
         public SqFragmentBlockEntry(ulong Start, uint Size, bool Compressed) : base(0x10)
         {
             this.Start = Start;
-            this.Size = Size & 0xffffffu + (Compressed ? 0x01000000u : 0);
+            this.Size = Size & 0xffffffu + (Compressed ? 0 : 0x01000000u);
         }
 
         public SqFragmentBlockEntry(byte[] Data, long Offset) : base(Data, Offset, 0x10)

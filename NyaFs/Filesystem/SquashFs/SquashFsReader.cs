@@ -364,7 +364,7 @@ namespace NyaFs.Filesystem.SquashFs
             {
                 var Frag = FragmentEntries[N.FragmentBlockIndex];
                 var FragData = ReadArray(Convert.ToInt64(Frag.Start), Frag.Size);
-                var UncompressedData = Comp.Decompress(FragData);
+                var UncompressedData = Frag.IsCompressed ? Comp.Decompress(FragData) : FragData;
 
                 var OwnData = UncompressedData.ReadArray(N.FragmentBlockOffset, N.FragmentSize);
                 Res.WriteArray(Offset, OwnData, OwnData.Length);

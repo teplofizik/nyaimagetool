@@ -15,7 +15,7 @@ namespace NyaFs.Filesystem.SquashFs.Types.Nodes
 
             this.DirBlockStart = DirBlockStart;
 
-            FileSize = DirEntriesFullSize + 3;
+            FileSize = DirEntriesFullSize;
             BlockOffset = DirBlockOffset;
             this.HardLinkCount = HardLinkCount;
             this.ParentINodeNumber = ParentINodeNumber;

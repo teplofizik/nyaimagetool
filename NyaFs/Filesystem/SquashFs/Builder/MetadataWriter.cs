@@ -10,12 +10,14 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         List<byte> Dst;
         uint BlockSize;
         ulong Offset;
+        bool AddHeader;
 
         FragmentBlock TempMetablock;
         Compression.BaseCompressor Compressor;
 
-        public MetadataWriter(List<byte> Dst, ulong Offset, uint BlockSize, Compression.BaseCompressor Compressor)
+        public MetadataWriter(List<byte> Dst, ulong Offset, uint BlockSize, Compression.BaseCompressor Compressor, bool AddHeader = true)
         {
+            this.AddHeader = AddHeader;
             this.Dst = Dst;
             this.Offset = Offset;
             this.BlockSize = BlockSize;
@@ -28,21 +30,28 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         {
             var Compressed = Compressor?.Compress(Data) ?? Data;
 
-            if (Compressed.Length >= Data.Length)
+            if (AddHeader)
             {
-                var Res = new byte[Data.Length + 2];
-                Res.WriteUInt16(0, Convert.ToUInt32(Data.Length) | 0x8000);
-                Res.WriteArray(2, Data, Data.Length);
+                if (Compressed.Length >= Data.Length)
+                {
+                    var Res = new byte[Data.Length + 2];
+                    Res.WriteUInt16(0, Convert.ToUInt32(Data.Length) | 0x8000);
+                    Res.WriteArray(2, Data, Data.Length);
 
-                return Res;
+                    return Res;
+                }
+                else
+                {
+                    var Res = new byte[Compressed.Length + 2];
+                    Res.WriteUInt16(0, Convert.ToUInt32(Compressed.Length));
+                    Res.WriteArray(2, Compressed, Compressed.Length);
+
+                    return Res;
+                }
             }
             else
             {
-                var Res = new byte[Compressed.Length + 2];
-                Res.WriteUInt16(0, Convert.ToUInt32(Compressed.Length));
-                Res.WriteArray(2, Compressed, Compressed.Length);
-
-                return Res;
+                return Compressed;
             }
         }
 
@@ -55,7 +64,10 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             {
                 if (TempMetablock.IsFilled)
                 {
-                    Dst.AddRange(CompressBlock(TempMetablock.Data));
+                    var Compressed = CompressBlock(TempMetablock.Data);
+                    System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04}");
+                    Dst.AddRange(Compressed);
+                    var Dec = Compressor.Decompress(Compressed);
 
                     TempMetablock = new FragmentBlock(Dst.Count, BlockSize);
                 }
@@ -70,7 +82,22 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         public void Flush()
         {
             if (TempMetablock.DataSize > 0)
-                Dst.AddRange(CompressBlock(TempMetablock.Data));
+            {
+                var Compressed = CompressBlock(TempMetablock.Data);
+                System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04}");
+                Dst.AddRange(Compressed);
+
+                if (Compressor != null)
+                {
+                    if (AddHeader)
+                    {
+                        if((Compressed[1] & 0x80) == 0)
+                            Compressor.Decompress(Compressed.ReadArray(2, Compressed.Length));
+                    }
+                    else
+                        Compressor.Decompress(Compressed);
+                }
+            }
         }
     }
 }

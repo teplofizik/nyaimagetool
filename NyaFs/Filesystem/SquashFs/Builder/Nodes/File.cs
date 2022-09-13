@@ -13,7 +13,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
         public uint[] DataBlocksSizes = new uint[] { };
         public long DataBlockOffset = 0;
 
-        public int FragmentIndex = 0;
+        public uint FragmentIndex = 0;
         public MetadataRef FragmentRef = null;
 
         public File(string Path, uint User, uint Group, uint Mode, uint BlockSize, byte[] Content) : base(Types.SqInodeType.BasicFile, Path, User, Group, Mode)
@@ -51,7 +51,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
         public override Types.SqInode GetINode() => new Types.Nodes.BasicFile(Mode, UId, GId, 
             Convert.ToUInt32(DataBlockOffset),
             Convert.ToUInt32(Content.Length),
-            Convert.ToUInt32(FragmentRef?.MetadataOffset ?? 0xFFFFFFFFu),
+            Convert.ToUInt32((FragmentRef != null) ? FragmentIndex : 0xFFFFFFFFu),
             Convert.ToUInt32(FragmentRef?.UnpackedOffset ?? 0), 
             DataBlocksSizes);
     }
