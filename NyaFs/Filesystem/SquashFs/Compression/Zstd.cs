@@ -28,7 +28,8 @@ namespace NyaFs.Filesystem.SquashFs.Compression
 
         internal override byte[] Compress(byte[] Data)
         {
-            throw new NotImplementedException();
+            using var compressor = new ZstdSharp.Compressor();
+            return compressor.Wrap(Data).ToArray();
         }
 
         internal override byte[] Decompress(byte[] Data)

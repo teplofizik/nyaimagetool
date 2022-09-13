@@ -10,6 +10,12 @@ namespace NyaFs.ImageFormat.Compressors
 {
     static class ZStd
     {
+        public static byte[] CompressWithHeader(byte[] Data)
+        {
+            using var compressor = new ZstdSharp.Compressor();
+            return compressor.Wrap(Data).ToArray();
+        }
+
         public static byte[] Decompress(byte[] Data)
         {
             using var decompressor = new ZstdSharp.Decompressor();

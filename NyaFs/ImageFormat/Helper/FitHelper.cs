@@ -345,6 +345,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_LZMA: return Compressors.Lzma.CompressWithHeader(Source);
                 case Types.CompressionType.IH_COMP_LZ4: return Compressors.Lz4.CompressWithHeader(Source);
                 case Types.CompressionType.IH_COMP_BZIP2: return Compressors.Bzip2.CompressWithHeader(Source);
+                case Types.CompressionType.IH_COMP_ZSTD: return Compressors.ZStd.CompressWithHeader(Source);
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");

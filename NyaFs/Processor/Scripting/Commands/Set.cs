@@ -283,6 +283,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "lz4": return ImageFormat.Types.CompressionType.IH_COMP_LZ4;
                     case "bzip2": return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
                     case "bz2": return ImageFormat.Types.CompressionType.IH_COMP_BZIP2;
+                    case "zstd": return ImageFormat.Types.CompressionType.IH_COMP_ZSTD;
                     default:
                         throw new ArgumentException("Unsupported compression type");
                 }

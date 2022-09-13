@@ -61,7 +61,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             if (TempMetablock.IsFilled)
             {
                 var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
-                System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04}: " +
+                System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04} ({Compressed.Length}): " +
                     $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
                 Dst.AddRange(Compressed);
 
@@ -96,7 +96,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
                 if (AddHeader)
                 {
                     if ((Compressed[1] & 0x80) == 0)
-                        Compressor.Decompress(Compressed.ReadArray(2, Compressed.Length));
+                        Compressor.Decompress(Compressed.ReadArray(2, Compressed.Length - 2));
                 }
                 else
                     Compressor.Decompress(Compressed);
@@ -108,7 +108,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             if (TempMetablock.DataSize > 0)
             {
                 var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
-                System.Diagnostics.Debug.WriteLine($"Metadata Flush: {Dst.Count:x06} l {Compressed.Length:x04}: " +
+                System.Diagnostics.Debug.WriteLine($"Metadata Flush: {Dst.Count:x06} l {Compressed.Length:x04} ({Compressed.Length}): " +
                     $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
                 Dst.AddRange(Compressed);
 
