@@ -41,6 +41,10 @@ namespace NyaFs.Filesystem.SquashFs
         /// </summary>
         private List<uint> ExportBlocks = new List<uint>();
 
+        List<uint> FragmentTablesList = new List<uint>();
+
+        private byte[] FragmentBlock;
+
         public SquashFsBuilder(CompressionType Type)
         {
             Superblock.Flags |= Types.SqSuperblockFlags.UNCOMPRESSED_INODES;
@@ -138,9 +142,9 @@ namespace NyaFs.Filesystem.SquashFs
             }
         }
 
-        private void AppendFragmentTable(List<byte> Dst)
+        private void PrepareFragmentTable()
         {
-            List<Types.SqFragmentBlockEntry> Fragments = new List<Types.SqFragmentBlockEntry>();
+            var Dst = new List<byte>();
 
             // Write fragment content
             uint Start = Convert.ToUInt32(Dst.Count);
@@ -176,32 +180,40 @@ namespace NyaFs.Filesystem.SquashFs
                 }
             }
 
-            List<uint> TablesList = new List<uint>();
-            Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
+            FragmentBlock = Dst.ToArray();
+        }
+
+        private void AppendFragmentTable(List<byte> Dst)
+        {
+            System.Diagnostics.Debug.WriteLine($"AppendFragmentTable data: {Dst.Count:x06}");
+            var Start = Convert.ToUInt64(Dst.Count);
+            // Write fragment tables list
+            Dst.AddRange(FragmentBlock);
+
+            var Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
             uint LastTable = Convert.ToUInt32(Dst.Count);
-            TablesList.Add(LastTable);
+            FragmentTablesList.Add(LastTable);
             //foreach (var F in Fragments)
-            for(int i = 0; i < Fragments.Count; i++)
+            for (int i = 0; i < Fragments.Count; i++)
             {
                 var F = Fragments[i];
+                F.Start += Start;
                 var FragmentRef = Writer.Write(F.getPacket());
 
                 System.Diagnostics.Debug.WriteLine($"Fragment {i}: {F.Start:x08} size: {F.Size:x04}");
-                if (FragmentRef.MetadataOffset != LastTable)
+                uint Pos = Convert.ToUInt32(Dst.Count);
+                if (Pos != LastTable)
                 {
-                    LastTable = Convert.ToUInt32(FragmentRef.MetadataOffset);
-                    TablesList.Add(LastTable);
+                    LastTable = Pos;
+                    FragmentTablesList.Add(LastTable);
                 }
             }
-
             Writer.Flush();
 
-            // Write fragment tables list
+            System.Diagnostics.Debug.WriteLine($"AppendFragmentTable table: {Dst.Count:x06}");
             Superblock.FragmentTableStart = Convert.ToUInt64(Dst.Count);
-            Superblock.FragmentEntryCount = Convert.ToUInt32(Fragments.Count);
-            System.Diagnostics.Debug.WriteLine($"AppendFragmentTable: {Dst.Count:x06}");
             var Temp = new byte[8];
-            foreach (var T in TablesList)
+            foreach (var T in FragmentTablesList)
             {
                 Temp.WriteUInt64(0, T);
                 Dst.AddRange(Temp);
@@ -210,12 +222,13 @@ namespace NyaFs.Filesystem.SquashFs
 
         private void AppendIdTable(List<byte> Dst)
         {
-            System.Diagnostics.Debug.WriteLine($"AppendIdTable: {Dst.Count:x06}");
+            System.Diagnostics.Debug.WriteLine($"AppendIdTable data: {Dst.Count:x06}");
 
             uint MdAddress = Convert.ToUInt32(Dst.Count);
             var Table = new Builder.IdTable(IdTable.ToArray());
             Dst.AddRange(Table.Data);
 
+            System.Diagnostics.Debug.WriteLine($"AppendIdTable table: {Dst.Count:x06}");
             Superblock.IdTableStart = Convert.ToUInt64(Dst.Count);
             byte[] Temp = new byte[8];
             Temp.WriteUInt64(0, MdAddress);
@@ -225,7 +238,7 @@ namespace NyaFs.Filesystem.SquashFs
 
         private void AppendDirectoryTable(List<byte> Dst)
         {
-            System.Diagnostics.Debug.WriteLine($"AppendDirectoryTable: {Dst.Count:x06}");
+            System.Diagnostics.Debug.WriteLine($"AppendDirectoryTable data: {Dst.Count:x06}");
             Superblock.DirectoryTableStart = Convert.ToUInt64(Dst.Count);
 
             Builder.MetadataWriter Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
@@ -294,7 +307,7 @@ namespace NyaFs.Filesystem.SquashFs
 
         private void AppendExportTable(List<byte> Dst)
         {
-            System.Diagnostics.Debug.WriteLine($"AppendExportTable: {Dst.Count:x06}");
+            System.Diagnostics.Debug.WriteLine($"AppendExportTable data: {Dst.Count:x06}");
 
             // Add export data [inode table]
             var Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
@@ -302,23 +315,25 @@ namespace NyaFs.Filesystem.SquashFs
             ExportBlocks.Add(Base);
             foreach (var N in Nodes)
             {
-                var Ref = Writer.Write(N.Ref.BytesValue);
+                Writer.Write(N.Ref.BytesValue);
 
-                if (Ref.MetadataOffset != Base)
+                uint Pos = Convert.ToUInt32(Dst.Count);
+                if (Pos != Base)
                 {
-                    Base = Convert.ToUInt32(Dst.Count);
+                    Base = Pos;
                     ExportBlocks.Add(Base);
                 }
             }
 
             Writer.Flush();
 
+            System.Diagnostics.Debug.WriteLine($"AppendExportTable table: {Dst.Count:x06}");
             Superblock.ExportTableStart = Convert.ToUInt64(Dst.Count);
 
-            byte[] Temp = new byte[4];
+            byte[] Temp = new byte[8];
             for (int i = 0; i < ExportBlocks.Count; i++)
             {
-                Temp.WriteUInt32(0, ExportBlocks[i]);
+                Temp.WriteUInt64(0, ExportBlocks[i]);
 
                 Dst.AddRange(Temp);
             }
@@ -341,10 +356,10 @@ namespace NyaFs.Filesystem.SquashFs
             SB.IdTableStart = Superblock.IdTableStart;
             SB.XAttrIdTableStart = 0xfffffffffffffffful;
             SB.FragmentTableStart = Superblock.FragmentTableStart;
+            SB.FragmentEntryCount = Convert.ToUInt32(Fragments.Count);
             SB.ExportTableStart = Superblock.ExportTableStart;
             SB.INodeTableStart = Superblock.INodeTableStart;
             SB.DirectoryTableStart = Superblock.DirectoryTableStart;
-            SB.FragmentEntryCount = Superblock.FragmentEntryCount;
         }
 
         private Builder.Nodes.Dir GetParentDirectory(string Path)
@@ -404,10 +419,12 @@ namespace NyaFs.Filesystem.SquashFs
             Res.AddRange(Superblock.getPacket());
 
             PreprocessNodes();
+            PrepareFragmentTable();
+
             AppendData(Res);
-            AppendFragmentTable(Res);
             AppendINodeTable(Res);
             AppendDirectoryTable(Res);
+            AppendFragmentTable(Res);
             AppendExportTable(Res);
             AppendIdTable(Res);
 
