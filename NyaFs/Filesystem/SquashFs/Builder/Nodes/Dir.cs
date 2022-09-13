@@ -22,7 +22,15 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             Entries.Add(Entry);
         }
 
-        private Types.SqDirectoryHeader GetHeader() => new Types.SqDirectoryHeader(Convert.ToUInt32(Entries.Count), 0, 0);
+        private uint GetEntryBlock()
+        {
+            if (Entries.Count > 0)
+                return Convert.ToUInt32(Entries.First().NodeRef.MetadataOffset);
+            else
+                return 0;
+        }
+
+        private Types.SqDirectoryHeader GetHeader() => new Types.SqDirectoryHeader(Convert.ToUInt32(Entries.Count), GetEntryBlock(), 1);
 
         public byte[] GetEntries()
         {
@@ -30,7 +38,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             var Header = GetHeader();
             Res.AddRange(Header.getPacket());
 
-            foreach(var E in Entries)
+            foreach(var E in Entries.OrderBy(E => E.Filename))
             {
                 var DE = new Types.SqDirectoryEntry(Header.INodeNumber, 
                                                     Convert.ToInt64(E.NodeRef.MetadataOffset), 
@@ -49,7 +57,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             Convert.ToUInt32(EntriesRef?.MetadataOffset ?? 0),
             Convert.ToUInt32(EntriesRef?.UnpackedOffset ?? 0),
             Convert.ToUInt32(Entries.Count + 2),
-            Convert.ToUInt32(GetEntries().Length),
+            Convert.ToUInt32(GetEntries().Length)+3,
             Parent);
     }
 }
