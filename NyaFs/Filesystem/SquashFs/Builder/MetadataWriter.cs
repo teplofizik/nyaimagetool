@@ -11,6 +11,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         uint BlockSize;
         ulong Offset;
         bool AddHeader;
+        public bool FullBlocks = false;
 
         FragmentBlock TempMetablock;
         Compression.BaseCompressor Compressor;
@@ -59,7 +60,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         {
             if (TempMetablock.IsFilled)
             {
-                var Compressed = CompressBlock(TempMetablock.Data);
+                var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
                 System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04}: " +
                     $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
                 Dst.AddRange(Compressed);
@@ -106,7 +107,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         {
             if (TempMetablock.DataSize > 0)
             {
-                var Compressed = CompressBlock(TempMetablock.Data);
+                var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
                 System.Diagnostics.Debug.WriteLine($"Metadata Flush: {Dst.Count:x06} l {Compressed.Length:x04}: " +
                     $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
                 Dst.AddRange(Compressed);

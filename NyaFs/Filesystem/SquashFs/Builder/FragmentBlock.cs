@@ -17,6 +17,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             Content = new byte[Size];
         }
 
+        public byte[] FullData => Content;
         public byte[] Data => Content.ReadArray(0, Filled);
 
         public long DataSize => Filled;

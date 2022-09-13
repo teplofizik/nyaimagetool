@@ -292,6 +292,7 @@ namespace NyaFs.Filesystem.SquashFs
 
             var Temp = new List<byte>();
             Builder.MetadataWriter Writer = new Builder.MetadataWriter(Temp, 0, MetadataBlockSize, Comp);
+            Writer.FullBlocks = true;
             foreach (var N in Nodes)
             {
                 if (N.Type == Types.SqInodeType.BasicDirectory)
