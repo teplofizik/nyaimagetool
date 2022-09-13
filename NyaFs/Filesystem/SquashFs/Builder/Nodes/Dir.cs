@@ -38,7 +38,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder.Nodes
             var Header = GetHeader();
             Res.AddRange(Header.getPacket());
 
-            foreach(var E in Entries.OrderBy(E => E.Filename))
+            foreach (var E in Entries.OrderBy(E => E.Filename, StringComparer.Ordinal))
             {
                 var DE = new Types.SqDirectoryEntry(Header.INodeNumber, 
                                                     Convert.ToInt64(E.NodeRef.MetadataOffset), 
