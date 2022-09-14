@@ -42,8 +42,9 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             switch(Fs.FilesystemType)
             {
                 case Types.FsType.Cpio: return new CpioFsWriter();
-                case Types.FsType.Ext2: 
-                    return new Ext2FsWriter(DetectFixDiskSize(Fs, 0x800000));
+                case Types.FsType.Ext2: return new Ext2FsWriter(DetectFixDiskSize(Fs, 0x800000));
+                case Types.FsType.SquashFs: return new SquashFsWriter(Fs.SquashFsCompression);
+
                 default: throw new InvalidOperationException($"Unsupported filesystem: {Fs.FilesystemType}");
             }
         }

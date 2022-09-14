@@ -283,6 +283,22 @@ namespace NyaFs.ImageFormat.Helper
             }
         }
 
+        public static string GetCompression(Filesystem.SquashFs.Types.SqCompressionType Compression)
+        {
+            switch (Compression)
+            {
+                case Filesystem.SquashFs.Types.SqCompressionType.Gzip: return "gzip";
+                case Filesystem.SquashFs.Types.SqCompressionType.Lzma: return "lzma";
+                case Filesystem.SquashFs.Types.SqCompressionType.Lz4: return "lz4";
+                case Filesystem.SquashFs.Types.SqCompressionType.Xz: return "xz";
+                case Filesystem.SquashFs.Types.SqCompressionType.Zstd: return "zstd";
+                case Filesystem.SquashFs.Types.SqCompressionType.Lzo: return "lzo";
+                default:
+                    Log.Error(0, $"Unsupported compression type: {Compression}");
+                    throw new ArgumentException($"Unsupported compression type: {Compression}");
+            }
+        }
+
         public static string GetCompression(Types.CompressionType Compression)
         {
             switch (Compression)

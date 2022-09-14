@@ -60,12 +60,13 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         {
             if (TempMetablock.IsFilled)
             {
-                var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
+                var Data = FullBlocks ? TempMetablock.FullData : TempMetablock.Data;
+                var Compressed = CompressBlock(Data);
                 System.Diagnostics.Debug.WriteLine($"Metadata: {Dst.Count:x06} l {Compressed.Length:x04} ({Compressed.Length}): " +
-                    $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
+                    $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}  unc:{Data.Length}"); // DEBUG
                 Dst.AddRange(Compressed);
 
-                TestCompressorData(Compressed);
+                TestCompressorData(Data, Compressed);
 
                 TempMetablock = new FragmentBlock(Dst.Count, BlockSize);
             }
@@ -88,7 +89,7 @@ namespace NyaFs.Filesystem.SquashFs.Builder
             return Ref;
         }
 
-        private void TestCompressorData(byte[] Compressed)
+        private void TestCompressorData(byte[] Data, byte[] Compressed)
         {
             // DEBUG
             if (Compressor != null)
@@ -96,10 +97,30 @@ namespace NyaFs.Filesystem.SquashFs.Builder
                 if (AddHeader)
                 {
                     if ((Compressed[1] & 0x80) == 0)
-                        Compressor.Decompress(Compressed.ReadArray(2, Compressed.Length - 2));
+                    {
+                        var Dec = Compressor.Decompress(Compressed.ReadArray(2, Compressed.Length - 2));
+                        if (Data.Length != Dec.Length)
+                            throw new InvalidOperationException("Decompressed data length is not equal source! Check compressor or decompressor...");
+
+                        for(int i = 0; i < Data.Length; i++)
+                        {
+                            if(Data[i] != Dec[i])
+                                throw new InvalidOperationException("Decompressed data is not equal source! Check compressor or decompressor...");
+                        }
+                    }
                 }
                 else
-                    Compressor.Decompress(Compressed);
+                {
+                    var Dec = Compressor.Decompress(Compressed);
+                    if (Data.Length != Dec.Length)
+                        throw new InvalidOperationException("Decompressed data length is not equal source! Check compressor or decompressor...");
+
+                    for (int i = 0; i < Data.Length; i++)
+                    {
+                        if (Data[i] != Dec[i])
+                            throw new InvalidOperationException("Decompressed data is not equal source! Check compressor or decompressor...");
+                    }
+                }
             }
         }
 
@@ -107,12 +128,14 @@ namespace NyaFs.Filesystem.SquashFs.Builder
         {
             if (TempMetablock.DataSize > 0)
             {
-                var Compressed = CompressBlock(FullBlocks ? TempMetablock.FullData : TempMetablock.Data);
+                var Data = FullBlocks ? TempMetablock.FullData : TempMetablock.Data;
+
+                var Compressed = CompressBlock(Data);
                 System.Diagnostics.Debug.WriteLine($"Metadata Flush: {Dst.Count:x06} l {Compressed.Length:x04} ({Compressed.Length}): " +
-                    $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}"); // DEBUG
+                    $"{Compressed[0]:x02} {Compressed[1]:x02} {Compressed[2]:x02} {Compressed[3]:x02}  unc:{Data.Length}"); // DEBUG
                 Dst.AddRange(Compressed);
 
-                TestCompressorData(Compressed);
+                TestCompressorData(Data, Compressed);
 
                 TempMetablock = new FragmentBlock(Dst.Count, BlockSize);
             }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.SquashFs.Types
 {
-    internal enum SqCompressionType
+    public enum SqCompressionType
     {
         Gzip = 1,
         Lzma = 2,

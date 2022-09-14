@@ -16,6 +16,8 @@ namespace NyaFs.Filesystem.SquashFs
         Types.SqFragmentBlockEntry[] FragmentEntries = null;
         uint[] IdTable = null;
 
+        public Types.SqCompressionType Compression => Superblock.CompressionId;
+
         public SquashFsReader(byte[] Data) : base(Data)
         {
             Init();

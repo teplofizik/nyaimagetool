@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Extension.Array;
+using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace NyaFs.Filesystem.SquashFs.Compression
 {
     internal class Lz4 : BaseCompressor
     {
-        internal Lz4()
+        internal Lz4() : base(8)
         {
-
+            Version = 1; // LZ4_LEGACY
+            Flags = 0;   // 
         }
 
         internal Lz4(byte[] Raw, long Offset) : base(Raw, Offset, 8)
@@ -36,17 +39,20 @@ namespace NyaFs.Filesystem.SquashFs.Compression
             set { WriteUInt32(4, Convert.ToUInt32(value)); }
         }
 
-        internal override byte[] Compress(byte[] data)
+        internal override byte[] Compress(byte[] Data)
         {
-            throw new NotImplementedException();
+            var Res = new byte[Data.Length * 2];
+
+            int Size = FT.LZ4.LZ4Codec.Encode(Data, 0, Data.Length, Res, 0, Res.Length, FT.LZ4.LZ4Level.L10_OPT);
+            return Res.ReadArray(0, Size);
         }
 
         internal override byte[] Decompress(byte[] Data)
         {
-            var Res = new byte[8192];
+            var Res = new byte[0x20000];
 
-            FT.LZ4.LZ4Codec.Decode(Data, 0, Data.Length, Res, 0, Res.Length);
-            return Res;
+            var Size = FT.LZ4.LZ4Codec.Decode(Data, 0, Data.Length, Res, 0, Res.Length);
+            return Res.ReadArray(0, Size);
         }
 
         [Flags]

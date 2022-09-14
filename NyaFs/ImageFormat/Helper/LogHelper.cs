@@ -21,12 +21,15 @@ namespace NyaFs.ImageFormat.Helper
         {
             string FsType = FitHelper.GetFilesystemType(Fs.FilesystemType);
             Log.Ok(1, "Filesystem:");
-            Log.Write(1, $"  Operating System: {FitHelper.GetOperatingSystem(Fs.Info.OperatingSystem)}");
-            Log.Write(1, $"      Architecture: {FitHelper.GetCPUArchitecture(Fs.Info.Architecture)}");
-            Log.Write(1, $"       Compression: {FitHelper.GetCompression(Fs.Info.Compression)}");
-            Log.Write(1, $"              Type: {FitHelper.GetType(Fs.Info.Type)}");
-            Log.Write(1, $"        Filesystem: {FsType}");
-            Log.Write(1, $"      Content size: {Fs.GetContentSize()}");
+            Log.Write(1, $"    Operating System: {FitHelper.GetOperatingSystem(Fs.Info.OperatingSystem)}");
+            Log.Write(1, $"        Architecture: {FitHelper.GetCPUArchitecture(Fs.Info.Architecture)}");
+            Log.Write(1, $"         Compression: {FitHelper.GetCompression(Fs.Info.Compression)}");
+            Log.Write(1, $"                Type: {FitHelper.GetType(Fs.Info.Type)}");
+            Log.Write(1, $"          Filesystem: {FsType}");
+            if (Fs.FilesystemType == Types.FsType.SquashFs)
+                Log.Write(1, $"Squashfs compression: {FitHelper.GetCompression(Fs.SquashFsCompression)}");
+            
+            Log.Write(1, $"        Content size: {Fs.GetContentSize()}");
         }
 
         public static void DevtreeInfo(Elements.Dtb.DeviceTree Dtb)

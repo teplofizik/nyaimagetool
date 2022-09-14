@@ -6,18 +6,15 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Elements.Fs
 {
-    // cpio
-    // gzipped cpio
-    // ext4
-    // gzipped ext4
-    // legacy gzipped cpio
-    // legacy gzipped ext4
-    // fit => gzipped cpio
-    // fit => gzipped ext4
 
     public class LinuxFilesystem
     {
         public NyaFs.Filesystem.Universal.Filesystem Fs = new NyaFs.Filesystem.Universal.Filesystem();
+
+        /// <summary>
+        /// Filesystem type
+        /// </summary>
+        public Filesystem.SquashFs.Types.SqCompressionType SquashFsCompression = Filesystem.SquashFs.Types.SqCompressionType.Gzip;
 
         /// <summary>
         /// Filesystem type

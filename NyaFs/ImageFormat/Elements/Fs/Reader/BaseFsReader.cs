@@ -6,7 +6,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
 {
     public class BaseFsReader : Reader
     {
-        Filesystem.Universal.IFilesystemReader FsReader;
+        protected Filesystem.Universal.IFilesystemReader FsReader;
         Types.FsType FsType;
 
         public BaseFsReader(Types.FsType FsType, Filesystem.Universal.IFilesystemReader FsReader)

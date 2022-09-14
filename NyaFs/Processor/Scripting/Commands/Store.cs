@@ -183,7 +183,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "legacy": return new ImageFormat.Elements.Fs.Writer.LegacyWriter(Path);
                     case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioFsWriter(Path);
                     case "ext2": return new ImageFormat.Elements.Fs.Writer.Ext2FsWriter(ImageFormat.Elements.Fs.Writer.Writer.DetectFixDiskSize(Fs, 0x800000), Path);
-                    case "squashfs": return new ImageFormat.Elements.Fs.Writer.SquashFsWriter(Fs.Info.Compression, Path);
+                    case "squashfs": return new ImageFormat.Elements.Fs.Writer.SquashFsWriter(Fs.SquashFsCompression, Path);
                     case "lz4":
                     case "lzma":
                     case "gz":

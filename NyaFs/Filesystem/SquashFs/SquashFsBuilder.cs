@@ -55,44 +55,46 @@ namespace NyaFs.Filesystem.SquashFs
         private uint MetadataBlockSize = 0x2000u;
         private uint MaxNodesPerMetadataBlock = 200;
 
-        public SquashFsBuilder(CompressionType Type)
+        public SquashFsBuilder(Types.SqCompressionType Type)
         {
             Superblock.Flags |= Types.SqSuperblockFlags.UNCOMPRESSED_INODES;
             InitCompressor(Type);
         }
 
-        private void InitCompressor(CompressionType Type)
+        private void InitCompressor(Types.SqCompressionType Type)
         {
             switch (Type)
             {
-                case CompressionType.IH_COMP_LZMA:
+                case Types.SqCompressionType.Lzma:
                     Superblock.CompressionId = Types.SqCompressionType.Lzma;
                     Comp = new Compression.Lzma();
                     break;
 
-                case CompressionType.IH_COMP_GZIP:
+                case Types.SqCompressionType.Gzip:
                     Superblock.CompressionId = Types.SqCompressionType.Gzip;
                     Comp = new Compression.Gzip();
                     break;
 
-                case CompressionType.IH_COMP_LZ4:
+                case Types.SqCompressionType.Lz4:
                     Superblock.CompressionId = Types.SqCompressionType.Lz4;
                     Comp = new Compression.Lz4();
+                    // Add compression options!..
                     break;
 
-                case CompressionType.IH_COMP_LZO:
+                case Types.SqCompressionType.Lzo:
                     Superblock.CompressionId = Types.SqCompressionType.Lzo;
                     Comp = new Compression.Lzo();
                     break;
 
-                case CompressionType.IH_COMP_ZSTD:
+                case Types.SqCompressionType.Zstd:
                     Superblock.CompressionId = Types.SqCompressionType.Zstd;
                     Comp = new Compression.Zstd();
                     break;
 
-                    //case Types.SqCompressionType.Xz:
-                    //    Comp = new Compression.Xz();
-                    //    break;
+                case Types.SqCompressionType.Xz:
+                    Superblock.CompressionId = Types.SqCompressionType.Xz;
+                    Comp = new Compression.Xz();
+                    break;
             }
         }
 
@@ -427,6 +429,7 @@ namespace NyaFs.Filesystem.SquashFs
             SB.ExportTableStart = Superblock.ExportTableStart;
             SB.INodeTableStart = Superblock.INodeTableStart;
             SB.DirectoryTableStart = Superblock.DirectoryTableStart;
+            SB.Flags = Superblock.Flags;
         }
 
         private Builder.Nodes.Dir GetParentDirectory(string Path)
@@ -476,6 +479,18 @@ namespace NyaFs.Filesystem.SquashFs
                 throw new InvalidOperationException($"Cannot add entry with path {Path}: no parent dir.");
         }
 
+        private void AddCompressorOptions(List<byte> Dst)
+        {
+            if(Superblock.CompressionId == Types.SqCompressionType.Lz4)
+            {
+                var Writer = new Builder.MetadataWriter(Dst, 0, 0x8000, Comp);
+                Writer.Write(Comp.getPacket());
+                Writer.Flush();
+
+                Superblock.Flags |= Types.SqSuperblockFlags.COMPRESSOR_OPTIONS;
+            }
+        }
+
         /// <summary>
         /// Get builded filesystem image
         /// </summary>
@@ -488,6 +503,7 @@ namespace NyaFs.Filesystem.SquashFs
             PreprocessNodes();
             PrepareFragmentTable();
 
+            AddCompressorOptions(Res);
             AppendData(Res);
             AppendINodeTable(Res);
             AppendDirectoryTable(Res);

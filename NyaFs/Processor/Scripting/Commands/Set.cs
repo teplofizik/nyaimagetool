@@ -42,10 +42,10 @@ namespace NyaFs.Processor.Scripting.Commands
                         return false;
                     }
 
-                    var AllowedParams = new string[] { "os", "arch", "type", "name", "load", "entry", "compression", "filesystem" };
+                    var AllowedParams = new string[] { "os", "arch", "type", "name", "load", "entry", "compression", "filesystem", "squashfs.compression" };
                     if (!AllowedParams.Contains(Args[1]))
                     {
-                        Log.Error(0, "Invalid parameter name. Must be one of: os, arch, type, name, load, entry, compression, filesystem");
+                        Log.Error(0, "Invalid parameter name. Must be one of: os, arch, type, name, load, entry, compression, filesystem, squashfs.compression");
                         return false;
                     }
                 }
@@ -147,8 +147,30 @@ namespace NyaFs.Processor.Scripting.Commands
                                 Fs.FilesystemType = ImageFormat.Types.FsType.Ext2;
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: ext2!");
                             }
+                            else if (Value == "squashfs")
+                            {
+                                Fs.FilesystemType = ImageFormat.Types.FsType.SquashFs;
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: squashfs!");
+                            }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Unsupported filesystem type: {Value}");
+                        }
+                    case "squashfs.compression":
+                        {
+                            if (Type != "ramfs")
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot set squashfs compression type to non-ramfs image!");
+
+                            try
+                            {
+                                var Fs = Processor.GetFs();
+                                Fs.SquashFsCompression = ParseSqCompression(Value);
+
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set compression ok: {Value}!");
+                            }
+                            catch (Exception)
+                            {
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown compression: {Value}!");
+                            }
                         }
                     case "compression":
                         {
@@ -270,6 +292,21 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "xtensa": return ImageFormat.Types.CPU.IH_ARCH_XTENSA; // Xtensa
                     case "riscv": return ImageFormat.Types.CPU.IH_ARCH_RISCV; // RISC-V
                     default: return ImageFormat.Types.CPU.IH_ARCH_INVALID;
+                }
+            }
+
+            Filesystem.SquashFs.Types.SqCompressionType ParseSqCompression(string Compression)
+            {
+                switch (Compression.ToLower())
+                {
+                    case "gzip": return Filesystem.SquashFs.Types.SqCompressionType.Gzip;
+                    case "lzma": return Filesystem.SquashFs.Types.SqCompressionType.Lzma;
+                    case "lz4": return Filesystem.SquashFs.Types.SqCompressionType.Lz4;
+                    case "xz": return Filesystem.SquashFs.Types.SqCompressionType.Xz;
+                    case "lzo": return Filesystem.SquashFs.Types.SqCompressionType.Lzo;
+                    case "zstd": return Filesystem.SquashFs.Types.SqCompressionType.Zstd;
+                    default:
+                        throw new ArgumentException("Unsupported compression type");
                 }
             }
 

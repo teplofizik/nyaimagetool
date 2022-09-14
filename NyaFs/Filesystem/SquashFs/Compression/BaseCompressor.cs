@@ -9,6 +9,11 @@ namespace NyaFs.Filesystem.SquashFs.Compression
     {
         protected readonly bool HasMetadata;
 
+        internal BaseCompressor(long Size) : base(Size)
+        {
+            HasMetadata = false;
+        }
+
         internal BaseCompressor() : base(null, 0, 0)
         {
             HasMetadata = false;
