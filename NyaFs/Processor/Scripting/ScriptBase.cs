@@ -38,6 +38,10 @@ namespace NyaFs.Processor.Scripting
             Add(new Commands.Fs.Dir());
             Add(new Commands.Fs.File());
             Add(new Commands.Fs.SLink());
+            Add(new Commands.Fs.Block());
+            Add(new Commands.Fs.Char());
+            Add(new Commands.Fs.Fifo());
+            Add(new Commands.Fs.Sock());
             Add(new Commands.Fs.Rm());
             Add(new Commands.Fs.Chmod());
             Add(new Commands.Fs.Chown());

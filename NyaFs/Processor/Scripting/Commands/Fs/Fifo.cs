@@ -4,9 +4,9 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Commands.Fs
 {
-    public class Dir : ScriptStepGenerator
+    public class Fifo : ScriptStepGenerator
     {
-        public Dir() : base("dir")
+        public Fifo() : base("fifo")
         {
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
@@ -20,18 +20,18 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
         {
             var A = Args.RawArgs;
 
-            return new DirScriptStep(A[0], Utils.ConvertMode(A[1]), Convert.ToUInt32(A[2]), Convert.ToUInt32(A[3]));
+            return new FifoScriptStep(A[0], Utils.ConvertMode(A[1]), Convert.ToUInt32(A[2]), Convert.ToUInt32(A[3]));
 
         }
 
-        public class DirScriptStep : ScriptStep
+        public class FifoScriptStep : ScriptStep
         {
             string Path = null;
             uint User = uint.MaxValue;
             uint Group = uint.MaxValue;
             uint Mode = uint.MaxValue;
 
-            public DirScriptStep(string Path, uint Mode, uint User, uint Group) : base("dir")
+            public FifoScriptStep(string Path, uint Mode, uint User, uint Group) : base("fifo")
             {
                 this.Path  = Path;
                 this.User  = User;
@@ -49,9 +49,9 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs.Exists(Path))
                 {
                     var Item = Fs.GetElement(Path);
-                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.Fifo)
                     {
-                        var File = Item as Filesystem.Universal.Items.Dir;
+                        var File = Item as Filesystem.Universal.Items.Fifo;
 
                         File.Mode = Mode;
                         File.User = User;
@@ -59,20 +59,20 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
 
                         File.Modified = DateTime.Now;
 
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} updated!");
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Fifo {Path} updated!");
                     }
                     else
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} is not dir!");
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} is not Fifo!");
                 }
                 else
                 {
                     var Parent = Fs.GetParentDirectory(Path);
                     if (Parent != null)
                     {
-                        var File = new Filesystem.Universal.Items.Dir(Path, User, Group, Mode);
+                        var File = new Filesystem.Universal.Items.Fifo(Path, User, Group, Mode);
 
                         Parent.Items.Add(File);
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} added!");                    }
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Fifo {Path} added!");                    }
                     else
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Parent dir for {Path} is not found!");
                 }

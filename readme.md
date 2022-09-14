@@ -277,6 +277,26 @@ Add symlink to <target>:
 slink <path> <target> <mode> <uid> <gid>
 ```
 
+Add char device:
+```
+char <path> <major> <minor> <mode> <uid> <gid>
+```
+
+Add block device:
+```
+block <path> <major> <minor> <mode> <uid> <gid>
+```
+
+Add socket:
+```
+sock <path> <mode> <uid> <gid>
+```
+
+Add fifo:
+```
+fifo <path> <mode> <uid> <gid>
+```
+
 Remove file or dir or etc:
 ```
 rm <path>

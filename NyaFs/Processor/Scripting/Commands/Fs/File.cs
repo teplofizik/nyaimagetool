@@ -108,7 +108,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                             var File = new Filesystem.Universal.Items.File(Path, User, Group, Mode, Content);
 
                             Parent.Items.Add(File);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} added!");
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"File {Path} added!");
                         }
                         else
                             return new ScriptStepResult(ScriptStepStatus.Error, $"File {Path} not exists! Cannot update. Specify user, group and mode to add file.");

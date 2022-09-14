@@ -4,12 +4,14 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Commands.Fs
 {
-    public class Dir : ScriptStepGenerator
+    public class Char : ScriptStepGenerator
     {
-        public Dir() : base("dir")
+        public Char() : base("char")
         {
             AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                     new Params.FsPathScriptArgsParam(),
+                    new Params.NumberScriptArgsParam("major"),
+                    new Params.NumberScriptArgsParam("minor"),
                     new Params.ModeScriptArgsParam(),
                     new Params.NumberScriptArgsParam("user"),
                     new Params.NumberScriptArgsParam("group")
@@ -20,23 +22,26 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
         {
             var A = Args.RawArgs;
 
-            return new DirScriptStep(A[0], Utils.ConvertMode(A[1]), Convert.ToUInt32(A[2]), Convert.ToUInt32(A[3]));
-
+            return new CharScriptStep(A[0], Convert.ToUInt32(A[1]), Convert.ToUInt32(A[2]), Utils.ConvertMode(A[3]), Convert.ToUInt32(A[4]), Convert.ToUInt32(A[5]));
         }
 
-        public class DirScriptStep : ScriptStep
+        public class CharScriptStep : ScriptStep
         {
-            string Path = null;
-            uint User = uint.MaxValue;
-            uint Group = uint.MaxValue;
-            uint Mode = uint.MaxValue;
+            string Path;
+            uint User;
+            uint Group;
+            uint Mode;
+            uint Major;
+            uint Minor;
 
-            public DirScriptStep(string Path, uint Mode, uint User, uint Group) : base("dir")
+            public CharScriptStep(string Path, uint Major, uint Minor, uint Mode, uint User, uint Group) : base("char")
             {
                 this.Path  = Path;
                 this.User  = User;
                 this.Group = Group;
                 this.Mode  = Mode;
+                this.Major = Major;
+                this.Minor = Minor;
             }
 
             public override ScriptStepResult Exec(ImageProcessor Processor)
@@ -49,30 +54,36 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs.Exists(Path))
                 {
                     var Item = Fs.GetElement(Path);
-                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+                    if (Item.ItemType == Filesystem.Universal.Types.FilesystemItemType.Character)
                     {
-                        var File = Item as Filesystem.Universal.Items.Dir;
+                        var File = Item as Filesystem.Universal.Items.Char;
 
                         File.Mode = Mode;
                         File.User = User;
                         File.Group = Group;
 
+                        File.Major = Major;
+                        File.Minor = Minor;
+
                         File.Modified = DateTime.Now;
 
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} updated!");
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Char device {Path} updated!");
                     }
                     else
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} is not dir!");
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} is not Char device!");
                 }
                 else
                 {
                     var Parent = Fs.GetParentDirectory(Path);
                     if (Parent != null)
                     {
-                        var File = new Filesystem.Universal.Items.Dir(Path, User, Group, Mode);
+                        var File = new Filesystem.Universal.Items.Char(Path, User, Group, Mode);
+
+                        File.Major = Major;
+                        File.Minor = Minor;
 
                         Parent.Items.Add(File);
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} added!");                    }
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Char device {Path} added!");                    }
                     else
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Parent dir for {Path} is not found!");
                 }
