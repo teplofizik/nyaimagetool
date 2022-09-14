@@ -12,7 +12,7 @@ There is possible to add or update files in ramfs image.
 Supported at now:
 1. CPIO ASCII (RW)
 2. EXT2 (RW)
-3. SquashFs (R)
+3. SquashFs (RW)
 
 ## Supported compression types
 Supported at now:
@@ -22,7 +22,7 @@ Supported at now:
 4. BZIP2 (RW)
 5. XZ (R)
 6. LZO (R)
-7. ZStd (R)
+7. ZStd (RW)
 
 LZMA compression is provided by LZMA SDK package.
 LZ4 compression is provided by FT.LZ4 package.
@@ -156,6 +156,11 @@ store <filename.fs.ct> ramfs <compression>
 ```
 (compression) is "gzip", "lz4", "lzma", "bzip2"
 
+Store fs as squashfs image:
+```
+store <filename.cpio> ramfs squashfs
+```
+
 Store fs as ext2 image:
 ```
 store <filename.ext2> ramfs ext2
@@ -199,7 +204,13 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs' or 'cpio'.
+
+Change squash compression type:
+```
+set ramfs squashfs.compression <compression>
+```
+(compression) is one of "gzip", "lzma", "lz4", "zstd"
 
 Update target OS for image:
 ```
@@ -226,7 +237,7 @@ Set compression type (for FIT/legacy):
 ```
 set <imagetype> compression <compression>
 ```
-(compression) is "none", "gzip", "lzma", "lz4", "bzip2"
+(compression) is "none", "gzip", "lzma", "lz4", "bzip2", "zstd"
 
 Set entry address (for kernel):
 ```
