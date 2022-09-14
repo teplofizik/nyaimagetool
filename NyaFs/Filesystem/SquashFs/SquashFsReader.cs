@@ -80,7 +80,8 @@ namespace NyaFs.Filesystem.SquashFs
             for (int i = 0; i < FragmentBlocksCount; i++)
             {
                 var Offset = Convert.ToInt64(Superblock.FragmentTableStart) + 0x08 * i;
-                var B = ReadMetadata((long)ReadUInt64(Offset), 0, Superblock.FragmentEntryCount * 0x10);
+                var Address = (long)ReadUInt64(Offset);
+                var B = ReadMetadata(Address, 0, Superblock.FragmentEntryCount * 0x10);
 
                 for (int e = 0; e < Superblock.FragmentEntryCount; e++)
                 {

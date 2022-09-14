@@ -302,8 +302,8 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "gzip": return Filesystem.SquashFs.Types.SqCompressionType.Gzip;
                     case "lzma": return Filesystem.SquashFs.Types.SqCompressionType.Lzma;
                     case "lz4": return Filesystem.SquashFs.Types.SqCompressionType.Lz4;
-                    case "xz": return Filesystem.SquashFs.Types.SqCompressionType.Xz;
-                    case "lzo": return Filesystem.SquashFs.Types.SqCompressionType.Lzo;
+                    //case "xz": return Filesystem.SquashFs.Types.SqCompressionType.Xz;
+                    //case "lzo": return Filesystem.SquashFs.Types.SqCompressionType.Lzo;
                     case "zstd": return Filesystem.SquashFs.Types.SqCompressionType.Zstd;
                     default:
                         throw new ArgumentException("Unsupported compression type");

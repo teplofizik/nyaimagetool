@@ -191,6 +191,9 @@ namespace NyaFs.Filesystem.SquashFs
                     AddBlocks(Dst, F);
                 }
             }
+
+            FragmentDataStart = Convert.ToUInt64(Dst.Count);
+            Dst.AddRange(FragmentBlock);
         }
 
         private void PrepareFragmentTable()
@@ -238,10 +241,9 @@ namespace NyaFs.Filesystem.SquashFs
         {
             System.Diagnostics.Debug.WriteLine($"AppendFragmentTable data: {Dst.Count:x06}");
             // Write fragment tables list
-            FragmentDataStart = Convert.ToUInt64(Dst.Count);
-            Dst.AddRange(FragmentBlock);
 
             var Writer = new Builder.MetadataWriter(Dst, 0, MetadataBlockSize, Comp);
+            Writer.FullBlocks = false;
             uint LastTable = Convert.ToUInt32(Dst.Count);
             FragmentTablesList.Add(LastTable);
             //foreach (var F in Fragments)
@@ -307,6 +309,7 @@ namespace NyaFs.Filesystem.SquashFs
 
             Writer.Flush();
             Dst.AddRange(Temp.ToArray());
+            System.Diagnostics.Debug.WriteLine($"AppendDirectoryTable data end: {Dst.Count:x06}");
 
             // Update dirs data refs
             foreach (var N in Nodes)
@@ -352,6 +355,7 @@ namespace NyaFs.Filesystem.SquashFs
 
             var Temp = new List<byte>();
             Builder.MetadataWriter Writer = new Builder.MetadataWriter(Temp, 0, MetadataBlockSize, null);
+            Writer.FullBlocks = true;
             for (int b = 0; b < NodesBlocks.Count; b++)
             {
                 System.Diagnostics.Debug.WriteLine($"Node block {b}: offset {Temp.Count:x06}");

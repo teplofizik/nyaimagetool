@@ -23,7 +23,15 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
             base.ReadToFs(Dst);
 
             var Reader = FsReader as Filesystem.SquashFs.SquashFsReader;
-            Dst.SquashFsCompression = Reader.Compression;
+            var Compression = Reader.Compression;
+            if ((Compression == Filesystem.SquashFs.Types.SqCompressionType.Xz) ||
+               (Compression == Filesystem.SquashFs.Types.SqCompressionType.Lzo))
+            {
+                Dst.SquashFsCompression = Filesystem.SquashFs.Types.SqCompressionType.Gzip;
+                Log.Warning(0, "Compression of loaded squashfs filesystem can not be used on writing. Compression is changed to default gzip compression.");
+            }
+            else
+                Dst.SquashFsCompression = Reader.Compression;
         }
     }
 }
