@@ -10,13 +10,13 @@ namespace NyaFs.Filesystem.Universal.Items
 
         public SymLink(string Filename, uint User, uint Group, uint Mode, string Target) : base(Types.FilesystemItemType.SymLink, Filename, User, Group, Mode)
         {
-            this.Target = Target;
+            this.Target = (Target == null) ? "" : Target;
         }
 
         public override string ToString()
         {
             return $"LINK {Filename} {User}:{Group} {Mode:x03} => {Target}";
         }
-        public override long Size => Target.Length;
+        public override long Size => Target?.Length ?? 0;
     }
 }

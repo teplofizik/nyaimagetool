@@ -9,6 +9,7 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
         Types.Android.LegacyAndroidImage Image;
 
         public AndroidReader(string Filename) : this(System.IO.File.ReadAllBytes(Filename)) { }
+
         public AndroidReader(byte[] Raw)
         {
             Image = new Types.Android.LegacyAndroidImage(Raw);
@@ -18,11 +19,28 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
         {
             if(Image.IsMagicCorrect)
             {
-                Dst.Image = Image.Kernel;
-                Dst.Info.Compression = Types.CompressionType.IH_COMP_NONE;
-                Dst.Info.DataLoadAddress = Image.KernelAddress;
-                Dst.Info.EntryPointAddress = Image.KernelAddress;
+                var Version = Image.HeaderVersion;
+                if (Version < 3)
+                {
+                    ReadToKernelv0(Dst);
+                }
+                else
+                {
+                    // Different image format!..
+                    throw new NotImplementedException("Android image v3-4 are not supported now!");
+                }
             }
+        }
+
+        private void ReadToKernelv0(LinuxKernel Dst)
+        {
+
+
+            // TODO: detect image format...
+            Dst.Info.Compression = Types.CompressionType.IH_COMP_NONE;
+            Dst.Info.DataLoadAddress = Image.KernelAddress;
+            Dst.Info.EntryPointAddress = Image.KernelAddress;
+            Dst.Image = Image.Kernel;
         }
     }
 }

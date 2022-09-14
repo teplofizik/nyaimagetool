@@ -59,7 +59,7 @@ namespace NyaFs.ImageFormat.Types.Android
         }
 
         /// <summary>
-        /// Second size in bytes 
+        /// Second bootloader size in bytes 
         /// </summary>
         public uint SecondSize
         {
@@ -68,7 +68,7 @@ namespace NyaFs.ImageFormat.Types.Android
         }
 
         /// <summary>
-        /// Second address 
+        /// Second bootloader address 
         /// </summary>
         public uint SecondAddress
         {
@@ -157,11 +157,13 @@ namespace NyaFs.ImageFormat.Types.Android
 
         public uint KernelBase => KernelAddress - 0x8000;
 
-        private long KernelOffset => HeaderSize.GetAligned(PageSize);
-        private long RamdiskOffset => (KernelOffset + KernelSize).GetAligned(PageSize);
+        protected long KernelOffset => HeaderSize.GetAligned(PageSize);
+        protected long RamdiskOffset => (KernelOffset + KernelSize).GetAligned(PageSize);
+        protected long SecondOffset => (RamdiskOffset + RamdiskSize).GetAligned(PageSize);
 
         public byte[] Kernel => ReadArray(KernelOffset, KernelSize);
         public byte[] Ramdisk => ReadArray(RamdiskOffset, RamdiskSize);
+        public byte[] Second => ReadArray(SecondOffset, SecondSize);
 
         public HashType DetectedHashType
         {

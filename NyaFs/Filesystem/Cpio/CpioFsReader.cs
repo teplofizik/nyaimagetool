@@ -28,11 +28,11 @@ namespace NyaFs.Filesystem.Cpio
                     var F = new Types.CpioNode(Raw);
 
                     if (!FI.IsTrailer)
-                    {
                         Nodes.Add(F);
+                    else
+                        break;
 
-                        Offset += FI.FullFileBlockSize;
-                    }
+                    Offset += FI.FullFileBlockSize;
                 }
                 else
                     break;
@@ -122,7 +122,7 @@ namespace NyaFs.Filesystem.Cpio
                 if(Pos == 0)
                 {
                     Pos = Pos + Path.Length + 1;
-                    if(UPath.IndexOf('/', Pos) < 0)
+                    if((Pos < UPath.Length) && UPath.IndexOf('/', Pos) < 0)
                     {
                         Res.Add(new FilesystemEntry(N.FsType, UPath, N.UserId, N.GroupId, N.HexMode, Convert.ToUInt32(N.Content.Length)));
                     }
