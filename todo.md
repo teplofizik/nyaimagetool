@@ -30,3 +30,6 @@ Different resources (TVIP splash)
 Access, adding and editing files from exist commanders like mc, WinSCP and other
 SCP
 SFTP
+
+## Links
+1. [filesystems info](https://gitlab.arm.com/linux-arm/linux-ae/-/tree/WIP-pmu-nmi/fs)

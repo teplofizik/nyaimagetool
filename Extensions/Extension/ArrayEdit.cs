@@ -221,12 +221,13 @@ namespace Extension.Array
             long i;
             byte[] Res = new byte[Length];
 
-            for (i = 0; i < Length; i++)
+            long MaxCopySize = Data.Length - Offset;
+            if (MaxCopySize > Length)
+                System.Array.Copy(Data, Offset, Res, 0, Length);
+            else
             {
-                if (Offset + i < Data.Length)
-                    Res[i] = Data[Offset + i] ;
-                else
-                    Res[i] = 0;
+                System.Array.Copy(Data, Offset, Res, 0, MaxCopySize);
+                for (i = MaxCopySize; i < Length; i++) Res[i] = 0;
             }
 
             return Res;

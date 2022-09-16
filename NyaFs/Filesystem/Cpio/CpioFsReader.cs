@@ -18,14 +18,14 @@ namespace NyaFs.Filesystem.Cpio
         private void Init()
         {
             long Offset = 0;
-            while (Offset < Data.Length)
+            while (Offset < Raw.Length)
             {
-                var FI = new Types.CpioFileInfo(Data, Offset);
+                var FI = new Types.CpioFileInfo(Raw, Offset);
 
                 if (FI.IsCorrectMagic)
                 {
-                    var Raw = Data.ReadArray(Offset, FI.FullFileBlockSize);
-                    var F = new Types.CpioNode(Raw);
+                   // var Raw = Data.ReadArray(Offset, FI.FullFileBlockSize);
+                    var F = new Types.CpioNode(Raw, Offset, FI.FullFileBlockSize);
 
                     if (!FI.IsTrailer)
                         Nodes.Add(F);

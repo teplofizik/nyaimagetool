@@ -1,33 +1,30 @@
 ﻿using Extension.Array;
+using Extension.Packet;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace NyaFs.Filesystem.Cpio.Types
 {
-    class CpioFileInfo
+    class CpioFileInfo : ArrayWrapper
     {
-        private byte[] Raw;
-        private long Offset;
-
-        public CpioFileInfo(byte[] Raw, long Offset)
+        public CpioFileInfo(byte[] Raw, long Offset) : base(Raw, Offset, 106)
         {
-            this.Raw = Raw;
-            this.Offset = Offset;
+
         }
 
         public bool IsCorrectMagic => Magic == "070701";
 
         private UInt32 GetAsciiValue(long HeaderOffset, int Size)
         {
-            var Text = Raw.ReadString(Offset + HeaderOffset, Size);
+            var Text = ReadString(HeaderOffset, Size);
             return Convert.ToUInt32(Text, 16);
         }
 
         /// <summary>
         /// The string 070701 for new ASCII, the string 070702 for new ASCII with CRC
         /// </summary>
-        public string Magic => Raw.ReadString(Offset, 6); 
+        public string Magic => ReadString(0, 6); 
 
         // https://developer.adobe.com/experience-manager/reference-materials/6-4/javadoc/org/apache/commons/compress/archivers/cpio/CpioArchiveEntry.html
         public UInt32 INode => GetAsciiValue(6, 8);
@@ -71,7 +68,7 @@ namespace NyaFs.Filesystem.Cpio.Types
         public long PathPadding => (110L + NameSize).MakeSizeAligned(4);
         public long HeaderWithPathSize => 110 + NameSize + PathPadding;
 
-        public string Path => Raw.ReadString(Offset + 110, NameSize - 1);
+        public string Path => ReadString(110, NameSize - 1);
 
         public long FilePadding => (HeaderWithPathSize + FileSize).MakeSizeAligned(4);
 

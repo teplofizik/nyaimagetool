@@ -8,7 +8,7 @@ using Extension.Packet;
 
 namespace NyaFs.Filesystem.Cpio.Types
 {
-    public class CpioNode : RawPacket
+    public class CpioNode : ArrayWrapper
     {
         public static UInt32 MaxNodeId = 0;
 
@@ -20,7 +20,9 @@ namespace NyaFs.Filesystem.Cpio.Types
             return (HeaderWithPathAlighedSize + DataSize).GetAligned(4);
         }
 
-        public CpioNode(byte[] Raw) : base(Raw) { }
+        public CpioNode(byte[] Raw, long Offset, long Size) : base(Raw, Offset, Size) { }
+
+        public CpioNode(byte[] Raw) : base(Raw, 0, Raw.Length) { }
 
         public CpioNode(string Path, 
                         byte[] Data, 
