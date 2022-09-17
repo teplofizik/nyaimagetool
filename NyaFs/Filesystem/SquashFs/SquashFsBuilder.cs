@@ -532,7 +532,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void Block(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode) => 
-            AddNestedNode(Path, () => new Builder.Nodes.Block(Path, Mode, User, Group, Major, Minor));
+            AddNestedNode(Path, () => new Builder.Nodes.Block(Path, User, Group, Mode, Major, Minor));
 
         /// <summary>
         /// Create char device
@@ -544,7 +544,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void Char(string Path, uint Major, uint Minor, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.Char(Path, Mode, User, Group, Major, Minor));
+            AddNestedNode(Path, () => new Builder.Nodes.Char(Path, User, Group, Mode, Major, Minor));
 
         /// <summary>
         /// Create directory
@@ -554,7 +554,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void Directory(string Path, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.Dir(Path, Mode, User, Group));
+            AddNestedNode(Path, () => new Builder.Nodes.Dir(Path, User, Group, Mode));
 
         /// <summary>
         /// Create fifo
@@ -564,7 +564,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void Fifo(string Path, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.Fifo(Path, Mode, User, Group));
+            AddNestedNode(Path, () => new Builder.Nodes.Fifo(Path, User, Group, Mode));
 
         /// <summary>
         /// Create file
@@ -575,7 +575,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void File(string Path, byte[] Content, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.File(Path, Mode, User, Group, Superblock.BlockSize, Content));
+            AddNestedNode(Path, () => new Builder.Nodes.File(Path, User, Group, Mode, Superblock.BlockSize, Content));
 
         /// <summary>
         /// Create socket
@@ -585,7 +585,7 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void Socket(string Path, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.Socket(Path, Mode, User, Group));
+            AddNestedNode(Path, () => new Builder.Nodes.Socket(Path, User, Group, Mode));
 
         /// <summary>
         /// Create symlink
@@ -596,6 +596,6 @@ namespace NyaFs.Filesystem.SquashFs
         /// <param name="Group">Owner group</param>
         /// <param name="Mode">Access mode</param>
         public void SymLink(string Path, string Target, uint User, uint Group, uint Mode) =>
-            AddNestedNode(Path, () => new Builder.Nodes.SymLink(Path, Mode, User, Group, Target));
+            AddNestedNode(Path, () => new Builder.Nodes.SymLink(Path, User, Group, Mode, Target));
     }
 }

@@ -1,4 +1,5 @@
-﻿using Extension.Packet;
+﻿using Extension.Array;
+using Extension.Packet;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,18 @@ namespace NyaFs.Filesystem.CramFs.Types
 {
     class CrNode : ArrayWrapper
     {
-        private int SizeWidth = 24;
+        // private int SizeWidth = 24;
+
+        public CrNode(uint Mode, uint Uid, uint Gid, uint Size, string Filename) : base(0x0C + Filename.Length.GetAligned(4))
+        {
+            this.Mode = Mode;
+            this.Size = Size;
+            UId = Uid;
+            GId = Gid;
+
+            NameLen = Convert.ToUInt32(Filename.Length);
+            WriteString(0x0C, Filename, Filename.Length);
+        }
 
         public CrNode(byte[] Data, long Offset) : base(Data, Offset, 0x0C)
         {
@@ -62,7 +74,7 @@ namespace NyaFs.Filesystem.CramFs.Types
         public uint NameLen
         {
             get { return (ReadByte(0x08) & 0x3Fu) * 4; }
-            set { WriteByte(0x08, Convert.ToByte(ReadByte(0x08) & 0xC0) | ((value / 4) & 0x3Fu)); }
+            set { WriteByte(0x08, Convert.ToByte(ReadByte(0x08) & 0xC0) | (((value + 3) / 4) & 0x3Fu)); }
         }
 
         /// <summary>
@@ -71,7 +83,7 @@ namespace NyaFs.Filesystem.CramFs.Types
         public uint Offset
         {
             get { return ((ReadUInt32(0x08) >> 6) & 0x3FFFFFFu) * 4; }
-            set { WriteUInt32(0x08, (ReadUInt32(0x08) & 0x0000003F) | ((value / 4) & 0x3FFFFFFu) << 6); }
+            set { WriteUInt32(0x08, (ReadUInt32(0x08) & 0x0000003F) | (((value + 3) / 4) & 0x3FFFFFFu) << 6); }
         }
 
         /// <summary>

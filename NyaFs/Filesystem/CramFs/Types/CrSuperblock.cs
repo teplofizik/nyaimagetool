@@ -7,6 +7,13 @@ namespace NyaFs.Filesystem.CramFs.Types
 {
     class CrSuperblock : ArrayWrapper
     {
+        public CrSuperblock() : base(0x40)
+        {
+            Magic = 0x28cd3d45;
+            Signature = "Compressed ROMFS";
+            Name = "cramfs";
+        }
+
         public CrSuperblock(byte[] Data, long Offset) : base(Data, Offset, 0x40)
         {
 

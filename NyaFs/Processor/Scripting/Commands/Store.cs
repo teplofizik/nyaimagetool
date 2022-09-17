@@ -12,7 +12,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 new string[] { "raw", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs",
-                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "ext2", "squashfs" }));
+                new string[] { "cpio", "gz", "gzip", "lzma", "lz4", "bz2", "bzip2", "legacy", "ext2", "squashfs", "cramfs" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree",
                 new string[] { "dtb" }));
@@ -184,6 +184,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "cpio": return new ImageFormat.Elements.Fs.Writer.CpioFsWriter(Path);
                     case "ext2": return new ImageFormat.Elements.Fs.Writer.Ext2FsWriter(ImageFormat.Elements.Fs.Writer.Writer.DetectFixDiskSize(Fs, 0x800000), Path);
                     case "squashfs": return new ImageFormat.Elements.Fs.Writer.SquashFsWriter(Fs.SquashFsCompression, Path);
+                    case "cramfs": return new ImageFormat.Elements.Fs.Writer.CramFsWriter(Path);
                     case "lz4":
                     case "lzma":
                     case "gz":

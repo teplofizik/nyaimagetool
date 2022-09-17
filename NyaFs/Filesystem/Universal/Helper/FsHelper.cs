@@ -64,6 +64,32 @@ namespace NyaFs.Filesystem.Universal.Helper
         /// </summary>
         private static LinuxINodeType GetNodeType(uint LinuxMode) => (LinuxINodeType)(LinuxMode & 0xF000);
 
+        private static LinuxINodeType GetLinuxNodeType(Types.FilesystemItemType Type)
+        {
+            switch (Type)
+            {
+                case Types.FilesystemItemType.Fifo: return LinuxINodeType.FIFO;
+                case Types.FilesystemItemType.Character: return LinuxINodeType.CHAR;
+                case Types.FilesystemItemType.Directory: return LinuxINodeType.DIR;
+                case Types.FilesystemItemType.Block: return LinuxINodeType.BLOCK;
+                case Types.FilesystemItemType.File: return LinuxINodeType.REG;
+                case Types.FilesystemItemType.SymLink: return LinuxINodeType.LINK;
+                case Types.FilesystemItemType.Socket: return LinuxINodeType.SOCK;
+                default: return LinuxINodeType.NONE;
+            }
+        }
+
+        /// <summary>
+        /// Filesystem node type
+        /// </summary>
+        public static uint GetLinuxMode(Types.FilesystemItemType Type, uint Mode)
+        {
+            var LinuxType = GetLinuxNodeType(Type);
+
+            return (Mode & 0xFFF) | Convert.ToUInt32(LinuxType);
+        }
+
+
         /// <summary>
         /// Filesystem node type
         /// </summary>
@@ -71,13 +97,13 @@ namespace NyaFs.Filesystem.Universal.Helper
         {
             switch (GetNodeType(LinuxMode))
             {
-                case LinuxINodeType.FIFO: return Universal.Types.FilesystemItemType.Fifo;
-                case LinuxINodeType.CHAR: return Universal.Types.FilesystemItemType.Character;
-                case LinuxINodeType.DIR: return Universal.Types.FilesystemItemType.Directory;
-                case LinuxINodeType.BLOCK: return Universal.Types.FilesystemItemType.Block;
-                case LinuxINodeType.REG: return Universal.Types.FilesystemItemType.File;
-                case LinuxINodeType.LINK: return Universal.Types.FilesystemItemType.SymLink;
-                case LinuxINodeType.SOCK: return Universal.Types.FilesystemItemType.Socket;
+                case LinuxINodeType.FIFO: return Types.FilesystemItemType.Fifo;
+                case LinuxINodeType.CHAR: return Types.FilesystemItemType.Character;
+                case LinuxINodeType.DIR: return Types.FilesystemItemType.Directory;
+                case LinuxINodeType.BLOCK: return Types.FilesystemItemType.Block;
+                case LinuxINodeType.REG: return Types.FilesystemItemType.File;
+                case LinuxINodeType.LINK: return Types.FilesystemItemType.SymLink;
+                case LinuxINodeType.SOCK: return Types.FilesystemItemType.Socket;
                 default: return Types.FilesystemItemType.Unknown;
             }
         }

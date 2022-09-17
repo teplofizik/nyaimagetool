@@ -1,4 +1,5 @@
-﻿using Extension.Packet;
+﻿using Extension.Array;
+using Extension.Packet;
 using NyaFs.Filesystem.Universal;
 using NyaFs.Filesystem.Universal.Types;
 using System;
@@ -11,10 +12,21 @@ namespace NyaFs.Filesystem.CramFs
     {
         private int BlockSize = 4096;
         private Types.CrSuperblock Superblock;
+        private bool Loaded = false;
 
         public CramFsReader(byte[] Data) : base(Data)
         {
             Superblock = new Types.CrSuperblock(Data, 0);
+
+            var Copy = ReadArray(0, Raw.Length);
+            Copy.WriteUInt32(0x20, 0);
+            var Crc = Crc32.CalcCrc(Copy);
+
+            Loaded = (Crc == Superblock.FsIDCrc);
+            if(!Loaded)
+            {
+                Log.Error(0, $"Invalid CRC in cramfs image header.");
+            }
         }
 
         private Types.CrNode GetRootNode() => new Types.CrNode(Raw, 0x40);
@@ -27,6 +39,7 @@ namespace NyaFs.Filesystem.CramFs
         internal Types.CrNode[] GetDirEntries(Types.CrNode Dir)
         {
             List<Types.CrNode> Nodes = new List<Types.CrNode>();
+            
             long Offset = 0x00;
             while (Offset < Dir.Size)
             {
@@ -84,67 +97,90 @@ namespace NyaFs.Filesystem.CramFs
 
         public byte[] Read(string Path)
         {
-            var Node = GetINodeByPath(Path);
-            var Data = ReadFileData(Node.Offset, Node.Size);
+            if (Loaded)
+            {
+                var Node = GetINodeByPath(Path);
+                var Data = ReadFileData(Node.Offset, Node.Size);
 
-            return Data;
+                return Data;
+            }
+            else
+                return null;
         }
 
         public DeviceInfo ReadDevice(string Path)
         {
-            var Node = GetINodeByPath(Path);
+            if (Loaded)
+            {
+                var Node = GetINodeByPath(Path);
 
-            return new DeviceInfo(Node.Size >> 20, Node.Size & 0xFFFFF);
+                return new DeviceInfo(Node.Size >> 20, Node.Size & 0xFFFFF);
+            }
+            else
+                return null;
         }
 
         public FilesystemEntry[] ReadDir(string Path)
         {
-            var Node = GetINodeByPath(Path);
-            if (Node != null)
+            if (Loaded)
             {
-                var Entries = GetDirEntries(Node);
-                var Res = new List<FilesystemEntry>();
-
-                foreach(var E in Entries)
+                var Node = GetINodeByPath(Path);
+                if (Node != null)
                 {
-                    var Size = ((E.FsNodeType == FilesystemItemType.File) || (E.FsNodeType == FilesystemItemType.SymLink)) ? E.Size : 0;
+                    var Entries = GetDirEntries(Node);
+                    var Res = new List<FilesystemEntry>();
 
-                    var R = new FilesystemEntry(E.FsNodeType, Universal.Helper.FsHelper.CombinePath(Path, E.Name), E.UId, E.GId, E.Mode, Size);
-                    Res.Add(R);
+                    foreach (var E in Entries)
+                    {
+                        var Size = ((E.FsNodeType == FilesystemItemType.File) || (E.FsNodeType == FilesystemItemType.SymLink)) ? E.Size : 0;
+
+                        var R = new FilesystemEntry(E.FsNodeType, Universal.Helper.FsHelper.CombinePath(Path, E.Name), E.UId, E.GId, E.Mode, Size);
+                        Res.Add(R);
+                    }
+
+                    return Res.ToArray();
+                }
+            }
+
+            return new FilesystemEntry[] { };
+        }
+
+        public string ReadLink(string Path)
+        {
+            if (Loaded)
+            {
+                var Node = GetINodeByPath(Path);
+                var Data = ReadFileData(Node.Offset, Node.Size);
+
+                return UTF8Encoding.UTF8.GetString(Data);
+            }
+            else
+                return null;
+        }
+
+        private byte[] ReadFileData(uint Offset, uint Size)
+        {
+            if (Loaded)
+            {
+                long BlockCount = (Size - 1) / BlockSize + 1;
+                // Array of pointer to blocks end
+                uint[] Pointers = ReadUInt32Array(Offset, BlockCount);
+
+                var Res = new List<byte>();
+                // Start of first block
+                long Start = Offset + BlockCount * 4;
+                for (long i = 0; i < BlockCount; i++)
+                {
+                    var Data = ReadArray(Start, Pointers[i] - Start);
+                    var Uncompressed = Compression.Gzip.Decompress(Data);
+
+                    Res.AddRange(Uncompressed);
                 }
 
                 return Res.ToArray();
             }
             else
                 return null;
-        }
-
-        public string ReadLink(string Path)
-        {
-            var Node = GetINodeByPath(Path);
-            var Data = ReadFileData(Node.Offset, Node.Size);
-
-            return UTF8Encoding.UTF8.GetString(Data);
-        }
-
-        private byte[] ReadFileData(uint Offset, uint Size)
-        {
-            long BlockCount = (Size - 1) / BlockSize + 1;
-            // Array of pointer to blocks end
-            uint[] Pointers = ReadUInt32Array(Offset, BlockCount);
-
-            var Res = new List<byte>();
-            // Start of first block
-            long Start = Offset + BlockCount * 4;
-            for(long i = 0; i < BlockCount; i++)
-            {
-                var Data = ReadArray(Start, Pointers[i] - Start);
-                var Uncompressed = Compression.Gzip.Decompress(Data);
-
-                Res.AddRange(Uncompressed);
-            }
-
-            return Res.ToArray();
         }
     }
 }
