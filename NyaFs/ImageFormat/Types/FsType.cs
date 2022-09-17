@@ -10,6 +10,7 @@ namespace NyaFs.ImageFormat.Types
         Cpio,
         Ext2,
         SquashFs,
-        CramFs
+        CramFs,
+        RomFs
     }
 }

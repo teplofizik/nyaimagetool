@@ -13,6 +13,7 @@ namespace NyaFs.Filesystem.Universal.Types
         Character,
         Block,
         Fifo,
-        Socket
+        Socket,
+        HardLink // fs internal type, not exposed to user (romfs)...
     }
 }

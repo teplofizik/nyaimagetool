@@ -34,6 +34,10 @@ namespace NyaFs.ImageFormat.Elements.Fs
             if (Magic == 0x453dcd28u) // cramfs magic
                 return Types.FsType.CramFs;
 
+            if (Magic == 0x2d726f6du) // romfs magic
+                return Types.FsType.RomFs;
+
+
             if (IsExt4(Raw))
                 return Types.FsType.Ext2;
 
