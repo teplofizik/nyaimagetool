@@ -51,5 +51,61 @@ namespace NyaFs.Filesystem.Universal.Helper
             }
             return Res;
         }
+
+
+        /// <summary>
+        /// 0x1000  S_IFIFO(FIFO)
+        /// 0x2000  S_IFCHR(Character device)
+        /// 0x4000  S_IFDIR(Directory)
+        /// 0x6000  S_IFBLK(Block device)
+        /// 0x8000  S_IFREG(Regular file)
+        /// 0xA000  S_IFLNK(Symbolic link)
+        /// 0xC000  S_IFSOCK(Socket)
+        /// </summary>
+        private static LinuxINodeType GetNodeType(uint LinuxMode) => (LinuxINodeType)(LinuxMode & 0xF000);
+
+        /// <summary>
+        /// Filesystem node type
+        /// </summary>
+        public static Types.FilesystemItemType GetFsNodeType(uint LinuxMode)
+        {
+            switch (GetNodeType(LinuxMode))
+            {
+                case LinuxINodeType.FIFO: return Universal.Types.FilesystemItemType.Fifo;
+                case LinuxINodeType.CHAR: return Universal.Types.FilesystemItemType.Character;
+                case LinuxINodeType.DIR: return Universal.Types.FilesystemItemType.Directory;
+                case LinuxINodeType.BLOCK: return Universal.Types.FilesystemItemType.Block;
+                case LinuxINodeType.REG: return Universal.Types.FilesystemItemType.File;
+                case LinuxINodeType.LINK: return Universal.Types.FilesystemItemType.SymLink;
+                case LinuxINodeType.SOCK: return Universal.Types.FilesystemItemType.Socket;
+                default: return Types.FilesystemItemType.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Mode as string
+        /// </summary>
+        public static string GetModeString(uint LinuxMode) => ConvertModeToString(LinuxMode & 0xFFF);
+
+        /// <summary>
+        /// 0x1000  S_IFIFO(FIFO)
+        /// 0x2000  S_IFCHR(Character device)
+        /// 0x4000  S_IFDIR(Directory)
+        /// 0x6000  S_IFBLK(Block device)
+        /// 0x8000  S_IFREG(Regular file)
+        /// 0xA000  S_IFLNK(Symbolic link)
+        /// 0xC000  S_IFSOCK(Socket)
+        /// </summary>
+        private enum LinuxINodeType
+        {
+            NONE = 0x0000,
+            FIFO = 0x1000,
+            CHAR = 0x2000,
+            DIR = 0x4000,
+            BLOCK = 0x6000,
+            REG = 0x8000,
+            LINK = 0xA000,
+            SOCK = 0xC000
+        }
     }
 }

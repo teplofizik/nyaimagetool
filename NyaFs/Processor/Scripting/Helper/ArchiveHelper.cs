@@ -43,6 +43,7 @@ namespace NyaFs.Processor.Scripting.Helper
                     case ImageFormat.Types.FsType.Cpio: return new Tuple<string, string>("ramfs", "cpio");
                     case ImageFormat.Types.FsType.Ext2: return new Tuple<string, string>("ramfs", "ext2");
                     case ImageFormat.Types.FsType.SquashFs: return new Tuple<string, string>("ramfs", "squashfs");
+                    case ImageFormat.Types.FsType.CramFs: return new Tuple<string, string>("ramfs", "cramfs");
                 }
             }
 

@@ -82,24 +82,8 @@ namespace NyaFs.Filesystem.Ext2.Types
         /// <summary>
         /// Filesystem node type
         /// </summary>
-        public NyaFs.Filesystem.Universal.Types.FilesystemItemType FsNodeType
-        {
-            get
-            {
-                switch(NodeType)
-                {
-                    case ExtINodeType.FIFO: return Universal.Types.FilesystemItemType.Fifo;
-                    case ExtINodeType.CHAR: return Universal.Types.FilesystemItemType.Character;
-                    case ExtINodeType.DIR: return Universal.Types.FilesystemItemType.Directory;
-                    case ExtINodeType.BLOCK: return Universal.Types.FilesystemItemType.Block;
-                    case ExtINodeType.REG: return Universal.Types.FilesystemItemType.File;
-                    case ExtINodeType.LINK: return Universal.Types.FilesystemItemType.SymLink;
-                    case ExtINodeType.SOCK: return Universal.Types.FilesystemItemType.Socket;
-                    default: return Universal.Types.FilesystemItemType.Unknown;
-                }
-            }
-        }
-
+        public Universal.Types.FilesystemItemType FsNodeType => Universal.Helper.FsHelper.GetFsNodeType(Mode);
+ 
         /// <summary>
         /// Mode as string
         /// </summary>

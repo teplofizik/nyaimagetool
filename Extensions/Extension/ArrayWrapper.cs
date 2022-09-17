@@ -30,6 +30,11 @@ namespace Extension.Packet
             StructSize = Size;
         }
 
+        protected void Resize(long Size)
+        {
+            StructSize = Size;
+        }
+
         /// <summary>
         /// Go to next element (as c pointer)
         /// </summary>

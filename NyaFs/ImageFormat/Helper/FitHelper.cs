@@ -15,6 +15,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.FsType.Cpio: return "cpio";
                 case Types.FsType.Ext2: return "ext2";
                 case Types.FsType.SquashFs: return "squashfs";
+                case Types.FsType.CramFs: return "cramfs";
                 case Types.FsType.Unknown:
                 default:
                     return "unknown";
@@ -28,6 +29,7 @@ namespace NyaFs.ImageFormat.Helper
                 case "cpio": return Types.FsType.Cpio;
                 case "ext2": return Types.FsType.Ext2;
                 case "squashfs": return Types.FsType.SquashFs;
+                case "cramfs": return Types.FsType.CramFs;
                 default: return Types.FsType.Unknown;
             }
         }

@@ -24,11 +24,15 @@ namespace NyaFs.ImageFormat.Elements.Fs
 
         public static Types.FsType DetectFs(byte[] Raw)
         {
-            if (Raw.ReadUInt32BE(0) == 0x30373037u) // CPIO start of block
+            var Magic = Raw.ReadUInt32BE(0);
+            if (Magic == 0x30373037u) // CPIO start of block
                 return Types.FsType.Cpio;
 
-            if (Raw.ReadUInt32BE(0) == 0x68737173) // hsqs magic
+            if (Magic == 0x68737173) // hsqs magic
                 return Types.FsType.SquashFs;
+
+            if (Magic == 0x453dcd28u) // cramfs magic
+                return Types.FsType.CramFs;
 
             if (IsExt4(Raw))
                 return Types.FsType.Ext2;

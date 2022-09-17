@@ -13,7 +13,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs", "cramfs" }));
 
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
@@ -224,6 +224,7 @@ namespace NyaFs.Processor.Scripting.Commands
             {
                 switch (Format)
                 {
+                    case "cramfs": return new ImageFormat.Elements.Fs.Reader.CramFsReader(Path);
                     case "squashfs": return new ImageFormat.Elements.Fs.Reader.SquashFsReader(Path);
                     case "legacy": return new ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
                     case "cpio": return new ImageFormat.Elements.Fs.Reader.CpioFsReader(Path);

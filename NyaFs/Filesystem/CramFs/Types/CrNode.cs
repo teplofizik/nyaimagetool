@@ -7,10 +7,17 @@ namespace NyaFs.Filesystem.CramFs.Types
 {
     class CrNode : ArrayWrapper
     {
+        private int SizeWidth = 24;
+
         public CrNode(byte[] Data, long Offset) : base(Data, Offset, 0x0C)
         {
-
+            Resize(NodeSize);
         }
+
+        /// <summary>
+        /// Node size
+        /// </summary>
+        public long NodeSize => 0x0C + NameLen;
 
 
         /// <summary>
@@ -32,21 +39,21 @@ namespace NyaFs.Filesystem.CramFs.Types
         }
 
         /// <summary>
-        /// Size (4, u26)
+        /// Size (4, u24)
         /// </summary>
         public uint Size
         {
-            get { return ReadUInt32(0x04) & 0x3FFFFFFu; }
-            set { WriteUInt32(0x04, (ReadUInt32(0x04) & 0xFC000000) | (value & 0x3FFFFFFu)); }
+            get { return ReadUInt32(0x04) & 0xFFFFFFu; }
+            set { WriteUInt32(0x04, (ReadUInt32(0x04) & 0xFF000000) | (value & 0xFFFFFFu)); }
         }
 
         /// <summary>
-        /// Gid (6, u6)
+        /// Gid (7, u8)
         /// </summary>
         public uint GId
         {
-            get { return Convert.ToUInt32(ReadByte(0x07) >> 2) & 0x3Fu; }
-            set { WriteByte(0x07, Convert.ToByte(ReadByte(0x07) & 0x03) | ((value & 0x3F) << 2)); }
+            get { return ReadByte(0x07); }
+            set { WriteByte(0x07, Convert.ToByte(value & 0xFF)); }
         }
 
         /// <summary>
@@ -66,5 +73,20 @@ namespace NyaFs.Filesystem.CramFs.Types
             get { return ((ReadUInt32(0x08) >> 6) & 0x3FFFFFFu) * 4; }
             set { WriteUInt32(0x08, (ReadUInt32(0x08) & 0x0000003F) | ((value / 4) & 0x3FFFFFFu) << 6); }
         }
+
+        /// <summary>
+        /// Filesystem node type
+        /// </summary>
+        public Universal.Types.FilesystemItemType FsNodeType => Universal.Helper.FsHelper.GetFsNodeType(Mode);
+
+        /// <summary>
+        /// Mode as string
+        /// </summary>
+        public string ModeStr => Universal.Helper.FsHelper.GetModeString(Mode);
+
+        /// <summary>
+        /// Filename
+        /// </summary>
+        public string Name => ReadString(0x0C, NameLen).Replace("\0", "");
     }
 }
