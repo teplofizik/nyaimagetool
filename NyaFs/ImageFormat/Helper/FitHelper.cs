@@ -45,6 +45,7 @@ namespace NyaFs.ImageFormat.Helper
                 case 0x005d: return Types.CompressionType.IH_COMP_LZMA;
                 case 0x2204: return Types.CompressionType.IH_COMP_LZ4;
                 case 0xb528: return Types.CompressionType.IH_COMP_ZSTD;
+                case 0xfd37: return Types.CompressionType.IH_COMP_XZ;
                 default: return Types.CompressionType.IH_COMP_NONE;
             }
         }
@@ -312,6 +313,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_BZIP2: return "bzip2";
                 case Types.CompressionType.IH_COMP_ZSTD: return "zstd";
                 case Types.CompressionType.IH_COMP_LZO: return "lzo";
+                case Types.CompressionType.IH_COMP_XZ: return "xz";
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");
                     throw new ArgumentException($"Unsupported compression type: {Compression}");
@@ -347,6 +349,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.CompressionType.IH_COMP_BZIP2: return Compressors.Bzip2.Decompress(Source);
                 case Types.CompressionType.IH_COMP_ZSTD: return Compressors.ZStd.Decompress(Source);
                 case Types.CompressionType.IH_COMP_LZO: return Compressors.LZO.Decompress(Source);
+                case Types.CompressionType.IH_COMP_XZ: return Compressors.Xz.Decompress(Source);
                 case Types.CompressionType.IH_COMP_NONE: return Source;
                 default:
                     Log.Error(0, $"Unsupported compression type: {Compression}");

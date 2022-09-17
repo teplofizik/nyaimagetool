@@ -49,6 +49,7 @@ namespace NyaFs.Filesystem.Cpio.Types
             SetAsciiValue(78, 8, 0); // RMajor
             SetAsciiValue(86, 8, 0); // RMinor
             SetAsciiValue(94, 8, Convert.ToUInt32(PathBytes.Length + 1)); // NameSize
+            SetAsciiValue(102, 8, 0); // Check
             WriteArray(110, PathBytes, PathBytes.Length);
             WriteArray(HeaderWithPathSize, Data, Data.Length);
         }

@@ -10,7 +10,7 @@ namespace NyaFs.Processor.Scripting.Commands
         public Load() : base("load")
         {
             AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
-                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android", "zimage" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
                 new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs", "cramfs" }));
@@ -134,6 +134,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "legacy": return new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);
                     case "fit": return new ImageFormat.Elements.Kernel.Reader.FitReader(Path);
                     case "android": return new ImageFormat.Elements.Kernel.Reader.AndroidReader(Path);
+                    case "zimage": return new ImageFormat.Elements.Kernel.Reader.zImageReader(Path);
                     case "lzma":
                     case "lz4":
                     case "gz":

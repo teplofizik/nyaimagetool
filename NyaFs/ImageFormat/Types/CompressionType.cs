@@ -22,6 +22,10 @@ namespace NyaFs.ImageFormat.Types
 		IH_COMP_LZ4,            /* lz4   Compression Used	*/
 		IH_COMP_ZSTD,           /* zstd   Compression Used	*/
 
+
+		// Not uboot formats
+		IH_COMP_XZ,             /* xz Compression Used */
+
 		IH_COMP_COUNT,
 	};
 }

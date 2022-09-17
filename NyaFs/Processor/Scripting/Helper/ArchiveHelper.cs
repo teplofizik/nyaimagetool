@@ -86,6 +86,14 @@ namespace NyaFs.Processor.Scripting.Helper
             if (Header == 0x464C457F)
                 return new Tuple<string, string>("kernel", "raw");
 
+            // Detect zImage:
+            var zImgMagic = Raw.ReadUInt32BE(0x24);
+            if (zImgMagic == 0x18286F01u) // little endian ??
+                return new Tuple<string, string>("kernel", "zimage");
+
+            if (zImgMagic == 0x016F2818u) // big endian ??
+                return new Tuple<string, string>("kernel", "zimage");
+
             // Detect archive headers:
             {
                 var Comp = ImageFormat.Helper.FitHelper.DetectCompression(Raw);
