@@ -1,4 +1,5 @@
 ﻿using Extension.Packet;
+using Extension.Array;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,9 +8,42 @@ namespace NyaFs.Filesystem.RomFs.Types
 {
     class RmNode : ArrayWrapper
     {
+        private static uint CalcNodeSize(string FileName) => Convert.ToUInt32(0x10 + (FileName.Length + 1).GetAligned(0x10));
+
+        public RmNode(string Filename, Universal.Types.FilesystemItemType Type, bool Executable, uint Size, uint Spec) : base(CalcNodeSize(Filename))
+        {
+            FsNodeType = Type;
+            IsExecutable = Executable;
+            WriteString(0x10, Filename, Filename.Length);
+            SpecInfo = Spec;
+            this.Size = Size;
+
+            CalcChecksum();
+        }
+
         public RmNode(byte[] Data, long Offset) : base(Data, Offset, 0xC)
         {
 
+        }
+
+        public uint CalculatedChecksum
+        {
+            get {
+                uint Res = 0;
+                for (int i = 0; i < HeaderSize; i += 4)
+                    Res += ReadUInt32BE(i);
+
+                Res -= Checksum;
+                Res = Convert.ToUInt32((-Res) & 0xFFFFFFFF);
+                return Res;
+            }
+        }
+
+        public bool CorrectChecksum => (Checksum == CalculatedChecksum);
+
+        public void CalcChecksum()
+        {
+            Checksum = CalculatedChecksum;
         }
 
         /// <summary>
@@ -75,7 +109,7 @@ namespace NyaFs.Filesystem.RomFs.Types
         public bool IsExecutable
         {
             get { return (ReadUInt32BE(0x00) & 0x8u) != 0; }
-            set { WriteUInt32BE(0x00, (ReadUInt32BE(0x00) & 0xFFFFFFF7u) | (value ? 0x80u : 0x00u)); }
+            set { WriteUInt32BE(0x00, (ReadUInt32BE(0x00) & 0xFFFFFFF7u) | (value ? 0x8u : 0x0u)); }
         }
 
         /// <summary>

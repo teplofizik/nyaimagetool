@@ -15,11 +15,30 @@ namespace NyaFs.Filesystem.RomFs
         public RomFsReader(byte[] Data) : base(Data)
         {
             Superblock = new Types.RmSuperblock(Data, 0);
+
+            if(!CheckChecksum())
+            {
+                Log.Error(0, "RomFS: invalid header checksum");
+            }
         }
 
         public RomFsReader(string Filename) : this(System.IO.File.ReadAllBytes(Filename))
         {
 
+        }
+
+        private bool CheckChecksum()
+        {
+            var Part = ReadArray(0, 512);
+            var SB = new Types.RmSuperblock(Part, 0);
+            SB.Checksum = 0;
+
+            long Res = 0;
+            for (int i = 0; i < Part.Length / 4; i++)
+                Res += Part.ReadUInt32BE(i*4);
+
+            Res = Convert.ToUInt32((-Res) & 0xFFFFFFFF);
+            return (Res == Superblock.Checksum);
         }
 
         private Types.RmNode GetRootNode() => new Types.RmNode(Raw, Superblock.SuperblockSize);
