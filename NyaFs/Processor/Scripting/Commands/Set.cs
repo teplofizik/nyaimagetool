@@ -152,6 +152,16 @@ namespace NyaFs.Processor.Scripting.Commands
                                 Fs.FilesystemType = ImageFormat.Types.FsType.SquashFs;
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: squashfs!");
                             }
+                            else if (Value == "cramfs")
+                            {
+                                Fs.FilesystemType = ImageFormat.Types.FsType.CramFs;
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: cramfs!");
+                            }
+                            else if (Value == "romfs")
+                            {
+                                Fs.FilesystemType = ImageFormat.Types.FsType.RomFs;
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"Set filesystem type ok: romfs!");
+                            }
                             else
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Unsupported filesystem type: {Value}");
                         }

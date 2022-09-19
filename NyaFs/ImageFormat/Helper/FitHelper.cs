@@ -16,6 +16,7 @@ namespace NyaFs.ImageFormat.Helper
                 case Types.FsType.Ext2: return "ext2";
                 case Types.FsType.SquashFs: return "squashfs";
                 case Types.FsType.CramFs: return "cramfs";
+                case Types.FsType.RomFs: return "romfs";
                 case Types.FsType.Unknown:
                 default:
                     return "unknown";
@@ -30,6 +31,7 @@ namespace NyaFs.ImageFormat.Helper
                 case "ext2": return Types.FsType.Ext2;
                 case "squashfs": return Types.FsType.SquashFs;
                 case "cramfs": return Types.FsType.CramFs;
+                case "romfs": return Types.FsType.RomFs;
                 default: return Types.FsType.Unknown;
             }
         }

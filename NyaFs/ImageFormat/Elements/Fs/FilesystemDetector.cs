@@ -37,7 +37,6 @@ namespace NyaFs.ImageFormat.Elements.Fs
             if (Magic == 0x2d726f6du) // romfs magic
                 return Types.FsType.RomFs;
 
-
             if (IsExt4(Raw))
                 return Types.FsType.Ext2;
 
@@ -51,6 +50,8 @@ namespace NyaFs.ImageFormat.Elements.Fs
                 case Types.FsType.Cpio: return "CPIO (ASCII)";
                 case Types.FsType.Ext2: return "Ext2";
                 case Types.FsType.SquashFs: return "SquashFs";
+                case Types.FsType.CramFs: return "CramFs";
+                case Types.FsType.RomFs: return "RomFs";
                 default: return "Unknown";
             }
         }

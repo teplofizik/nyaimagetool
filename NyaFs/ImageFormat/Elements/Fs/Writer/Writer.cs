@@ -29,6 +29,9 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
             {
                 case Types.FsType.Cpio: 
                 case Types.FsType.Ext2:
+                case Types.FsType.SquashFs:
+                case Types.FsType.CramFs:
+                case Types.FsType.RomFs:
                     return true;
                 default:
                     return false;
@@ -45,6 +48,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Writer
                 case Types.FsType.Ext2: return new Ext2FsWriter(DetectFixDiskSize(Fs, 0x800000));
                 case Types.FsType.SquashFs: return new SquashFsWriter(Fs.SquashFsCompression);
                 case Types.FsType.CramFs: return new CramFsWriter();
+                case Types.FsType.RomFs: return new RomFsWriter();
 
                 default: throw new InvalidOperationException($"Unsupported filesystem: {Fs.FilesystemType}");
             }

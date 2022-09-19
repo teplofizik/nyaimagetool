@@ -5,7 +5,7 @@ There is possible to add or update files in ramfs image.
 
 ## Supported image formats
 1. Kernel: compressed raw, fit, android, raw, legacy
-2. Ramfs: cpio, ext2, squashfs, cramfs, compressed cpio or ext2, legacy, fit, android image
+2. Ramfs: cpio, ext2, squashfs, cramfs, romfs, compressed cpio or ext2, legacy, fit, android image
 3. Device tree: dtb, fit
 
 ## Supported filesystems
@@ -14,6 +14,7 @@ Supported at now:
 2. EXT2 (RW)
 3. SquashFs (RW)
 4. CramFs (RW)
+5. RomFs (RW)
 
 ## Supported compression types
 Supported at now:
@@ -111,7 +112,11 @@ load <filename.sqfs> ramfs squashfs
 ```
 Load fs from cramfs image:
 ```
-load <filename.sqfs> ramfs cramfs
+load <filename.cramfs> ramfs cramfs
+```
+Load fs from romfs image:
+```
+load <filename.romfs> ramfs romfs
 ```
 
 ### Kernel image
@@ -160,6 +165,11 @@ Store fs as compressed cpio/ext2 archive:
 store <filename.fs.ct> ramfs <compression>
 ```
 (compression) is "gzip", "lz4", "lzma", "bzip2"
+
+Store fs as romfs image:
+```
+store <filename.romfs> ramfs romfs
+```
 
 Store fs as cramfs image:
 ```
@@ -214,7 +224,7 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2', 'squashfs', 'cramfs' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs' or 'cpio'.
 
 Change squash compression type:
 ```
