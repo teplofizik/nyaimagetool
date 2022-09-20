@@ -55,7 +55,7 @@ namespace NyaFs.Processor.Scripting.Commands.Fs.Interactive
             public override ScriptStepResult Exec(ImageProcessor Processor)
             {
                 var Fs = Processor.GetFs();
-                if ((Fs == null) || !Fs.Loaded)
+                if (Fs == null)
                     return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem not loaded");
                 else
                 {

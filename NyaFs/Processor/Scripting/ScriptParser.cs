@@ -74,13 +74,14 @@ namespace NyaFs.Processor.Scripting
         private void Parse(string Filename, string Name, string[] Lines)
         {
             var Sep = new char[] { ' ' };
-            for(int i = 0; i < Lines.Length; i++)
+            var SepTab = new char[] { '\t' };
+            for (int i = 0; i < Lines.Length; i++)
             {
                 var TCmd = Lines[i].Trim();
                 if (TCmd.StartsWith('#')) continue;
                 if (TCmd.Length == 0) continue;
 
-                var Parts = TCmd.Split(Sep);
+                var Parts = (TCmd.IndexOf('\t') > 0) ? TCmd.Split(SepTab) :  TCmd.Split(Sep);
 
                 var Command = Parts[0];
                 var Args = ExtractArgs(Parts);

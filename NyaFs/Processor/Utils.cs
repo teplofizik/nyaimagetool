@@ -43,22 +43,34 @@ namespace NyaFs.Processor
         public static UInt32 ConvertMode(string Mode)
         {
             UInt32 ModeX = 0;
-            for (int i = 0; i < 3; i++)
+            if (Mode.Length == 9)
             {
-                int Offset = i * 3;
-
-                var R = Mode[Offset + 0];
-                var W = Mode[Offset + 1];
-                var X = Mode[Offset + 2];
-
-                if (R == 'r') ModeX |= 4U << ((2 - i) * 3);
-                if (W == 'w') ModeX |= 2U << ((2 - i) * 3);
-                if (X == 'x') 
-                    ModeX |= 1U << ((2 - i) * 3);
-                else if (X == 's')
+                for (int i = 0; i < 3; i++)
                 {
-                    ModeX |= 1U << ((2 - i) * 3);
-                    ModeX |= 1U << 9 << (2 - i);
+                    int Offset = i * 3;
+
+                    var R = Mode[Offset + 0];
+                    var W = Mode[Offset + 1];
+                    var X = Mode[Offset + 2];
+
+                    if (R == 'r') ModeX |= 4U << ((2 - i) * 3);
+                    if (W == 'w') ModeX |= 2U << ((2 - i) * 3);
+                    if (X == 'x')
+                        ModeX |= 1U << ((2 - i) * 3);
+                    else if (X == 's')
+                    {
+                        ModeX |= 1U << ((2 - i) * 3);
+                        ModeX |= 1U << 9 << (2 - i);
+                    }
+                }
+            }
+            else if (Mode.Length == 3)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var Md = Convert.ToUInt32(Mode[i] - '0');
+
+                    ModeX |= Md << ((2 - i) * 3);
                 }
             }
             return ModeX;
