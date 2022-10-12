@@ -2,6 +2,7 @@
 using NyaFs.Filesystem.Universal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace NyaFs.Filesystem.Cpio

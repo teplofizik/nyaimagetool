@@ -80,7 +80,7 @@ namespace NyaFs.Filesystem.Cpio
             {
                 if (UnifyPath(N.Path) == UnifyPath(Path))
                 {
-                    if (N.FileType == Types.CpioModeFileType.C_ISREG)
+                    if (N.FileType == Types.CpioModeFileType.C_ISLNK)
                         return UTF8Encoding.UTF8.GetString(N.Content);
                     else
                         return null;
@@ -124,6 +124,8 @@ namespace NyaFs.Filesystem.Cpio
                     Pos = Pos + Path.Length + 1;
                     if((Pos < UPath.Length) && UPath.IndexOf('/', Pos) < 0)
                     {
+                        if ((Path.Length > 0) && UPath[Path.Length] != '/') continue;
+
                         Res.Add(new FilesystemEntry(N.FsType, UPath, N.UserId, N.GroupId, N.HexMode, Convert.ToUInt32(N.Content.Length)));
                     }
                 }
