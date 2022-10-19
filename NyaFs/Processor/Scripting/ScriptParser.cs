@@ -66,6 +66,24 @@ namespace NyaFs.Processor.Scripting
                 return Args.ToArray();
         }
 
+        private string ExtractCondition(string Line)
+        {
+            var Pos = Line.IndexOf('?');
+            if (Pos > 0)
+                return Line.Substring(0, Pos).Trim();
+            else
+                return null;
+        }
+
+        private string ExtraceCommand(string Line)
+        {
+            var Pos = Line.IndexOf('?');
+            if (Pos > 0)
+                return Line.Substring(Pos + 1).Trim();
+            else
+                return Line;
+        }
+
         /// <summary>
         /// Process a set of lines
         /// </summary>
@@ -81,7 +99,10 @@ namespace NyaFs.Processor.Scripting
                 if (TCmd.StartsWith('#')) continue;
                 if (TCmd.Length == 0) continue;
 
-                var Parts = (TCmd.IndexOf('\t') > 0) ? TCmd.Split(SepTab) :  TCmd.Split(Sep);
+                string Cond = ExtractCondition(TCmd);
+                string Cmd = ExtraceCommand(TCmd);
+
+                var Parts = (Cmd.IndexOf('\t') > 0) ? Cmd.Split(SepTab) : Cmd.Split(Sep);
 
                 var Command = Parts[0];
                 var Args = ExtractArgs(Parts);
@@ -92,7 +113,7 @@ namespace NyaFs.Processor.Scripting
                     Log.Error(0, $"Error at {Name}:{i + 1}. Invalid quotes.");
                 }
                 else
-                    ParseLine(Filename, Name, i + 1, Command, Args);
+                    ParseLine(Filename, Name, i + 1, Cond, Command, Args);
             }
         }
 
@@ -114,7 +135,7 @@ namespace NyaFs.Processor.Scripting
             return null;
         }
 
-        private void ParseLine(string Filename, string Name, int Line, string Cmd, string[] Args)
+        private void ParseLine(string Filename, string Name, int Line, string Cond, string Cmd, string[] Args)
         {
             switch (Cmd)
             {
@@ -157,6 +178,7 @@ namespace NyaFs.Processor.Scripting
                             {
                                 var Step = Gen.Get(SArgs);
                                 Step.SetScriptInfo(Filename, Name, Line);
+                                if(Cond != null) Step.SetCondition(Conditions.ConditionParser.Parse(Cond));
 
                                 Script.Steps.Add(Step);
                             }

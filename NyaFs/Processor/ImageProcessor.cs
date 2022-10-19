@@ -13,6 +13,8 @@ namespace NyaFs.Processor
 
         ImageFormat.BaseImageBlob Blob = new ImageFormat.BaseImageBlob();
 
+        public Scripting.Variables.VariableScope Scope = new Scripting.Variables.VariableScope();
+
         public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);
 
         public void SetKernel(LinuxKernel Kernel) => Blob.SetKernel(0, Kernel);
@@ -38,9 +40,12 @@ namespace NyaFs.Processor
         {
             foreach(var S in Script.Steps)
             {
-                var Res = S.Exec(this);
+                if (S.CheckCondition(this))
+                {
+                    var Res = S.Exec(this);
 
-                WriteLogLine(S, Res);
+                    WriteLogLine(S, Res);
+                }
             }
         }
 

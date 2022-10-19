@@ -12,6 +12,8 @@ namespace NyaFs.Processor.Scripting
 
         public readonly string Name;
 
+        private Conditions.Condition Condition = null;
+
         public ScriptStep(string Name)
         {
             this.Name = Name;
@@ -22,6 +24,19 @@ namespace NyaFs.Processor.Scripting
             ScriptFilename = Filename;
             ScriptName = Name;
             ScriptLine = Line;
+        }
+
+        public void SetCondition(Conditions.Condition Condition)
+        {
+            this.Condition = Condition;
+        }
+
+        public bool CheckCondition(ImageProcessor Proc)
+        {
+            if (Condition != null)
+                return Condition.IsCorrect(Proc);
+            else
+                return true;
         }
 
         public string ScriptPath => System.IO.Path.GetDirectoryName(ScriptFilename);
