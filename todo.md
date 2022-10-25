@@ -24,10 +24,17 @@ FIT encryption (AES)
 
 ## Plugins
 Plugin system
-Allow add readers/writers as plugin
-Allow add commands from plugin
+* Change all fs readers/writers to plugin-base system, provided by NyaPlugin class: Provide reader, provide writer
+* Change all compressors as plugins
+* Change all image formats as plugins
+* Change all commands to plugin
 Editing filesystem: change users, groups, rights
 Lua scripts as commands: open file, edit, save
+
+Filesystem i/o
+  [optional] Filesystem compression wrapper [cramfs, squashfs has internal compression, additional compression is not needed]
+    [optional] Image
+
 
 ##  Additional images processing
 Uboot (TVIP)
