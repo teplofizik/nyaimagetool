@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.ImageFormat.Plugins.Base
 {
-    class CompressorPlugin : NyaPlugin
+    public class CompressorPlugin : NyaPlugin
     {
         public readonly string CompressorName;
 

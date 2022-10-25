@@ -14,6 +14,7 @@ namespace NyaFs.Processor
         ImageFormat.BaseImageBlob Blob = new ImageFormat.BaseImageBlob();
 
         public Scripting.Variables.VariableScope Scope = new Scripting.Variables.VariableScope();
+        public Scripting.ScriptPlugins Plugins = new Scripting.ScriptPlugins();
 
         public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);
 

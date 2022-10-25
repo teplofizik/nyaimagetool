@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="Processor\Scripting\Commands\Kernel\" />
+    <Folder Include="Processor\Scripting\Plugins\" />
   </ItemGroup>
 
   <ItemGroup>
