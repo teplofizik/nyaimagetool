@@ -49,8 +49,11 @@ namespace NyaFs.Processor.Scripting
                     else
                     {
                         Temp += $" {P}";
-                        if(Temp.Last() == '"')
+                        if (P.Last() == '"')
+                        {
                             Args.Add(Temp.Substring(1, Temp.Length - 2));
+                            Temp = null;
+                        }
                     }
                 }
                 else
