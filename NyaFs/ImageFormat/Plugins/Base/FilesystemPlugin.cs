@@ -66,5 +66,23 @@ namespace NyaFs.ImageFormat.Plugins.Base
         /// <returns></returns>
 
         public virtual bool CheckFilesystem(Elements.Fs.LinuxFilesystem Fs) => true;
+
+        protected void IterateAllFilesystem(Elements.Fs.LinuxFilesystem Fs, Action<Filesystem.Universal.FilesystemItem> OnItem)
+        {
+            IterateDirectory(Fs.Fs.Root, OnItem);
+        }
+
+        private void IterateDirectory(Filesystem.Universal.Items.Dir Dir, Action<Filesystem.Universal.FilesystemItem> OnItem)
+        {
+            OnItem(Dir);
+
+            foreach(var N in Dir.Items)
+            {
+                if (N.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+                    IterateDirectory(N as Filesystem.Universal.Items.Dir, OnItem);
+                else
+                    OnItem(N);
+            }
+        }
     }
 }
