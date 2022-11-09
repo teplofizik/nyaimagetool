@@ -50,5 +50,26 @@ namespace NyaFs.Filesystem.Universal
 
         public DateTime Created = DateTime.UnixEpoch;
         public DateTime Modified = DateTime.UnixEpoch;
+
+        public uint FullMode
+        {
+            get
+            {
+                uint Res = Mode;
+
+                switch(ItemType)
+                {
+                    case Types.FilesystemItemType.Fifo: Res |= 0x1000; break;
+                    case Types.FilesystemItemType.Character: Res |= 0x2000; break;
+                    case Types.FilesystemItemType.Directory: Res |= 0x4000; break;
+                    case Types.FilesystemItemType.Block: Res |= 0x6000; break;
+                    case Types.FilesystemItemType.File: Res |= 0x8000; break;
+                    case Types.FilesystemItemType.SymLink: Res |= 0xA000; break;
+                    case Types.FilesystemItemType.Socket: Res |= 0xC000; break;
+                }
+
+                return Res;
+            }
+        }
     }
 }

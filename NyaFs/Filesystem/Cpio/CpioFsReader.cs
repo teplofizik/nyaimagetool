@@ -126,7 +126,7 @@ namespace NyaFs.Filesystem.Cpio
                     {
                         if ((Path.Length > 0) && UPath[Path.Length] != '/') continue;
 
-                        Res.Add(new FilesystemEntry(N.FsType, UPath, N.UserId, N.GroupId, N.HexMode, Convert.ToUInt32(N.Content.Length)));
+                        Res.Add(new FilesystemEntry(N.FsType, UPath, N.UserId, N.GroupId, N.Mode, Convert.ToUInt32(N.Content.Length)));
                     }
                 }
             }

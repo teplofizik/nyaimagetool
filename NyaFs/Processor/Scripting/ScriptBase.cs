@@ -38,6 +38,7 @@ namespace NyaFs.Processor.Scripting
             Add(new Commands.Var());
             Add(new Commands.Service()); 
             Add(new Commands.SystemCmd());
+            Add(new Commands.LoadPlugin());
 
             Add(new Commands.Fs.Dir());
             Add(new Commands.Fs.File());

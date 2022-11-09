@@ -31,8 +31,10 @@ namespace NyaImageTool
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
             var Script = new NyaFs.Processor.Scripting.ScriptParser(Base, FN).Script;
 
+            Processor.Plugins.LoadLocalPlugins();
+
             // TODO:
-            foreach(var P in Params)
+            foreach (var P in Params)
             {
                 if (NyaFs.Processor.Scripting.Variables.VariableChecker.IsCorrectName(P))
                 {

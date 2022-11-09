@@ -8,7 +8,7 @@ namespace NyaFs.ImageFormat.Plugins.Base
     public class ServicePlugin : NyaPlugin
     {
         private Thread loopthread;
-        private Processor.ImageProcessor processor;
+        private Processor.ImageProcessor processor = null;
         private bool Running = false;
 
         public readonly string ServiceName;
@@ -20,9 +20,20 @@ namespace NyaFs.ImageFormat.Plugins.Base
 
         public bool IsRunning() => Running;
 
+        protected virtual void OnStart()
+        {
+
+        }
+
+        protected virtual void OnStop()
+        {
+
+        }
+
         public void Run(Processor.ImageProcessor Proc)
         {
             Running = true;
+            processor = Proc;
             loopthread = new Thread(ServiceLoop);
             loopthread.Start();
         }
@@ -37,11 +48,14 @@ namespace NyaFs.ImageFormat.Plugins.Base
 
         private void ServiceLoop()
         {
+            OnStart();
             Setup();
             while(Running)
             {
                 Loop();
+                Thread.Sleep(1);
             }
+            OnStop();
         }
 
         protected virtual void Setup()

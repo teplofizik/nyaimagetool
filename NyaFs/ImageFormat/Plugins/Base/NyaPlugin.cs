@@ -9,7 +9,7 @@ namespace NyaFs.ImageFormat.Plugins.Base
         public readonly string Name;
         public readonly string PluginType;
 
-        public NyaPlugin(string Name, string Type)
+        public NyaPlugin(string Name, string Type) 
         {
             this.Name = Name;
         }

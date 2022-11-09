@@ -11,15 +11,14 @@ namespace NyaFs.Processor.Scripting.Commands
     {
         public LoadPlugin() : base("loadplugin")
         {
-            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] { 
-                new Params.LocalPathScriptArgsParam(),
-                new Params.StringScriptArgsParam("name")
+            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
+                new Params.LocalPathScriptArgsParam()
             }));
         }
 
         public override ScriptStep Get(ScriptArgs Args)
         {
-            return new LoadPluginScriptStep(Args.RawArgs[0], Args.RawArgs[1]);
+            return new LoadPluginScriptStep(Args.RawArgs[0], null);
         }
 
         public class LoadPluginScriptStep : ScriptStep
@@ -35,29 +34,21 @@ namespace NyaFs.Processor.Scripting.Commands
 
             public override ScriptStepResult Exec(ImageProcessor Processor)
             {
-                var PluginAssembly = Assembly.Load(Filename);
-
-                if (PluginAssembly != null)
+                // https://learn.microsoft.com/en-us/dotnet/core/tutorials/creating-app-with-plugin-support
+                // https://habr.com/ru/post/242209/
+                try
                 {
-                    object Class = PluginAssembly.CreateInstance(ClassName);
-                    if(Class != null)
-                    {
-                        var Plugin = Class as NyaPlugin;
-                        if (Plugin != null)
-                        {
-                            Processor.Plugins.Load(Plugin);
+                    var Loaded = Processor.Plugins.LoadFromFile(Filename);
 
-                            return new ScriptStepResult(ScriptStepStatus.Ok, null);
-                        }
-                        else
-                            return new ScriptStepResult(ScriptStepStatus.Error, $"Class '{ClassName}' in file '{Filename}' do not successor of NyaPlugin.");
-                    }
+                    if (Loaded.Length > 0)
+                        return new ScriptStepResult(ScriptStepStatus.Ok, null);
                     else
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot find class '{ClassName}' in file '{Filename}'");
-
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"File '{Filename}' has no any successors of NyaPlugin.");
                 }
-                else
-                    return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot load assembly '{Filename}'");
+                catch (Exception E)
+                {
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot load assembly '{Filename}: {E.Message}'");
+                }
             }
         }
     }
