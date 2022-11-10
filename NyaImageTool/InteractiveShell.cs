@@ -14,6 +14,7 @@ namespace NyaImageTool
             var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
 
             Processor = new NyaFs.Processor.ImageProcessor(Parser);
+            Processor.Plugins.LoadLocalPlugins();
         }
 
         public void ShellLoop()
