@@ -63,7 +63,8 @@ namespace NyaFs.Processor
             {
                 if (S.CheckCondition(this))
                 {
-                    var Res = S.Exec(this);
+                    var Step = S.GetPreprocessed(Scope);
+                    var Res = Step.Exec(this);
 
                     WriteLogLine(S, Res);
                 }

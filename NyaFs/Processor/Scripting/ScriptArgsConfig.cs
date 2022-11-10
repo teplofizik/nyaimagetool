@@ -17,6 +17,11 @@ namespace NyaFs.Processor.Scripting
 
         protected bool CheckArgsLen(string[] Args) => (Params.Length == Args.Length);
 
+        private bool HasVariable(string Arg)
+        {
+            return Variables.VariableChecker.IsCorrectName(Arg);
+        }
+
         public virtual bool IsMyConfig(string[] Args)
         {
             if (!CheckArgsLen(Args)) return false;
@@ -27,6 +32,9 @@ namespace NyaFs.Processor.Scripting
                 var P = Params[i];
                 var A = Args[i];
 
+                if (HasVariable(A))
+                    continue;
+                
                 if (!P.CheckParam(A))
                     return false;
             }

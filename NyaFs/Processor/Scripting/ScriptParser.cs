@@ -158,6 +158,8 @@ namespace NyaFs.Processor.Scripting
                 {
                     var Step = Gen.Get(SArgs);
                     Step.SetScriptInfo(Filename, Name, Line);
+                    Step.SetGenerator(Gen, Args);
+
                     if (Cond != null) Step.SetCondition(Conditions.ConditionParser.Parse(Cond));
 
                     Result.Steps.Add(Step);
