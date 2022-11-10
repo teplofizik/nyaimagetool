@@ -7,21 +7,21 @@ namespace NyaFs.Processor.Scripting
 {
     public class ScriptParser
     {
-        public Script Script = new Script();
         private ScriptBase Base;
 
-        public ScriptParser(ScriptBase Base, string Filename)
+        public ScriptParser(ScriptBase Base)
         {
             this.Base = Base;
-
-            Parse(Filename, System.IO.Path.GetFileName(Filename), System.IO.File.ReadAllLines(Filename));
         }
 
-        public ScriptParser(ScriptBase Base, string Name, string[] Lines)
+        public Script ParseScript(string Filename)
         {
-            this.Base = Base;
+            return Parse(Filename, System.IO.Path.GetFileName(Filename), System.IO.File.ReadAllLines(Filename));
+        }
 
-            Parse("", Name, Lines);
+        public Script ParseScript(string Name, string[] Lines)
+        {
+            return Parse("", Name, Lines);
         }
 
         /// <summary>
@@ -92,8 +92,10 @@ namespace NyaFs.Processor.Scripting
         /// </summary>
         /// <param name="Filename"></param>
         /// <param name="Lines"></param>
-        private void Parse(string Filename, string Name, string[] Lines)
+        public Script Parse(string Filename, string Name, string[] Lines)
         {
+            var Result = new Script();
+
             var Sep = new char[] { ' ' };
             var SepTab = new char[] { '\t' };
             for (int i = 0; i < Lines.Length; i++)
@@ -112,12 +114,13 @@ namespace NyaFs.Processor.Scripting
 
                 if (Args == null)
                 {
-                    Script.HasErrors = true;
+                    Result.HasErrors = true;
                     Log.Error(0, $"Error at {Name}:{i + 1}. Invalid quotes.");
                 }
                 else
-                    ParseLine(Filename, Name, i + 1, Cond, Command, Args);
+                    ParseLine(Result, Filename, Name, i + 1, Cond, Command, Args);
             }
+            return Result;
         }
 
         private string DetectPath(string Caller, string Path)
@@ -138,61 +141,32 @@ namespace NyaFs.Processor.Scripting
             return null;
         }
 
-        private void ParseLine(string Filename, string Name, int Line, string Cond, string Cmd, string[] Args)
+        private void ParseLine(Script Result, string Filename, string Name, int Line, string Cond, string Cmd, string[] Args)
         {
-            switch (Cmd)
+            var Gen = Base.GetGenerator(Cmd);
+
+            if (Gen == null)
             {
-                case "include":
-                    {
-                        if(Args.Length != 1)
-                        {
-                            Script.HasErrors = true;
-                            Log.Error(0, $"Error at {Name}:{Line}. Invalid arguments for command {Cmd}.");
-                            return;
-                        }
+                Result.HasErrors = true;
+                Log.Error(0, $"Error at {Name}:{Line}. Command {Cmd} is not supported.");
+            }
+            else
+            {
+                // Check and select args configuration
+                var SArgs = Gen.GetArgs(Args);
+                if (SArgs != null)
+                {
+                    var Step = Gen.Get(SArgs);
+                    Step.SetScriptInfo(Filename, Name, Line);
+                    if (Cond != null) Step.SetCondition(Conditions.ConditionParser.Parse(Cond));
 
-                        var Path = DetectPath(Filename, Args[0]);
-                        if (Path == null)
-                        {
-                            Script.HasErrors = true;
-                            Log.Error(0, $"Error at {Name}:{Line}.  not found.");
-                            return;
-                        }
-                        else
-                        {
-                            Parse(Path, System.IO.Path.GetFileName(Path), System.IO.File.ReadAllLines(Path));
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        var Gen = Base.GetGenerator(Cmd);
-
-                        if (Gen == null)
-                        {
-                            Script.HasErrors = true;
-                            Log.Error(0, $"Error at {Name}:{Line}. Command {Cmd} is not supported.");
-                        }
-                        else
-                        {
-                            // Check and select args configuration
-                            var SArgs = Gen.GetArgs(Args);
-                            if (SArgs != null)
-                            {
-                                var Step = Gen.Get(SArgs);
-                                Step.SetScriptInfo(Filename, Name, Line);
-                                if(Cond != null) Step.SetCondition(Conditions.ConditionParser.Parse(Cond));
-
-                                Script.Steps.Add(Step);
-                            }
-                            else
-                            {
-                                Script.HasErrors = true;
-                                Log.Error(0, $"Error at {Name}:{Line}. Invalid arguments for command '{Cmd}'.");
-                            }
-                        }
-                        break;
-                    }
+                    Result.Steps.Add(Step);
+                }
+                else
+                {
+                    Result.HasErrors = true;
+                    Log.Error(0, $"Error at {Name}:{Line}. Invalid arguments for command '{Cmd}'.");
+                }
             }
         }
     }

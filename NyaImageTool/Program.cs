@@ -27,11 +27,13 @@ namespace NyaImageTool
 
         static void LoadScript(string FN, string[] Params)
         {
-            var Processor = new NyaFs.Processor.ImageProcessor();
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
-            var Script = new NyaFs.Processor.Scripting.ScriptParser(Base, FN).Script;
+            var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
+            var Processor = new NyaFs.Processor.ImageProcessor(Parser);
 
             Processor.Plugins.LoadLocalPlugins();
+
+            var Script = Parser.ParseScript(FN);
 
             // TODO:
             foreach (var P in Params)

@@ -6,8 +6,15 @@ namespace NyaImageTool
 {
     class InteractiveShell
     {
-        NyaFs.Processor.ImageProcessor Processor = new NyaFs.Processor.ImageProcessor();
-        NyaFs.Processor.Scripting.ScriptBase Base = new NyaFs.Processor.Scripting.ScriptBaseInteractive();
+        NyaFs.Processor.ImageProcessor Processor;
+
+        public InteractiveShell()
+        {
+            var Base = new NyaFs.Processor.Scripting.ScriptBaseInteractive();
+            var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
+
+            Processor = new NyaFs.Processor.ImageProcessor(Parser);
+        }
 
         public void ShellLoop()
         {
@@ -30,7 +37,8 @@ namespace NyaImageTool
 
         private void RunCommand(string Line)
         {
-            var Script = new NyaFs.Processor.Scripting.ScriptParser(Base, "cmd", new string[] { Line }).Script;
+            var Script = Processor.Parser.ParseScript("cmd", new string[] { Line });
+
             Processor.Process(Script);
         }
     }

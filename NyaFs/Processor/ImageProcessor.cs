@@ -11,10 +11,30 @@ namespace NyaFs.Processor
     {
         public string ActivePath = "/";
 
+        /// <summary>
+        /// Session images blob
+        /// </summary>
         ImageFormat.BaseImageBlob Blob = new ImageFormat.BaseImageBlob();
 
+        /// <summary>
+        /// Session variable scope
+        /// </summary>
         public Scripting.Variables.VariableScope Scope = new Scripting.Variables.VariableScope();
+
+        /// <summary>
+        /// Session plugins
+        /// </summary>
         public Scripting.ScriptPlugins Plugins = new Scripting.ScriptPlugins();
+
+        /// <summary>
+        /// Session parser
+        /// </summary>
+        public Scripting.ScriptParser Parser;
+
+        public ImageProcessor(Scripting.ScriptParser Parser)
+        {
+            this.Parser = Parser;
+        }
 
         public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);
 

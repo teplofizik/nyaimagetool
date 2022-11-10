@@ -29,6 +29,8 @@ namespace NyaFs.Processor.Scripting
     {
         public ScriptBaseAll()
         {
+            Add(new Commands.Include());
+
             Add(new Commands.Load());
             Add(new Commands.Store());
             Add(new Commands.Set());
