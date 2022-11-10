@@ -81,6 +81,11 @@ Reset program state, drop all images:
 reset
 ```
 
+Echo any text:
+```
+echo <text>
+```
+
 ## Commands for image loading
 Default load command (type and image format autodetect):
 ```
@@ -365,6 +370,44 @@ ls
 List items in other dir:
 ```
 ls <path>
+```
+
+## Variables
+Variables can be defined with command:
+```
+var <name> <value>
+```
+or
+```
+var <name>
+```
+Variable names starts with $: $image, $path etc.
+
+Variables can be used instead parameters:
+```
+var $image zynq.fit
+load $image
+```
+
+Variables can be used in conditions. If variable defined, command line will be executed.
+```
+<var>? <command> <args...>
+```
+Example:
+```
+# Define image1 variable
+var $image1
+
+# Update some config based on condition:
+$image1? file etc/config.cfg files/image1/config.cfg
+$image2? file etc/config.cfg files/image2/config.cfg
+```
+
+As variant, variables can contain part of path:
+```
+var $image image1
+echo Image is $image
+file etc/config.cfg files/$image/config.cfg
 ```
 
 ## Plugins

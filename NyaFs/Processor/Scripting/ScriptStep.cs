@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NyaFs.Processor.Scripting
@@ -22,22 +23,39 @@ namespace NyaFs.Processor.Scripting
             this.Name = Name;
         }
 
+
         private string PreprocessArg(Variables.VariableScope Scope, string Arg)
         {
             if (Variables.VariableChecker.IsCorrectName(Arg) && Scope.IsDefined(Arg))
                 return Scope.GetValue(Arg);
             else
+            {
+                var Vars = Variables.VariableChecker.ExtractVariables(Arg);
+                foreach(var V in Vars)
+                {
+                    if (Scope.IsDefined(V))
+                        Arg = Arg.Replace(V, Scope.GetValue(V));
+                }
                 return Arg;
+            }
         }
 
-        private string[] PreprocessArgs(Variables.VariableScope Scope, string[] Args)
+        private string[] PreprocessArgs(Variables.VariableScope Scope, string[] Args, int[] Masked)
         {
-            return Array.ConvertAll(Args, A => PreprocessArg(Scope, A));
+            var Res = new string[Args.Length];
+            for(int i = 0; i < Args.Length; i++)
+            {
+                if (Masked.Contains(i))
+                    Res[i] = Args[i];
+                else
+                    Res[i] = PreprocessArg(Scope, Args[i]);
+            }
+            return Res;
         }
 
         public ScriptStep GetPreprocessed(Variables.VariableScope Scope)
         {
-            var SArgs = Generator.GetArgs(PreprocessArgs(Scope, GeneratorArgs));
+            var SArgs = Generator.GetArgs(PreprocessArgs(Scope, GeneratorArgs, Generator.MaskedArgs));
             if (SArgs != null)
             {
                 var Step = Generator.Get(SArgs);

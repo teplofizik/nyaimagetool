@@ -30,6 +30,7 @@ namespace NyaFs.Processor.Scripting
         public ScriptBaseAll()
         {
             Add(new Commands.Include());
+            Add(new Commands.Echo());
 
             Add(new Commands.Load());
             Add(new Commands.Store());

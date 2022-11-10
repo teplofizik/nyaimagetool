@@ -24,10 +24,15 @@ namespace NyaFs.Processor.Scripting
             throw new NotImplementedException("There is need to implement script step getter");
         }
 
+        public virtual int[] MaskedArgs => new int[] { };
+
         public ScriptArgs GetArgs(string[] Args)
         {
             foreach(var C in Configs)
             {
+                if(C.Params == null)
+                    return new ScriptArgs(C.Id, Args);
+
                 if (CheckConfig(C, Args))
                 {
                     if (!C.CheckArgs(Args))

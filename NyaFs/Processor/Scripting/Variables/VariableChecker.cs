@@ -11,5 +11,21 @@ namespace NyaFs.Processor.Scripting.Variables
         {
             return (Name != null) && (Name.Length > 2) && (Name.Count(C => (C == '$')) == 1) && (Name[0] == '$');
         }
+
+        public static string[] ExtractVariables(string Text)
+        {
+            var Res = new List<string>();
+            string Temp = null;
+
+            var Parts = Text.Split(new char[] { ' ', '\t', ',', ':', '\\', '/', '>', '<', '?', '!', '*', '*', '%', '#', '@', '~' });
+
+            foreach(var P in Parts)
+            {
+                if (IsCorrectName(P))
+                    Res.Add(P);
+            }
+
+            return Res.ToArray();
+        }
     }
 }

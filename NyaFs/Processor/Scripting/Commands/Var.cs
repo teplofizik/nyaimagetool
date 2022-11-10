@@ -17,6 +17,8 @@ namespace NyaFs.Processor.Scripting.Commands
                 new Params.StringScriptArgsParam("name") }));
         }
 
+        public override int[] MaskedArgs => new int[] { 0 };
+
         public override ScriptStep Get(ScriptArgs Args)
         {
             if(Args.ArgConfig == 0)
