@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NyaFs\NyaFs.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\NyaImageTool\bin\Debug\netcoreapp3.1\plugins\&quot;&#xD;&#xA;copy &quot;$(OutDir)\$(TargetName).pdb&quot; &quot;$(SolutionDir)\NyaImageTool\bin\Debug\netcoreapp3.1\plugins\&quot;" />
+  </Target>
+
+</Project>

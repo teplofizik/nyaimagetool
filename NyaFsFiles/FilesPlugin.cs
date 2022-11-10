@@ -5,7 +5,7 @@ namespace NyaFsFiles
 {
     public class FilesPlugin : NyaFs.Processor.Scripting.Plugins.CommandPlugin
     {
-        public FilesPlugin() : base("filescommands")
+        public FilesPlugin() : base("files")
         {
 
         }

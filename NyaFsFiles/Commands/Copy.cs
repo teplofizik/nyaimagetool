@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NyaFsFiles.Commands
 {
-    class Copy : NyaFs.Processor.Scripting.ScriptStepGenerator
+    class Copy : ScriptStepGenerator
     {
 
         public Copy() : base("copy")
