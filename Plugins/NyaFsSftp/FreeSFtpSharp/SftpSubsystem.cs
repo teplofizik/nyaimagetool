@@ -1,4 +1,5 @@
-﻿using FxSsh;
+﻿using Extension.Array;
+using FxSsh;
 using FxSsh.Messages.Connection;
 using FxSsh.Services;
 using System;
@@ -21,8 +22,13 @@ namespace FreeSFtpSharp
         public event Events.SFtpMakeDirEventHandler onMakeDir;
         public event Events.SFtpRemoveFileEventHandler onRemoveFile;
         public event Events.SFtpStatEventHandler onStat;
+        public event Events.SFtpSetStatEventHandler onSetStat;
         public event Events.SFtpListDirEventHandler onListDir;
         public event Events.SFtpReadEventHandler onReadData;
+        public event Events.SFtpWriteEventHandler onWriteData;
+        public event Events.SFtpNewFileEventHandler onNewFile;
+        public event Events.SFtpReadLinkEventHandler onReadLink;
+        public event Events.SFtpMakeLinkEventHandler onMakeLink;
 
         private string ActivePath = "/";
 
@@ -43,6 +49,12 @@ namespace FreeSFtpSharp
         }
 
         /// <summary>
+        /// Data to store incomplete packets
+        /// </summary>
+
+        List<byte> Pending = new List<byte>();
+
+        /// <summary>
         /// It first reads the first 5 bytes of the input, which is the length of the message and the message
         /// type. Then it reads the rest of the message and calls the appropriate function to handle the
         /// message based on the type
@@ -50,85 +62,115 @@ namespace FreeSFtpSharp
         /// <param name="ee">the byte array of the data received from the client</param>
         internal void OnInput(byte[] ee)
         {
-            var input = Encoding.ASCII.GetString(ee);
-
-            //uint32 length
-            //byte type
-            //byte[length - 1] data payload
-            SshDataWorker reader = new SshDataWorker(ee);
-
-            if (reader.DataAvailable >= 5)
+            Pending.AddRange(ee);
+            while(Pending.Count > 0)
             {
-                var msglength = reader.ReadUInt32();
-                var msgtype = (RequestPacketType)(int)reader.ReadByte();
+                var input = Pending.ToArray();
 
-                switch (msgtype)
+                if (input.Length >= 5)
                 {
-                    case RequestPacketType.SSH_FXP_INIT:
-                        HandleInit(reader);
-                        break;
+                    //uint32 length
+                    //byte type
+                    //byte[length - 1] data payload
+                    var msglength = input.ReadUInt32BE(0);
+                    var msgtype = (RequestPacketType)input.ReadByte(4);
 
-                    case RequestPacketType.SSH_FXP_REALPATH:
+                    //Console.WriteLine($"{msgtype} {msglength}  (avail {input.Length})");
+                    if (msglength > input.Length - 4)
+                        return;
 
-                        HandleRealPath(reader);
-                        break;
+                    // Build a packet
+                    byte[] packet = input.ReadArray(5, msglength - 1);
+                    var packetreader = new SshDataWorker(packet);
 
-                    case RequestPacketType.SSH_FXP_READDIR:
-                        HandleReadDir(reader);
-                        break;
+                    Pending.Clear();
+                    var availdata = input.Length - msglength - 4;
+                    if (availdata > 0)
+                        Pending.AddRange(input.ReadArray(input.Length - availdata, availdata));
 
-                    case RequestPacketType.SSH_FXP_OPENDIR:
-                        HandleOpenDir(reader);
-                        break;
+                    switch (msgtype)
+                    {
+                        case RequestPacketType.SSH_FXP_INIT:
+                            HandleInit(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_STAT: // follows symbolic links
-                        HandleStat(reader, true);
-                        break;
-                    case RequestPacketType.SSH_FXP_LSTAT: // does not follow symbolic links
-                        HandleStat(reader, false);
-                        break;
+                        case RequestPacketType.SSH_FXP_REALPATH:
+                            HandleRealPath(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_FSTAT: // SSH_FXP_FSTAT differs from the others in that it returns status information for an open file(identified by the file handle).
-                        HandleFStat(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_READDIR:
+                            HandleReadDir(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_CLOSE:
-                        HandleClose(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_OPENDIR:
+                            HandleOpenDir(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_OPEN:
-                        HandleFileOpen(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_SETSTAT:
+                            HandleSetStat(packetreader, true);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_READ:
-                        HandleReadFile(reader);
-                        break;
-                    case RequestPacketType.SSH_FXP_WRITE:
-                        HandleWriteFile(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_STAT: // follows symbolic links
+                            HandleStat(packetreader, true);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_REMOVE:
-                        HandleRemoveFile(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_LSTAT: // does not follow symbolic links
+                            HandleStat(packetreader, false);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_MKDIR:
-                        HandleMakeDir(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_FSTAT: // SSH_FXP_FSTAT differs from the others in that it returns status information for an open file(identified by the file handle).
+                            HandleFStat(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_RMDIR:
-                        HandleRemoveDir(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_SYMLINK:
+                            HandleLink(packetreader);
+                            break;
 
-                    case RequestPacketType.SSH_FXP_RENAME:
-                        HandleRename(reader);
-                        break;
+                        case RequestPacketType.SSH_FXP_READLINK:
+                            HandleReadLink(packetreader);
+                            break;
 
-                    default:
-                        // unsupported command
-                        uint requestId = reader.ReadUInt32();
-                        SendStatus(requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
-                        break;
+                        case RequestPacketType.SSH_FXP_CLOSE:
+                            HandleClose(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_OPEN:
+                            HandleFileOpen(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_READ:
+                            HandleReadFile(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_WRITE:
+                            HandleWriteFile(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_REMOVE:
+                            HandleRemoveFile(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_MKDIR:
+                            HandleMakeDir(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_RMDIR:
+                            HandleRemoveDir(packetreader);
+                            break;
+
+                        case RequestPacketType.SSH_FXP_RENAME:
+                            HandleRename(packetreader);
+                            break;
+
+                        default:
+                            // unsupported command
+                            uint requestId = packetreader.ReadUInt32();
+                            SendStatus(requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
+                            break;
+                    }
                 }
+                else
+                    break;
             }
         }
 
@@ -176,11 +218,24 @@ namespace FreeSFtpSharp
             }
             else
             {
-                var e = new Events.SFtpRemoveDirEventArgs(path);
-                onRemoveDir?.Invoke(this, e);
+                var le = new Events.SFtpListDirEventArgs(path);
+                onListDir?.Invoke(this, le);
 
-                if (e.Result)
-                    SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+                if (le.Result)
+                {
+                    if (le.Entries.Count > 0)
+                        SendStatus(requestId, SftpStatusType.SSH_FX_DIR_NOT_EMPTY);
+                    else
+                    {
+                        var e = new Events.SFtpRemoveDirEventArgs(path);
+                        onRemoveDir?.Invoke(this, e);
+
+                        if (e.Result)
+                            SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+                        else
+                            SendStatus(requestId, SftpStatusType.SSH_FX_FAILURE);
+                    }
+                }
                 else
                     SendStatus(requestId, SftpStatusType.SSH_FX_FAILURE);
             }
@@ -195,9 +250,6 @@ namespace FreeSFtpSharp
             uint requestId = reader.ReadUInt32();
             var path = GetAbsolutePath(reader.ReadString(Encoding.UTF8));
 
-            //ATTRS  attrs
-            //uint32 desired-access
-            var desired_access = reader.ReadUInt32();
             //uint32 flags
             var flags = reader.ReadUInt32();
 
@@ -229,6 +281,38 @@ namespace FreeSFtpSharp
                 SendStatus(requestId, SftpStatusType.SSH_FX_OK);
             else
                 SendStatus(requestId, SftpStatusType.SSH_FX_FAILURE);
+        }
+
+        private void HandleSetStat(SshDataWorker reader, bool FollowSymlink)
+        {
+            uint requestId = reader.ReadUInt32();
+            var srcpath = reader.ReadString(Encoding.UTF8);
+            var processedpath = ProcessPath(srcpath);
+            var path = GetAbsolutePath(processedpath);
+
+            var e = new Events.SFtpSetStatEventArgs(path);
+            var flags = reader.ReadUInt32(); // TODO: check flags
+            if ((flags & 0x0002) != 0)
+            {
+                e.UID = reader.ReadUInt32();
+                e.GID = reader.ReadUInt32();
+            }
+            if ((flags & 0x0004) != 0)
+            {
+                e.Mode = reader.ReadUInt32();
+            }
+            if ((flags & 0x0008) != 0)
+            {
+                var atime = reader.ReadUInt32();
+                e.AccessTime = reader.ReadUInt32();
+            }
+
+            onSetStat?.Invoke(this, e);
+
+            if (e.Result)
+                SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+            else
+                SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_PATH);
         }
 
         private void HandleStat(SshDataWorker reader, bool FollowSymlink)
@@ -285,16 +369,59 @@ namespace FreeSFtpSharp
             SendStatus(requestId, SftpStatusType.SSH_FX_OK);
         }
 
-       /// <summary>
-       /// The function reads the request-id, handle, offset and length from the packet and then reads
-       /// the file from the offset and length specified 
-       /// </summary>
-       /// <param name="SshDataWorker">This is a class that I wrote to help with reading and writing SSH
-       /// packets. </param>
-       /// <returns>
-       /// SendStatus method will be called on EOF or on error otherwise the method will will send data from 
-       /// the file being read to the SSH channel
-       /// </returns>
+        private void HandleLink(SshDataWorker reader)
+        {
+            uint requestId = reader.ReadUInt32();
+            var srcpath = reader.ReadString(Encoding.UTF8);
+            var processedpath = ProcessPath(srcpath);
+            var path = GetAbsolutePath(processedpath);
+            var target = reader.ReadString(Encoding.UTF8);
+
+            var e = new Events.SFtpMakeLinkEventArgs(path, target);
+            onMakeLink?.Invoke(this, e);
+
+            if (e.Result)
+                SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+            else
+                SendStatus(requestId, SftpStatusType.SSH_FX_FAILURE);
+        }
+
+        private void HandleReadLink(SshDataWorker reader)
+        {
+            uint requestId = reader.ReadUInt32();
+            var srcpath = reader.ReadString(Encoding.UTF8);
+            var processedpath = ProcessPath(srcpath);
+            var path = GetAbsolutePath(processedpath);
+
+            var e = new Events.SFtpReadLinkEventArgs(path);
+            onReadLink?.Invoke(this, e);
+
+            if (e.Result)
+            {
+                SshDataWorker writer = new SshDataWorker();
+                writer.Write((byte)RequestPacketType.SSH_FXP_NAME);
+                writer.Write((uint)requestId);
+                writer.Write((uint)1); // one file/directory at a time
+
+                writer.Write(e.Target, Encoding.UTF8);
+                writer.Write(e.Target, Encoding.UTF8);
+
+                SendPacket(writer.ToByteArray());
+            }
+            else
+                SendStatus(requestId, SftpStatusType.SSH_FX_FAILURE);
+        }
+
+        /// <summary>
+        /// The function reads the request-id, handle, offset and length from the packet and then reads
+        /// the file from the offset and length specified 
+        /// </summary>
+        /// <param name="SshDataWorker">This is a class that I wrote to help with reading and writing SSH
+        /// packets. </param>
+        /// <returns>
+        /// SendStatus method will be called on EOF or on error otherwise the method will will send data from 
+        /// the file being read to the SSH channel
+        /// </returns>
         private void HandleReadFile(SshDataWorker reader)
         {
             SshDataWorker writer = new SshDataWorker();
@@ -348,27 +475,28 @@ namespace FreeSFtpSharp
             var handle = reader.ReadString(Encoding.UTF8);
             if (HandleToPathDictionary.ContainsKey(handle))
             {
-                var offsetfromfileBeginning = (long)reader.ReadUInt64();
-                // TODO:
-                /*
-                var buffer = reader.ReadBinary();
-
-                if (fs.CanWrite && fs.CanSeek)
+                try
                 {
-                    fs.Seek(offsetfromfileBeginning, SeekOrigin.Begin);
-                    fs.Write(buffer, 0, buffer.Length);
+                    var offset = (long)reader.ReadUInt64();
+                    var path = HandleToPathDictionary[handle];
+                    var buffer = reader.ReadBinary();
 
-                    SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+                    var e = new Events.SFtpWriteEventArgs(path, offset, buffer);
+                    onWriteData?.Invoke(this, e);
+
+                    if (e.Result)
+                        SendStatus(requestId, SftpStatusType.SSH_FX_OK);
+                    else
+                        SendStatus(requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
                 }
-                else if (!fs.CanWrite)
-                    SendStatus(requestId, SftpStatusType.SSH_FX_PERMISSION_DENIED);
-                else*/
-                    
-                SendStatus(requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
+                catch(Exception E)
+                {
+                    SendStatus(requestId, SftpStatusType.SSH_FX_BAD_MESSAGE);
+                }
             }
             else
             {
-                SendStatus((uint)requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
+                SendStatus((uint)requestId, SftpStatusType.SSH_FX_INVALID_HANDLE);
                 return;
             }
         }
@@ -446,28 +574,63 @@ namespace FreeSFtpSharp
             var read = desired_access & (uint)FileSystemOperation.Read;
             var create = desired_access & (uint)FileSystemOperation.Create;
 
-            var e = new Events.SFtpStatEventArgs(path, true);
-            onStat?.Invoke(this, e);
-
-            if (e.Result)
+            if (read > 0)
             {
-                if (read > 0 && write == 0 && create == 0)
+                var e = new Events.SFtpStatEventArgs(path, true);
+                onStat?.Invoke(this, e);
+
+                if (e.Result)
                 {
-                    // if(check...)
-                    //     SendStatus(requestId, SftpStatusType.SSH_FX_PERMISSION_DENIED);
-
                     HandleToFileStreamDictionary.Add(handle, path);
+
+                    writer.Write((byte)RequestPacketType.SSH_FXP_HANDLE);
+                    writer.Write((uint)requestId);
+                    writer.Write(handle, Encoding.UTF8);
+                    // returns SSH_FXP_HANDLE on success or a SSH_FXP_STATUS message on fail
+
+                    SendPacket(writer.ToByteArray());
                 }
-
-                writer.Write((byte)RequestPacketType.SSH_FXP_HANDLE);
-                writer.Write((uint)requestId);
-                writer.Write(handle, Encoding.UTF8);
-                // returns SSH_FXP_HANDLE on success or a SSH_FXP_STATUS message on fail
-
-                SendPacket(writer.ToByteArray());
+                else
+                    SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_FILE);
             }
-            else
-                SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_FILE);
+            else if (write > 0)
+            {
+                // Файл может быть, а, может и не быть
+                var e = new Events.SFtpStatEventArgs(path, true);
+                onStat?.Invoke(this, e);
+
+                if (e.Result)
+                {
+                    // Файл есть, переписываем...
+                    HandleToFileStreamDictionary.Add(handle, path);
+
+                    writer.Write((byte)RequestPacketType.SSH_FXP_HANDLE);
+                    writer.Write((uint)requestId);
+                    writer.Write(handle, Encoding.UTF8);
+                    // returns SSH_FXP_HANDLE on success or a SSH_FXP_STATUS message on fail
+
+                    SendPacket(writer.ToByteArray());
+                }
+                else
+                {
+                    // Файла нет. Создадим...
+                    var ne = new Events.SFtpNewFileEventArgs(path);
+                    onNewFile?.Invoke(this, ne);
+                    if (ne.Result)
+                    {
+                        HandleToFileStreamDictionary.Add(handle, path);
+
+                        writer.Write((byte)RequestPacketType.SSH_FXP_HANDLE);
+                        writer.Write((uint)requestId);
+                        writer.Write(handle, Encoding.UTF8);
+                        // returns SSH_FXP_HANDLE on success or a SSH_FXP_STATUS message on fail
+
+                        SendPacket(writer.ToByteArray());
+                    }
+                    else
+                        SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_PATH);
+                }
+            }
         }
 
         private string HandleReadDir(SshDataWorker reader)
@@ -499,25 +662,6 @@ namespace FreeSFtpSharp
             }
 
             return handle;
-        }
-
-        private void ReturnReadDir(Types.SFtpFsEntry[] entries, uint requestId)
-        {
-            var writer = new SshDataWorker();
-
-            // returns SSH_FXP_NAME or SSH_FXP_STATUS with SSH_FX_EOF 
-            writer.Write((byte)RequestPacketType.SSH_FXP_NAME);
-            writer.Write((uint)requestId);
-            writer.Write((uint)entries.Length); // one file/directory at a time
-
-            foreach (var entry in entries)
-            {
-                writer.Write(entry.Filename, Encoding.UTF8);
-                writer.Write(entry.LsLine, Encoding.UTF8);
-                writer.Write(GetAttributes(entry));
-            }
-
-            SendPacket(writer.ToByteArray());
         }
 
         private void ReturnReadDir(Types.SFtpFsEntry entry, uint requestId)
@@ -565,7 +709,7 @@ namespace FreeSFtpSharp
                 SendPacket(writer.ToByteArray());
             }
             else
-                SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_FILE);
+                SendStatus(requestId, SftpStatusType.SSH_FX_NO_SUCH_PATH);
         }
 
         private void HandleInit(SshDataWorker reader)
@@ -595,7 +739,7 @@ namespace FreeSFtpSharp
             writer.Write(0x0F000005u); // flags
             writer.Write((ulong)entry.Size); // size
             writer.Write((uint)entry.UID); // uid
-            writer.Write((uint)entry.UID); // gid
+            writer.Write((uint)entry.GID); // gid
             writer.Write((uint)entry.Mode); // permissions
             writer.Write((uint)GetUnixFileTime(entry.Timestamp)); //atime   
             writer.Write((uint)GetUnixFileTime(entry.Timestamp)); //mtime

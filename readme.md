@@ -33,6 +33,12 @@ XZ compression is provided by SharpCompress package.
 LZO compression is provided by NyaLZO library (Decompression code is ported from lzo1x_decompress_safe.c)
 ZStd compression is provided by ZstdSharp package.
 
+## Supported protocols
+1. SFTP (server)
+SFTP server is available for fast inspecting a content of loaded filesystem.
+
+SFTP server is provided by (freesftpsharp)[https://github.com/mikaelliljedahl/freesftpsharp/] and (FxSsh)[https://github.com/Aimeast/FxSsh]. freesftpsharp is slightly rewrited and adopted for virtual fs.
+
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
 Run image processing:
@@ -333,6 +339,13 @@ chown <user>
 chown <user> <group>
 ```
 
+## Services
+```
+service <name> <command>
+```
+At now available only one service: 'sftp'.
+Commands is 'start', 'stop' or 'status'.
+
 ## Interactive shell commands
 Print active directory:
 ```
@@ -353,3 +366,10 @@ List items in other dir:
 ```
 ls <path>
 ```
+
+## Plugins
+Plugin is a dll that contain adiitional functionality.
+Available plugins:
+1. NyaFsSftp.dll
+
+Plugins must be placed at 'plugins' folder, then they will be loaded on app startup.

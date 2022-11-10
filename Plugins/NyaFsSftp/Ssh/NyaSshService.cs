@@ -5,6 +5,7 @@ using FxSsh.Services;
 using NyaFs.Filesystem.Universal.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace NyaFsSftp.Ssh
@@ -28,7 +29,16 @@ namespace NyaFsSftp.Ssh
 
         private void Server_ExceptionRaised(object sender, Exception e)
         {
-            Console.WriteLine($"Server_ExceptionRaised: {e.Message}");
+            Console.WriteLine($"Server_ExceptionRaised");
+            while(e != null)
+            {
+                Console.WriteLine("================");
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
+
+                e = e.InnerException;
+            }
         }
 
         public void Start()
@@ -98,16 +108,15 @@ namespace NyaFsSftp.Ssh
         {
             if (e.SubSystemName == "shell")
             {
-
+                Debug.WriteLine("shell REQUESTED");
             }
             else if (e.SubSystemName == "exec")
             {
-
+                Debug.WriteLine("exec REQUESTED");
             }
             else if (e.SubSystemName == "sftp")
             {
                 InitializeSftp(e.Channel, e.AttachedUserAuthArgs.Username);
-
             }
 
             e.Channel.SendData(Encoding.UTF8.GetBytes($"You ran {e.CommandText}\n"));
@@ -124,12 +133,17 @@ namespace NyaFsSftp.Ssh
             sftpsub.onListDir += Sftpsub_onListDir;
             sftpsub.onStat += Sftpsub_onStat;
             sftpsub.onReadData += Sftpsub_onReadData;
+            sftpsub.onReadLink += Sftpsub_onReadLink;
 
             // Edit commands
+            sftpsub.onNewFile += Sftpsub_onNewFile;
+            sftpsub.onWriteData += Sftpsub_onWriteData;
+            sftpsub.onSetStat += Sftpsub_onSetStat; ;
             sftpsub.onMakeDir += Sftpsub_onMakeDir;
             sftpsub.onRemoveDir += Sftpsub_onRemoveDir;
             sftpsub.onRemoveFile += Sftpsub_onRemoveFile;
             sftpsub.onRename += Sftpsub_onRename;
+            sftpsub.onMakeLink += Sftpsub_onMakeLink;
 
             channel.CloseReceived += (ss, ee) =>
             {
@@ -138,33 +152,148 @@ namespace NyaFsSftp.Ssh
             };
         }
 
+        private void Sftpsub_onMakeLink(object sender, FreeSFtpSharp.Events.SFtpMakeLinkEventArgs e)
+        {
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (!Fs.Exists(e.Path))
+                {
+                    var Parent = Fs.GetParentDirectory(e.Path);
+                    var SymLink = new NyaFs.Filesystem.Universal.Items.SymLink(e.Path, 0, 0, 0x1ff, e.Target);
+
+                    Parent.Items.Add(SymLink);
+                    e.Result = true;
+                }
+            }
+        }
+
+        private void Sftpsub_onReadLink(object sender, FreeSFtpSharp.Events.SFtpReadLinkEventArgs e)
+        {
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Path))
+                {
+                    var Element = Fs.GetElement(e.Path);
+
+                    if(Element.ItemType == FilesystemItemType.SymLink)
+                    {
+                        e.Target = (Element as NyaFs.Filesystem.Universal.Items.SymLink).Target;
+                        e.Result = true;
+                    }
+                }
+            }
+        }
+
+        private void Sftpsub_onSetStat(object sender, FreeSFtpSharp.Events.SFtpSetStatEventArgs e)
+        {
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Path))
+                {
+                    var Element = Fs.GetElement(e.Path);
+
+                    if (e.Mode.HasValue)
+                        Element.Mode = e.Mode.Value & 0xfffu;
+                    if (e.AccessTime.HasValue)
+                        Element.Modified = NyaFs.Filesystem.Universal.Helper.FsHelper.ConvertFromUnixTimestamp(e.AccessTime.Value);
+                    if (e.UID.HasValue)
+                        Element.User = e.UID.Value;
+                    if (e.GID.HasValue)
+                        Element.Group = e.GID.Value;
+
+                    e.Result = true;
+                }
+            }
+        }
+
+        private void Sftpsub_onWriteData(object sender, FreeSFtpSharp.Events.SFtpWriteEventArgs e)
+        {
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Path))
+                {
+                    var Element = Fs.GetElement(e.Path);
+
+                    if (Element.ItemType == FilesystemItemType.File)
+                    {
+                        var F = Element as NyaFs.Filesystem.Universal.Items.File;
+
+                        var Content = F.Content;
+                        var RequestedSize = e.Offset + e.Data.Length;
+                        if(RequestedSize > Content.Length)
+                        {
+                            var Temp = new byte[RequestedSize];
+                            Temp.WriteArray(0, Content, Content.Length);
+                            Content = Temp;
+                        }
+                        Content.WriteArray(e.Offset, e.Data, e.Data.Length);
+
+                        // Update content
+                        F.Content = Content;
+                        e.Result = true;
+                    }
+                }
+            }
+        }
+
+        private void Sftpsub_onNewFile(object sender, FreeSFtpSharp.Events.SFtpNewFileEventArgs e)
+        {
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Path))
+                    e.Result = true;
+                else
+                {
+                    var Parent = Fs.GetParentDirectory(e.Path);
+
+                    var File = new NyaFs.Filesystem.Universal.Items.File(e.Path, 0, 0, 0x1a4, new byte[] { });
+
+                    Parent.Items.Add(File);
+                    e.Result = true;
+                }
+            }
+        }
+
         private void Sftpsub_onReadData(object sender, FreeSFtpSharp.Events.SFtpReadEventArgs e)
         {
             var Fs = Processor.GetFs();
 
             if (Fs != null)
             {
-                var Element = Fs.GetElement(e.Path);
-
-                if((Element != null) && (Element.ItemType == FilesystemItemType.File))
+                if (Fs.Exists(e.Path))
                 {
-                    var F = Element as NyaFs.Filesystem.Universal.Items.File;
+                    var Element = Fs.GetElement(e.Path);
 
-                    var Content = F.Content;
-                    if(e.Offset < Content.Length)
+                    if (Element.ItemType == FilesystemItemType.File)
                     {
-                        long AvailSize = Content.Length - e.Offset;
-                        long Requested = e.Length;
+                        var F = Element as NyaFs.Filesystem.Universal.Items.File;
 
-                        if (Requested > AvailSize)
-                            Requested = AvailSize;
+                        var Content = F.Content;
+                        if (e.Offset < Content.Length)
+                        {
+                            long AvailSize = Content.Length - e.Offset;
+                            long Requested = e.Length;
 
-                        e.Data = Content.ReadArray(e.Offset, Requested);
-                        e.Result = true;
-                    }
-                    else
-                    {
-                        e.Result = true;
+                            if (Requested > AvailSize)
+                                Requested = AvailSize;
+
+                            e.Data = Content.ReadArray(e.Offset, Requested);
+                            e.Result = true;
+                        }
+                        else
+                        {
+                            e.Result = true;
+                        }
                     }
                 }
             }
@@ -176,15 +305,18 @@ namespace NyaFsSftp.Ssh
 
             if (Fs != null)
             {
-                var Dir = Fs.GetDirectory(e.Path);
+                if (Fs.Exists(e.Path))
+                {
+                    var Dir = Fs.GetDirectory(e.Path);
 
-                var Parent = GetEntry(Dir);
-                Parent.Filename = "..";
-                e.Entries.Add(Parent);
-                foreach (var Element in Dir.Items)
-                    e.Entries.Add(GetEntry(Element));
+                    var Parent = GetEntry(Dir);
+                    Parent.Filename = "..";
+                    e.Entries.Add(Parent);
+                    foreach (var Element in Dir.Items)
+                        e.Entries.Add(GetEntry(Element));
 
-                e.Result = true;
+                    e.Result = true;
+                }
             }
         }
 
@@ -194,10 +326,10 @@ namespace NyaFsSftp.Ssh
 
             if (Fs != null)
             {
-                var Element = Fs.GetElement(e.Path);
-
-                if (Element != null)
+                if (Fs.Exists(e.Path))
                 {
+                    var Element = Fs.GetElement(e.Path);
+
                     e.Entry = GetEntry(Element);
                     e.Result = true;
                 }
@@ -210,8 +342,8 @@ namespace NyaFsSftp.Ssh
             Entry.Filename = Item.ShortFilename;
             Entry.UID = Item.User;
             Entry.GID = Item.Group;
-            Entry.User = "root";
-            Entry.Group = "root";
+            Entry.User = (Item.User == 0) ? "root" : null;
+            Entry.Group = (Item.Group == 0) ? "root" : null;
             Entry.Mode = Item.FullMode;
             Entry.Timestamp = Item.Modified;
             Entry.Size = Item.Size;
@@ -238,26 +370,78 @@ namespace NyaFsSftp.Ssh
 
         private void Sftpsub_onRename(object sender, FreeSFtpSharp.Events.SFtpRenameEventArgs e)
         {
-            Console.WriteLine("Sftpsub_onRename");
-            throw new NotImplementedException();
+            Console.WriteLine($"Sftpsub_onRename: {e.OldPath} => {e.NewPath}");
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.OldPath))
+                {
+                    var Element = Fs.GetElement(e.OldPath);
+                    var OldParent = Fs.GetParentDirectory(e.OldPath);
+                    var NewParent = Fs.GetParentDirectory(e.NewPath);
+
+                    if (OldParent != NewParent)
+                    {
+                        NewParent.Items.Add(Element);
+                        OldParent.Items.Remove(Element);
+                    }
+                    Element.Filename = e.NewPath;
+
+                    e.Result = true;
+                }
+            }
         }
+
 
         private void Sftpsub_onRemoveFile(object sender, FreeSFtpSharp.Events.SFtpRemoveFileEventArgs e)
         {
-            Console.WriteLine("Sftpsub_onRemoveFile");
-            throw new NotImplementedException();
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Filename))
+                {
+                    Fs.Delete(e.Filename);
+                    e.Result = true;
+                }
+            }
         }
 
         private void Sftpsub_onRemoveDir(object sender, FreeSFtpSharp.Events.SFtpRemoveDirEventArgs e)
         {
-            Console.WriteLine("Sftpsub_onRemoveDir");
-            throw new NotImplementedException();
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (Fs.Exists(e.Path))
+                {
+                    var Element = Fs.GetDirectory(e.Path);
+
+                    if(Element.ItemType == FilesystemItemType.Directory)
+                    {
+                        Fs.Delete(e.Path);
+                        e.Result = true;
+                    }
+                }
+            }
         }
 
         private void Sftpsub_onMakeDir(object sender, FreeSFtpSharp.Events.SFtpMakeDirEventArgs e)
         {
-            Console.WriteLine("Sftpsub_onMakeDir");
-            throw new NotImplementedException();
+            var Fs = Processor.GetFs();
+
+            if (Fs != null)
+            {
+                if (!Fs.Exists(e.Path))
+                {
+                    var Parent = Fs.GetParentDirectory(e.Path);
+                    var Dir = new NyaFs.Filesystem.Universal.Items.Dir(e.Path, 0, 0, 0x1ed);
+
+                    Parent.Items.Add(Dir);
+                    e.Result = true;
+                }
+            }
         }
     }
 }

@@ -26,8 +26,10 @@ namespace NyaFs.Filesystem.Universal
             this.Group = Group;
             this.Mode = Mode;
 
-            this.Filename = PreprocessFilename(Filename);
+            this.Filename = Filename;
         }
+
+        private string IntFilename;
 
         public readonly Types.FilesystemItemType ItemType;
 
@@ -36,7 +38,12 @@ namespace NyaFs.Filesystem.Universal
 
         public uint Mode; // Access rights 12 bit 4 4 4
 
-        public string Filename;
+        public string Filename
+        {
+            get { return IntFilename; }
+            set { IntFilename = PreprocessFilename(value); }
+        }
+
         public string ShortFilename
         {
             get

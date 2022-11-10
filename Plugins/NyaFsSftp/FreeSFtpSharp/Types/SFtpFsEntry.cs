@@ -7,19 +7,19 @@ namespace FreeSFtpSharp.Types
 {
     public class SFtpFsEntry
     {
-        public string Filename;
+        public string Filename = null;
 
-        public uint   UID;
-        public uint   GID;
+        public uint   UID = 0;
+        public uint   GID = 0;
 
-        public string User;
-        public string Group;
+        public string User = null;
+        public string Group = null;
 
         public long Size = 0;
 
-        public DateTime Timestamp;
+        public DateTime Timestamp = DateTime.UnixEpoch;
 
-        public uint Mode;
+        public uint Mode = 0;
 
         public SFtpFsEntryType Type;
 
@@ -62,8 +62,8 @@ namespace FreeSFtpSharp.Types
             get
             {
                 var M = $"{ItemType}{ModeString}";
-                var U = ((User == null) ? $"{UID}" : $"{User}").PadLeft(9);
-                var G = ((Group == null) ? $"{GID}" : $"{Group}").PadLeft(9);
+                var U = ((User == null) ? $"u{UID}" : $"{User}").PadLeft(9);
+                var G = ((Group == null) ? $"g{GID}" : $"{Group}").PadLeft(9);
                 var S = $"{Size}".PadLeft(12);
                 var TS = Timestamp.ToString("MMM  d  yyyy", CultureInfo.GetCultureInfo("en-US"));
 

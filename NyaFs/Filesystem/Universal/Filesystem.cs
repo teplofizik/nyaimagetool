@@ -61,7 +61,7 @@ namespace NyaFs.Filesystem.Universal
 
         public bool Exists(string Path)
         {
-            if (Path == ".") return true;
+            if ((Path == ".") || (Path == "/")) return true;
             if (Path.Length == 0)
                 throw new ArgumentException($"{Path} is empty");
 
@@ -152,7 +152,7 @@ namespace NyaFs.Filesystem.Universal
             if (Parent == null)
                 throw new ArgumentException($"Parent dir for {Path} is not found in filesystem");
 
-            Parent.Items.RemoveAll(FI => FI.Filename == Path);
+            Parent.Items.Remove(Element);
         }
     }
 }

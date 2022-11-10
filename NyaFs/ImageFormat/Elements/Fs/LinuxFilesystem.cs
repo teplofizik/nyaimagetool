@@ -41,10 +41,23 @@ namespace NyaFs.ImageFormat.Elements.Fs
 
         public FilesystemItem GetElement(string Path) => Fs.GetElement(Path);
 
+        /// <summary>
+        /// Delete specified element from filesystem
+        /// </summary>
+        /// <param name="Path">Path to delete</param>
         public void Delete(string Path) => Fs.Delete(Path);
 
+        /// <summary>
+        /// Calculate total amount of data over all files on filesystem (only content of regular files + text of symlinks)
+        /// </summary>
+        /// <returns>Total amount of data in filesystem</returns>
         public long GetContentSize() => GetDirSize(Fs.Root);
 
+        /// <summary>
+        /// Calculate total amount of data over all files in directory (only content of regular files + text of symlinks)
+        /// </summary>
+        /// <param name="Dir">Directory to calc sum of files size</param>
+        /// <returns>Total amount of data in deirectory</returns>
         private long GetDirSize(Filesystem.Universal.Items.Dir Dir)
         {
             long Res = 0;
