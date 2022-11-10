@@ -15,7 +15,8 @@ namespace NyaFsLinux
             return new ScriptStepGenerator[] {
                 new Commands.LsUsers(),
                 new Commands.LsHashes(),
-                new Commands.Passwd()
+                new Commands.Passwd(),
+                new Commands.Mkpasswd()
             };
         }
     }
