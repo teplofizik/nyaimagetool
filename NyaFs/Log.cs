@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs
 {
-    static class Log
+    public static class Log
     {
         static int LogLevel = 5;
 

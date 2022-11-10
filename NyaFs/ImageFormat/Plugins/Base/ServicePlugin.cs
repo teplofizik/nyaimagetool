@@ -67,5 +67,33 @@ namespace NyaFs.ImageFormat.Plugins.Base
         {
 
         }
+
+        /// <summary>
+        /// Print sservice usage
+        /// </summary>
+        public virtual void Usage()
+        {
+            Log.Write(0, "  start: run service");
+            Log.Write(0, "   stop: stop service");
+            Log.Write(0, " status: stop service status (running/stopped)");
+            Log.Write(0, "   info: show service information");
+            Log.Write(0, "    set: set options <option> <param>");
+        }
+
+        /// <summary>
+        /// Information about service
+        /// </summary>
+        public virtual void Info()
+        {
+
+        }
+
+        /// <summary>
+        /// Set service options
+        /// </summary>
+        public virtual void SetOption(string Param, string Value)
+        {
+
+        }
     }
 }
