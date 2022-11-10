@@ -13,7 +13,8 @@ namespace NyaFsFiles
         public override ScriptStepGenerator[] GetGenerators()
         {
             return new ScriptStepGenerator[] {
-                new Commands.Copy()
+                new Commands.Copy(),
+                new Commands.Download()
             };
         }
     }
