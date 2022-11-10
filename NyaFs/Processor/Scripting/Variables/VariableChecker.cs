@@ -15,9 +15,7 @@ namespace NyaFs.Processor.Scripting.Variables
         public static string[] ExtractVariables(string Text)
         {
             var Res = new List<string>();
-            string Temp = null;
-
-            var Parts = Text.Split(new char[] { ' ', '\t', ',', ':', '\\', '/', '>', '<', '?', '!', '*', '*', '%', '#', '@', '~' });
+            var Parts = Text.Split(new char[] { ' ', '\t', ',', '.', ':', '(', ')', '[', ']', '{', '}', '-', '\\', '/', '>', '<', '?', '!', '+', '*', '*', '%', '#', '@', '~' });
 
             foreach(var P in Parts)
             {
