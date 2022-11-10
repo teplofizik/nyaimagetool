@@ -6,7 +6,12 @@ namespace NyaFs
 {
     public static class Log
     {
-        static int LogLevel = 5;
+        static int LogLevel = 2;
+
+        public static void SetLevel(int Level)
+        {
+            LogLevel = Level;
+        }
 
         public static void Write(int Level, string Text)
         {

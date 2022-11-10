@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Params
 {
-    class FsPathScriptArgsParam : ScriptArgsParam
+    public class FsPathScriptArgsParam : ScriptArgsParam
     {
         public FsPathScriptArgsParam() : base("path")
         {

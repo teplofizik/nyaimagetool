@@ -34,6 +34,7 @@ namespace NyaFs.Processor
         public ImageProcessor(Scripting.ScriptParser Parser)
         {
             this.Parser = Parser;
+            LoadPlugins();
         }
 
         public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);
@@ -80,6 +81,36 @@ namespace NyaFs.Processor
                     case ScriptStepStatus.Error: Log.Error(0, $"{Step.Name} [{Step.ScriptName}:{Step.ScriptLine}]: {Res.Text}"); break;
                     case ScriptStepStatus.Ok: Log.Ok(0, $"{Step.Name}: {Res.Text}"); break;
                     case ScriptStepStatus.Warning: Log.Warning(0, $"{Step.Name} [{Step.ScriptName}:{Step.ScriptLine}]: {Res.Text}"); break;
+                }
+            }
+        }
+
+        public void LoadPlugins()
+        {
+            var Filenames = System.IO.Directory.GetFiles("plugins/", "*.dll");
+
+            foreach (var F in Filenames)
+            {
+                try
+                {
+                    var PluginList = Plugins.LoadFromFile(F);
+
+                    foreach (var Plugin in PluginList)
+                    {
+                        Plugins.Load(Plugin);
+
+                        var C = Plugin as Scripting.Plugins.CommandPlugin;
+                        if(C != null)
+                        {
+                            var Generators = C.GetGenerators();
+
+                            Parser.AddGenerators(Generators);
+                        }
+                    }
+                }
+                catch (Exception E)
+                {
+                    Log.Error(0, $"Error on loading {F}: {E.Message}");
                 }
             }
         }

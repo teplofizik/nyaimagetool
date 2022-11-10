@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Params
 {
-    class ModeScriptArgsParam : ScriptArgsParam
+    public class ModeScriptArgsParam : ScriptArgsParam
     {
         public ModeScriptArgsParam() : base("mode")
         {

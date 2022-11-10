@@ -261,6 +261,23 @@ namespace NyaFs.Processor.Scripting.Commands
                         {
                             return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid entry address: {Value}!");
                         }
+                    case "loglevel":
+                        {
+                            int Level;
+                            if (Int32.TryParse(Value, out Level))
+                            {
+                                if ((Level >= 0) && (Level < 7))
+                                {
+                                    Log.SetLevel(Level);
+
+                                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Set log level ok: {Value}!");
+                                }
+                                else
+                                    return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid log level: {Level}. Must be from 0 to 6!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"Invalid log level: {Value}!");
+                        }
                     default:
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown parameter {Param}!");
                 }

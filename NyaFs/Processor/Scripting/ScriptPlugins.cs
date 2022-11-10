@@ -13,6 +13,7 @@ namespace NyaFs.Processor.Scripting
         private List<CompressorPlugin> Compressors = new List<CompressorPlugin>();
         private List<FilesystemPlugin> Filesystems = new List<FilesystemPlugin>();
         private List<ServicePlugin> Services = new List<ServicePlugin>();
+        private List<Plugins.CommandPlugin> Commands = new List<Plugins.CommandPlugin>();
 
         /// <summary>
         /// Get compressor plugin by name
@@ -96,6 +97,13 @@ namespace NyaFs.Processor.Scripting
                 return true;
             }
 
+            var Command = Plugin as Plugins.CommandPlugin;
+            if (Command != null)
+            {
+                Commands.Add(Command);
+                return true;
+            }
+
             return false;
         }
 
@@ -142,8 +150,6 @@ namespace NyaFs.Processor.Scripting
             if (PluginAssembly != null)
             {
                 var Types = PluginAssembly.GetTypes().Where(t => CheckPluginType(t)).ToArray();
-                int Loaded = 0;
-
                 foreach (var t in Types)
                 {
                     var obj = AppDomain.CurrentDomain.CreateInstanceFrom(Filename, t.FullName).Unwrap();
@@ -151,11 +157,7 @@ namespace NyaFs.Processor.Scripting
                     {
                         var Plugin = obj as NyaPlugin;
                         if (Plugin != null)
-                        {
-                            Load(Plugin);
                             Res.Add(Plugin);
-                            Loaded++;
-                        }
                     }
                 }
             }
@@ -165,23 +167,6 @@ namespace NyaFs.Processor.Scripting
         private bool CheckPlugin(NyaPlugin Plugin)
         {
             return true;
-        }
-
-        public void LoadLocalPlugins()
-        {
-            var Filenames = System.IO.Directory.GetFiles("plugins/", "*.dll");
-
-            foreach(var F in Filenames)
-            {
-                ///try
-                {
-                    LoadFromFile(F);
-                }
-               // catch(Exception E)
-                //{
-               //     Log.Error(0, $"Error on loading {F}: {E.Message}");
-               // }
-            }
         }
     }
 }

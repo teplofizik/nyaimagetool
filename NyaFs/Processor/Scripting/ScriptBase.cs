@@ -10,7 +10,9 @@ namespace NyaFs.Processor.Scripting
 
         public void Add(ScriptStepGenerator G)
         {
-            Commands.Add(G);
+            // check for duplicates
+            if(GetGenerator(G.Name) == null)
+                Commands.Add(G);
         }
 
         public ScriptStepGenerator GetGenerator(string Name)

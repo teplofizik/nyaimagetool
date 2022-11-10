@@ -25,6 +25,16 @@ namespace NyaFs.Processor.Scripting
         }
 
         /// <summary>
+        /// Add commands
+        /// </summary>
+        /// <param name="Generators"></param>
+        public void AddGenerators(ScriptStepGenerator[] Generators)
+        {
+            foreach(var G in Generators)
+                Base.Add(G);
+        }
+
+        /// <summary>
         /// Extract command args (all elements after first)
         /// </summary>
         /// <param name="Parts">Splitted command line</param>

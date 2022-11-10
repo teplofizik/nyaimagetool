@@ -18,7 +18,8 @@ namespace NyaFsSftp
         protected override void OnStart()
         {
             ssh = new NyaSshService(Port, getProcessor());
-            NyaFs.Log.Ok(0, $"SFTP server is running on 0.0.0.0:{Port}");
+            NyaFs.Log.Ok(3, $"SFTP server is running on 0.0.0.0:{Port}");
+
             ssh.Start();
         }
 
@@ -27,17 +28,6 @@ namespace NyaFsSftp
             ssh.Stop();
             ssh = null;
             NyaFs.Log.Ok(0, $"Sftp is stopped");
-        }
-
-        protected override void Setup()
-        {
-            base.Setup();
-        }
-
-
-        protected override void Loop()
-        {
-            base.Loop();
         }
 
         /// <summary>

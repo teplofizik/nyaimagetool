@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Params
 {
-    class NumberScriptArgsParam : ScriptArgsParam
+    public class NumberScriptArgsParam : ScriptArgsParam
     {
         public NumberScriptArgsParam(string Name) : base(Name)
         {
