@@ -16,7 +16,8 @@ namespace NyaFsLinux
                 new Commands.LsUsers(),
                 new Commands.LsHashes(),
                 new Commands.Passwd(),
-                new Commands.Mkpasswd()
+                new Commands.Mkpasswd(),
+                new Commands.FindPasswd()
             };
         }
     }
