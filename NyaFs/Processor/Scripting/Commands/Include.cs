@@ -38,10 +38,13 @@ namespace NyaFs.Processor.Scripting.Commands
                 };
                 foreach (var V in Variants)
                 {
-                    var Target = System.IO.Path.Combine(V, Path);
+                    if (V != null)
+                    {
+                        var Target = System.IO.Path.Combine(V, Path);
 
-                    if (System.IO.File.Exists(Target))
-                        return Target;
+                        if (System.IO.File.Exists(Target))
+                            return Target;
+                    }
                 }
 
                 return null;
