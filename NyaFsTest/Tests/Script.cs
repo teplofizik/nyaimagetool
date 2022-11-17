@@ -8,9 +8,11 @@ namespace NyaFsTest.Tests
     {
         public static void TestScriptFile(string FN)
         {
-            var Processor = new NyaFs.Processor.ImageProcessor();
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
-            var Script = new NyaFs.Processor.Scripting.ScriptParser(Base, FN).Script;
+            var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
+            var Processor = new NyaFs.Processor.ImageProcessor(Parser);
+
+            var Script = Parser.ParseScript(FN);
 
             if (!Script.HasErrors)
                 Processor.Process(Script);
@@ -20,10 +22,11 @@ namespace NyaFsTest.Tests
 
         public static void TestScript()
         {
-            var Processor = new NyaFs.Processor.ImageProcessor();
-
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
-            var Script = new NyaFs.Processor.Scripting.ScriptParser(Base, "test", new string[] {
+            var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
+            var Processor = new NyaFs.Processor.ImageProcessor(Parser);
+
+            var Script = Parser.ParseScript("test", new string[] {
                // "load initramfs.bin.SD ramfs legacy",
                // "load test.fit ramfs fit",
                // "load test.fit devtree fit",
@@ -41,7 +44,7 @@ namespace NyaFsTest.Tests
                 // "store builded.fit",
                // "export exported",
              //   "store ramfs.cpio ramfs cpio"
-            }).Script;
+            });
 
             if (!Script.HasErrors)
                 Processor.Process(Script);
