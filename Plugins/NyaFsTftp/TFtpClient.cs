@@ -1,11 +1,11 @@
 ﻿using NyaFs.Processor.Scripting;
 using System;
 
-namespace NyaFsFiles
+namespace NyaFsTftp
 {
-    public class FilesPlugin : NyaFs.Processor.Scripting.Plugins.CommandPlugin
+    public class TFtpClient : NyaFs.Processor.Scripting.Plugins.CommandPlugin
     {
-        public FilesPlugin() : base("files")
+        public TFtpClient() : base("tftp")
         {
 
         }
@@ -13,8 +13,8 @@ namespace NyaFsFiles
         public override ScriptStepGenerator[] GetGenerators()
         {
             return new ScriptStepGenerator[] {
-                new Commands.Copy(),
-                new Commands.Download()
+                new Commands.TFtpGet(),
+                new Commands.TFtpPut()
             };
         }
     }
