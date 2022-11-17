@@ -39,6 +39,10 @@ SFTP server is available for fast inspecting a content of loaded filesystem.
 
 SFTP server is provided by (freesftpsharp)[https://github.com/mikaelliljedahl/freesftpsharp/] and (FxSsh)[https://github.com/Aimeast/FxSsh]. freesftpsharp is slightly rewrited and adopted for virtual fs.
 
+2. TFTP (client/server)
+TFTP server is available to provide tftp-access to builded packages. TFTP client allow download and upload files.
+TFTP support is provided by tftp.net [https://github.com/Callisto82/tftp.net] library.
+
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
 Run image processing:
@@ -414,5 +418,118 @@ file etc/config.cfg files/$image/config.cfg
 Plugin is a dll that contain adiitional functionality.
 Available plugins:
 1. NyaFsSftp.dll
-
+2. NyaFsLinux.dll
+3. NyaFsTFtp.dll
+4. NyaFsFiles.dll
 Plugins must be placed at 'plugins' folder, then they will be loaded on app startup.
+
+## SFTP plugin (NyaFsSftp.dll)
+Default server port is 22.
+Start server:
+```
+service sftp start
+```
+Stop server:
+```
+service sftp stop
+```
+Information about server parameters:
+```
+service sftp info
+```
+Port selection (while server is stopped):
+```
+service sftp set port <port>
+```
+There are need to setup in WinSCP connection settings sending null packets every 20-30 sec to keep connection alive. Timeout is 45 seconds.
+
+## TFTP plugin (NyaFsTFtp.dll)
+Default server port is 69.
+Start server:
+```
+service tftp start
+```
+Stop server:
+```
+service tftp stop
+```
+Port selection (while server is stopped):
+```
+service tftp set port <port>
+```
+Information about server parameters:
+```
+service tftp info
+```
+Directory selection (while server is stopped):
+```
+service tftp set dir <directory>
+```
+
+Downloading from remote tftp server:
+```
+tftpget <filename> <server> <remotefilename>
+```
+(filename) - filename of file to write received data
+(server) - ip or hostname of remote server
+(remotefilename) - filename of requested file on server
+
+Uploading to remote tftp server:
+```
+tftpput <filename> <server> <remotefilename>
+```
+(filename) - filename with content of sended file
+(server) - ip or hostname of remote server
+(remotefilename) - filename of target file on server
+
+## Operations with local files (NyaFsFiles.dll)
+Copy file on local filesystem:
+```
+copy <src> <dst>
+```
+(src) - filename of file to be copied
+(dst) - filename of new file
+
+Download file from http/https:
+```
+download <filename> <url>
+```
+(filename) - filename of file to write received data
+(url) - url of remote file
+
+Remove file from local filesystem:
+```
+remove <filename>
+```
+
+## Linux-specific operations (NyaFsLinux.dll)
+List of all users (from /etc/passwd):
+```
+lsusr
+```
+List of password hashes (from /etc/shadow):
+```
+lshashes
+```
+
+Example of users inspection:
+![Interactive shell](/docs/images/plugins/linux_lsusr.png)
+
+Set new password for user (/etc/shadow will be updated, SHA-512 hash is used by default):
+```
+mkpasswd <user> <password>
+```
+
+Check user password - is password valid for this user:
+```
+passwd <user> <password>
+passwd <user>
+```
+(password) - password to check. If field is not specified, user will be checked for empty password.
+
+Find user password from list of passwords (bruteforce, very slow, but applicable for finding which password from list of used passwords was used in loaded rootfs)
+```
+findpasswd <user> <listfilename>
+```
+(listfilename) is filename of file, which contains a list of passwords to check.
+

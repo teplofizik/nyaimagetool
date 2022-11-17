@@ -114,7 +114,15 @@ namespace FxSsh
         public event EventHandler<SshService> ServiceRegistered;
 
         public event EventHandler<KeyExchangeArgs> KeysExchanged;
-                
+
+        public event EventHandler<SshService> Check;
+
+        internal void CheckService()
+        {
+            if(_socket.Connected)
+                SendMessage(new Messages.Connection.ShouldIgnoreMessage());
+        }
+
         internal void EstablishConnection()
         {
             if (!_socket.Connected)
@@ -218,7 +226,7 @@ namespace FxSsh
 
                 if (len == 0)
                 {
-                    throw new SshConnectionException("Could't read the protocal version", DisconnectReason.ProtocolError);
+                    throw new SshConnectionException("Could't read the protocol version", DisconnectReason.ProtocolError);
                 }
 
                 for (var i = 0; i < len; i++, pos++)

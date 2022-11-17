@@ -54,12 +54,14 @@ namespace NyaFsLinux.Commands
                     if (U.Hash != null)
                     {
                         if (U.NoPassword)
-                            Info += "no password";
+                            NyaFs.Log.Ok(0, Info + "no password enabled");
+                        else if (U.Hash == "")
+                            NyaFs.Log.Warning(0, Info + "no password (unrestricted access)");
                         else
-                            Info += $"hash {U.HashType} with salt '{U.Salt}'";
+                            NyaFs.Log.Ok(0, Info + $"hash {U.HashType} with salt '{U.Salt}'");
                     }
-                    
-                    NyaFs.Log.Write(0, Info);
+                    else
+                        NyaFs.Log.Warning(0, Info + "no hash info!");
                 }
 
                 return new ScriptStepResult(ScriptStepStatus.Ok, null);

@@ -60,6 +60,11 @@ namespace NyaFsLinux.Commands
                     {
                         if(U.NoPassword)
                             return new ScriptStepResult(ScriptStepStatus.Error, $"User '{User}' has no password.");
+                        else if (U.Hash == "")
+                        {
+                            NyaFs.Log.Ok(0, $"Password for '{User}' is '' (empty string)");
+                            return new ScriptStepResult(ScriptStepStatus.Ok, null);
+                        }
                         else if (U.Hash != null)
                         {
                             var Passwords = System.IO.File.ReadAllLines(PasswordsFile);

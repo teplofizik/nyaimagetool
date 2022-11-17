@@ -3,11 +3,16 @@ using System;
 
 namespace NyaFsSftp
 {
-    
     public class SftpPlugin : NyaFs.ImageFormat.Plugins.Base.ServicePlugin
     {
-        private int Port = 1234;
+        /// <summary>
+        /// SSH port. Default is 22
+        /// </summary>
+        private int Port = 22;
 
+        /// <summary>
+        ///  SSH server class
+        /// </summary>
         NyaSshService ssh;
 
         public SftpPlugin() : base("sftp", "SFTP service")
@@ -27,7 +32,7 @@ namespace NyaFsSftp
         {
             ssh.Stop();
             ssh = null;
-            NyaFs.Log.Ok(0, $"Sftp is stopped");
+            NyaFs.Log.Ok(0, $"SFTP server is stopped");
         }
 
         /// <summary>

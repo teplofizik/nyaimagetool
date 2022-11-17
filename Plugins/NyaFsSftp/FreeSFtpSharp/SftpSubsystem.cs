@@ -32,7 +32,7 @@ namespace FreeSFtpSharp
 
         private string ActivePath = "/";
 
-        private uint channel;
+        private readonly uint channel;
         internal EventHandler<ICollection<byte>> OnOutput;
 
         Dictionary<string, string> HandleToPathDictionary;
@@ -489,7 +489,7 @@ namespace FreeSFtpSharp
                     else
                         SendStatus(requestId, SftpStatusType.SSH_FX_OP_UNSUPPORTED);
                 }
-                catch(Exception E)
+                catch(Exception)
                 {
                     SendStatus(requestId, SftpStatusType.SSH_FX_BAD_MESSAGE);
                 }

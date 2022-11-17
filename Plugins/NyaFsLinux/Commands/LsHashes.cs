@@ -50,7 +50,9 @@ namespace NyaFsLinux.Commands
                 {
                     var UidGid = $"{U.UID}:{U.GID}";
 
-                    if ((U.Hash != null) && !U.NoPassword)
+                    if((U.Hash == ""))
+                        NyaFs.Log.Write(0, $"{U.Name.PadRight(12)} {"no".PadRight(8)} {"-".PadRight(18)} {"no password".PadRight(25)}");
+                    else if ((U.Hash != null) && !U.NoPassword)
                         NyaFs.Log.Write(0, $"{U.Name.PadRight(12)} {U.HashType.PadRight(8)} {U.Salt.PadRight(18)} {U.HashValue.PadRight(25)}");
                 }
 

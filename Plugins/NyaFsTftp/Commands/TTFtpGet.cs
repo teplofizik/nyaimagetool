@@ -59,12 +59,16 @@ namespace NyaFsTftp.Commands
                 transfer.OnFinished += Transfer_OnFinished;
                 transfer.OnError += Transfer_OnError;
 
-                Stream stream = new MemoryStream();
+                MemoryStream stream = new MemoryStream();
                 transfer.Start(stream);
 
                 TransferFinishedEvent.WaitOne();
-                if(Result)
+                if (Result)
+                {
+                    var data = stream.ToArray();
+                    File.WriteAllBytes(Filename, data);
                     return new ScriptStepResult(ScriptStepStatus.Ok, null);
+                }
                 else
                     return new ScriptStepResult(ScriptStepStatus.Error, ErrorText);
             }

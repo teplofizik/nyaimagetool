@@ -11,15 +11,21 @@ namespace NyaFsLinux.Commands
 
         public Passwd() : base("passwd")
         {
-            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
+            AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("user"),
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("password")
+            }));
+            AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
+                new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("user")
             }));
         }
 
         public override ScriptStep Get(ScriptArgs Args)
         {
-            return new PasswdScriptStep(Args.RawArgs[0], Args.RawArgs[1]);
+            if(Args.ArgConfig == 1)
+                return new PasswdScriptStep(Args.RawArgs[0], Args.RawArgs[1]);
+            else
+                return new PasswdScriptStep(Args.RawArgs[0], "");
         }
 
         public class PasswdScriptStep : ScriptStep
@@ -57,6 +63,14 @@ namespace NyaFsLinux.Commands
                     {
                         if(U.NoPassword)
                             return new ScriptStepResult(ScriptStepStatus.Error, $"User '{User}' has no password.");
+                        else if (U.Hash == "")
+                        {
+                            if (Password == "")
+                            {
+                                NyaFs.Log.Ok(0, $"Password is correct");
+                                return new ScriptStepResult(ScriptStepStatus.Ok, null);
+                            }
+                        }
                         else if (U.Hash != null)
                         {
                             if (U.CheckPassword(Password))

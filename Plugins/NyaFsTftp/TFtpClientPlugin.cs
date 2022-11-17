@@ -3,9 +3,9 @@ using System;
 
 namespace NyaFsTftp
 {
-    public class TFtpClient : NyaFs.Processor.Scripting.Plugins.CommandPlugin
+    public class TFtpClientPlugin : NyaFs.Processor.Scripting.Plugins.CommandPlugin
     {
-        public TFtpClient() : base("tftp")
+        public TFtpClientPlugin() : base("tftpclient")
         {
 
         }

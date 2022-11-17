@@ -15,6 +15,7 @@ namespace FxSsh
         private bool _isDisposed;
         private bool _started;
         private TcpListener _listener = null;
+        private System.Timers.Timer checkTimer = new System.Timers.Timer(5000);
 
         public SshServer()
             : this(new SshServerSettings())
@@ -49,9 +50,33 @@ namespace FxSsh
                 _listener.Start();
                 BeginAcceptSocket();
 
+                checkTimer.Elapsed += CheckTimer_Elapsed;
+                checkTimer.Start();
+
                 _started = true;
             }
         }
+
+        private void CheckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            try
+            { 
+                foreach (var session in sessions)
+                {
+                    try
+                    {
+                        session.CheckService();
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
 
         public void Stop()
         {
@@ -63,6 +88,7 @@ namespace FxSsh
 
                 _listener.Stop();
 
+                checkTimer.Stop();
                 _isDisposed = true;
                 _started = false;
 

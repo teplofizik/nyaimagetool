@@ -26,6 +26,7 @@ namespace NyaFsSftp.Ssh
 
             Server.ConnectionAccepted += Server_ConnectionAccepted;
             Server.ExceptionRaised += Server_ExceptionRaised;
+
         }
 
         private void Server_ExceptionRaised(object sender, Exception e)
