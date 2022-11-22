@@ -107,20 +107,39 @@ namespace NyaFs.Processor.Scripting.Helper
 
         public static Tuple<string,string> DetectImageFormat(string Filename)
         {
+            Tuple<string, string> res = null;
             var Data = System.IO.File.ReadAllBytes(Filename);
             // Detect by extension
             var Extension = System.IO.Path.GetExtension(Filename);
             switch(Extension)
             {
-                case ".gz": return TryDecompressArchive(Data, "gzip", ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                case ".gz":
+                    res = TryDecompressArchive(Data, "gzip", ImageFormat.Types.CompressionType.IH_COMP_GZIP);
+                    if (res != null) return res;
+                    break;
                 case ".zst":
-                case ".zstd": return TryDecompressArchive(Data, "zstd", ImageFormat.Types.CompressionType.IH_COMP_ZSTD);
+                case ".zstd": 
+                    res = TryDecompressArchive(Data, "zstd", ImageFormat.Types.CompressionType.IH_COMP_ZSTD);
+                    if (res != null) return res;
+                    break;
                 case ".bz2":
-                case ".bzip2": return TryDecompressArchive(Data, "bzip2", ImageFormat.Types.CompressionType.IH_COMP_BZIP2);
-                case ".lz4": return TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
+                case ".bzip2": 
+                    res = TryDecompressArchive(Data, "bzip2", ImageFormat.Types.CompressionType.IH_COMP_BZIP2);
+                    if (res != null) return res;
+                    break;
+                case ".lz4": 
+                    res = TryDecompressArchive(Data, "lz4", ImageFormat.Types.CompressionType.IH_COMP_LZ4);
+                    if (res != null) return res;
+                    break;
                 case ".lzimg":
-                case ".lzma": return TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
-                case ".lzo": return TryDecompressArchive(Data, "lzo", ImageFormat.Types.CompressionType.IH_COMP_LZO);
+                case ".lzma": 
+                    res = TryDecompressArchive(Data, "lzma", ImageFormat.Types.CompressionType.IH_COMP_LZMA);
+                    if (res != null) return res;
+                    break;
+                case ".lzo": 
+                    res = TryDecompressArchive(Data, "lzo", ImageFormat.Types.CompressionType.IH_COMP_LZO);
+                    if (res != null) return res;
+                    break;
             }
 
             // Detect by content
