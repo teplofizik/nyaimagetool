@@ -36,9 +36,15 @@ namespace NyaImageTool
             // TODO:
             foreach (var P in Params)
             {
+                if (P == null) continue;
+
                 if (NyaFs.Processor.Scripting.Variables.VariableChecker.IsCorrectName(P))
-                {
                     Processor.Scope.SetValue(P, "");
+                else
+                {
+                    var RepP = P.Replace('%', '$');
+                    if (NyaFs.Processor.Scripting.Variables.VariableChecker.IsCorrectName(RepP))
+                        Processor.Scope.SetValue(RepP, "");
                 }
             }
 

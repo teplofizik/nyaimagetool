@@ -3,6 +3,22 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
+## Install
+
+## Windows
+Install .NET Core 3.1 runtime
+
+## Linux
+Download dotnet binaries for your system (for example dotnet-runtime-3.1.32-linux-x64.tar.gz for x64 linux):
+```
+mkdir ~/.dotnet
+tar -xf dotnet-runtime-3.1.32-linux-x64.tar.gz -C ~/.dotnet/
+export PATH=~/.dotnet:$PATH
+dotnet ./NyaImageTool.dll
+```
+
+![Run on linux](/docs/images/linux.png)
+
 ## Supported image formats
 1. Kernel: compressed raw, fit, android, raw, legacy
 2. Ramfs: cpio, ext2, squashfs, cramfs, romfs, compressed cpio or ext2, legacy, fit, android image
