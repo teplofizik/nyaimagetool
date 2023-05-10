@@ -34,9 +34,9 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
 
         private void ReadToKernelv0(LinuxKernel Dst)
         {
-
-
             // TODO: detect image format...
+            Dst.Info.Type = Types.ImageType.IH_TYPE_KERNEL;
+            Dst.Info.OperatingSystem = Types.OS.IH_OS_LINUX;
             Dst.Info.Compression = Types.CompressionType.IH_COMP_NONE;
             Dst.Info.DataLoadAddress = Image.KernelAddress;
             Dst.Info.EntryPointAddress = Image.KernelAddress;
