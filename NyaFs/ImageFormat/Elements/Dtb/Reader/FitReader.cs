@@ -13,7 +13,7 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
         FlattenedDeviceTree.Types.Node DevtreeNode = null;
 
         // https://github.com/siemens/u-boot/blob/master/common/image.c
-        public FitReader(string Filename)
+        public FitReader(string Filename, string Config)
         {
             Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(Filename).Read();
 
@@ -29,7 +29,7 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
                 Log.Error(0, $"Invalid FIT image {Filename}: no 'configuration' node.");
                 return;
             }
-            var DefaultConfig = Configurations.GetStringValue("default");
+            var DefaultConfig = (Config != null) ? Config : Configurations.GetStringValue("default");
 
             if (DefaultConfig == null)
             {
@@ -93,20 +93,25 @@ namespace NyaFs.ImageFormat.Elements.Dtb.Reader
             }
 
             var Data = DevtreeNode.GetValue("data");
-
-            if (Helper.FitHelper.CheckHash(Data, DevtreeNode.GetNode("hash@1")))
+            var HashNode = Helper.FitHelper.GetHashNode(DevtreeNode);
+            if (HashNode != null)
             {
-                var Dtb = Helper.FitHelper.GetDecompressedData(Data, Compression);
-                Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
-                Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
-                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
-                Dst.DevTree = new FlattenedDeviceTree.Reader.FDTReader(Dtb).Read();
+                if (Helper.FitHelper.CheckHash(Data, HashNode))
+                {
+                    var Dtb = Helper.FitHelper.GetDecompressedData(Data, Compression);
+                    Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
+                    Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                    Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
+                    Dst.DevTree = new FlattenedDeviceTree.Reader.FDTReader(Dtb).Read();
+                }
+                else
+                {
+                    Log.Error(0, $"Invalid FIT image: hash is not equal.");
+                    return;
+                }
             }
             else
-            {
-                Log.Error(0, $"Invalid FIT image: hash is not equal.");
-                return;
-            }
+                Log.Warning(0, $"No hash node in devtree image node!");
         }
     }
 }

@@ -21,8 +21,8 @@ namespace NyaFs.ImageFormat.Types
 			Type = Info.Type;
 			CPUArchitecture = Info.Architecture;
 			OperatingSystem = Info.OperatingSystem;
-			DataLoadAddress = Info.DataLoadAddress;
-			EntryPointAddress = Info.EntryPointAddress;
+			DataLoadAddress = Convert.ToUInt32(Info.DataLoadAddress & 0xFFFFFFFFUL);
+			EntryPointAddress = Convert.ToUInt32(Info.EntryPointAddress & 0xFFFFFFFFUL);
 			this.Compression = Compression;
 
 			WriteArray(0x40, Data, Data.Length);

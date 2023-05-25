@@ -68,6 +68,14 @@ namespace NyaFs.FlattenedDeviceTree.Types
                 return null;
         }
 
+        public void AddUInt64Value(string Name, UInt64 Value)
+        {
+            byte[] Raw = new byte[8];
+            Raw.WriteUInt64BE(0, Value);
+
+            Properties.Add(new Property(Name, Raw));
+        }
+
         public void AddUInt32Value(string Name, uint Value)
         {
             byte[] Raw = new byte[4];

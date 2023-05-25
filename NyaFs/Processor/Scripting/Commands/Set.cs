@@ -238,7 +238,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "load":
                         try
                         {
-                            uint Load = Convert.ToUInt32(Value, 16);
+                            UInt64 Load = Convert.ToUInt64(Value, 16);
 
                             Array.ForEach(Info.ToArray(), I => I.DataLoadAddress = Load);
 
@@ -251,7 +251,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "entry":
                         try
                         {
-                            uint Entry = Convert.ToUInt32(Value, 16);
+                            UInt64 Entry = Convert.ToUInt64(Value, 16);
 
                             Array.ForEach(Info.ToArray(), I => I.EntryPointAddress = Entry);
 

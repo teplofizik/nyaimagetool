@@ -13,8 +13,8 @@ namespace NyaFs.ImageFormat.Types
 
         public string Name = "";
 
-        public uint DataLoadAddress = 0;
-        public uint EntryPointAddress = 0;
+        public UInt64 DataLoadAddress = 0;
+        public UInt64 EntryPointAddress = 0;
 
         public ImageInfo Clone()
         {

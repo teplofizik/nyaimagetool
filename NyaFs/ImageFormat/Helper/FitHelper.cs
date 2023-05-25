@@ -8,6 +8,17 @@ namespace NyaFs.ImageFormat.Helper
 {
     public static class FitHelper
     {
+        public static FlattenedDeviceTree.Types.Node GetHashNode(FlattenedDeviceTree.Types.Node Node)
+        {
+            foreach (var N in Node.Nodes)
+            {
+                if (N.Name.StartsWith("hash@"))
+                    return N;
+            }
+
+            return null;
+        }
+
         public static string GetFilesystemType(Types.FsType Fs)
         {
             switch(Fs)
@@ -49,6 +60,20 @@ namespace NyaFs.ImageFormat.Helper
                 case 0xb528: return Types.CompressionType.IH_COMP_ZSTD;
                 case 0xfd37: return Types.CompressionType.IH_COMP_XZ;
                 default: return Types.CompressionType.IH_COMP_NONE;
+            }
+        }
+
+        public static bool Is64BitArchitecture(Types.CPU Arch)
+        {
+            switch (Arch)
+            {
+                case Types.CPU.IH_ARCH_MIPS64:
+                case Types.CPU.IH_ARCH_ARM64:
+                case Types.CPU.IH_ARCH_IA64:
+                case Types.CPU.IH_ARCH_SPARC64:
+                case Types.CPU.IH_ARCH_X86_64:
+                    return true;
+                default: return false;
             }
         }
 
@@ -391,6 +416,16 @@ namespace NyaFs.ImageFormat.Helper
 
                         return true;
                     }
+                case "sha256":
+                    {
+                        byte[] calchash = CalcSHA256Hash(image);
+
+                        for (int i = 0; i < calchash.Length; i++)
+                            if (calchash[i] != value[i])
+                                return false;
+
+                        return true;
+                    }
                 default:
                     Log.Write(0, $"Hash algo '{algo}' is not supported.");
                     return false;
@@ -405,5 +440,12 @@ namespace NyaFs.ImageFormat.Helper
             }
         }
 
+        public static byte[] CalcSHA256Hash(byte[] Data)
+        {
+            using (SHA256Managed sha256 = new SHA256Managed())
+            {
+                return sha256.ComputeHash(Data);
+            }
+        }
     }
 }

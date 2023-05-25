@@ -21,6 +21,8 @@ namespace NyaFs.Processor.Scripting.Commands
 
             AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[] { new Params.FsPathScriptArgsParam() }));
 
+            AddConfig(new ScriptArgsConfig(4, new ScriptArgsParam[] { new Params.FsPathScriptArgsParam(), new Params.StringScriptArgsParam("config") }));
+
             AddConfig(new Configs.ErrorConfig("Invalid image type: %1%. Must be one of: kernel, ramfs, devtree"));
         }
 
@@ -30,6 +32,8 @@ namespace NyaFs.Processor.Scripting.Commands
 
             if (Args.ArgConfig == 3)
                 return new LoadScriptStep(A[0], "detect", "fit");
+            else if (Args.ArgConfig == 4)
+                return new LoadScriptStep(A[0], "detect", "fit", A[1]);
             else
                 return new LoadScriptStep(A[0], A[1], A[2]);
         }
@@ -39,12 +43,14 @@ namespace NyaFs.Processor.Scripting.Commands
             string Path;
             string Type;
             string Format;
+            string Config;
 
-            public LoadScriptStep(string Path, string Type, string Format) : base("load")
+            public LoadScriptStep(string Path, string Type, string Format, string Config = null) : base("load")
             {
                 this.Path = Path;
                 this.Type = Type;
                 this.Format = Format;
+                this.Config = Config;
             }
 
             public override ScriptStepResult Exec(ImageProcessor Processor)
@@ -132,7 +138,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 {
                     case "raw": return new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, ImageFormat.Types.CompressionType.IH_COMP_NONE);
                     case "legacy": return new ImageFormat.Elements.Kernel.Reader.LegacyReader(Path);
-                    case "fit": return new ImageFormat.Elements.Kernel.Reader.FitReader(Path);
+                    case "fit": return new ImageFormat.Elements.Kernel.Reader.FitReader(Path, Config);
                     case "android": return new ImageFormat.Elements.Kernel.Reader.AndroidReader(Path);
                     case "zimage": return new ImageFormat.Elements.Kernel.Reader.zImageReader(Path);
                     case "lzma":
@@ -182,7 +188,7 @@ namespace NyaFs.Processor.Scripting.Commands
                 switch (Format)
                 {
                     case "dtb": return new ImageFormat.Elements.Dtb.Reader.DtbReader(Path);
-                    case "fit": return new ImageFormat.Elements.Dtb.Reader.FitReader(Path);
+                    case "fit": return new ImageFormat.Elements.Dtb.Reader.FitReader(Path, Config);
                     case "lz4":
                     case "lzma":
                     case "gz":
@@ -230,7 +236,7 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "legacy": return new ImageFormat.Elements.Fs.Reader.LegacyReader(Path);
                     case "cpio": return new ImageFormat.Elements.Fs.Reader.CpioFsReader(Path);
                     case "romfs": return new ImageFormat.Elements.Fs.Reader.RomFsReader(Path);
-                    case "fit": return new ImageFormat.Elements.Fs.Reader.FitReader(Path);
+                    case "fit": return new ImageFormat.Elements.Fs.Reader.FitReader(Path, Config);
                     case "android": return new ImageFormat.Elements.Fs.Reader.AndroidReader(Path);
                     case "ext2": return new ImageFormat.Elements.Fs.Reader.ExtReader(Path);
                     case "lz4":

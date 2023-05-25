@@ -76,8 +76,16 @@ namespace NyaFs.ImageFormat.Composite
                 Kernel.AddStringValue("arch", Helper.FitHelper.GetCPUArchitecture(K.Info.Architecture));
                 Kernel.AddStringValue("os", Helper.FitHelper.GetOperatingSystem(K.Info.OperatingSystem));
                 Kernel.AddStringValue("compression", Helper.FitHelper.GetCompression(K.Info.Compression));
-                Kernel.AddUInt32Value("load", K.Info.DataLoadAddress);
-                Kernel.AddUInt32Value("entry", K.Info.EntryPointAddress);
+                if (Helper.FitHelper.Is64BitArchitecture(K.Info.Architecture))
+                {
+                    Kernel.AddUInt64Value("load", K.Info.DataLoadAddress);
+                    Kernel.AddUInt64Value("entry", K.Info.EntryPointAddress);
+                }
+                else
+                { 
+                    Kernel.AddUInt32Value("load", Convert.ToUInt32(K.Info.DataLoadAddress & 0xFFFFFFFFUL));
+                    Kernel.AddUInt32Value("entry", Convert.ToUInt32(K.Info.EntryPointAddress & 0xFFFFFFFFUL));
+                }
                 Kernel.Nodes.Add(GetHashNode(Data));
 
                 Node.Nodes.Add(Kernel);

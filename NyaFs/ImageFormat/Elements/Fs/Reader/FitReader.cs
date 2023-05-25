@@ -12,7 +12,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
         FlattenedDeviceTree.Types.Node RamdiskNode = null;
 
         // https://github.com/siemens/u-boot/blob/master/common/image.c
-        public FitReader(string Filename)
+        public FitReader(string Filename, string Config)
         {
             Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(Filename).Read();
 
@@ -28,7 +28,7 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 Log.Error(0, $"Invalid FIT image {Filename}: no 'configuration' node.");
                 return;
             }
-            var DefaultConfig = Configurations.GetStringValue("default");
+            var DefaultConfig = (Config != null) ? Config : Configurations.GetStringValue("default");
 
             if (DefaultConfig == null)
             {
@@ -105,26 +105,32 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 return;
             }
 
-            if (Helper.FitHelper.CheckHash(CompressedData, RamdiskNode.GetNode("hash@1")))
+            var HashNode = Helper.FitHelper.GetHashNode(RamdiskNode);
+            if (HashNode != null)
             {
-                var Data = Helper.FitHelper.GetDecompressedData(CompressedData, Compression);
+                if (Helper.FitHelper.CheckHash(CompressedData, HashNode))
+                {
+                    var Data = Helper.FitHelper.GetDecompressedData(CompressedData, Compression);
 
-                Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
-                Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
-                Dst.Info.Name = null;
-                Dst.Info.DataLoadAddress = 0;
-                Dst.Info.EntryPointAddress = 0;
-                Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
-                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
+                    Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
+                    Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
+                    Dst.Info.Name = null;
+                    Dst.Info.DataLoadAddress = 0;
+                    Dst.Info.EntryPointAddress = 0;
+                    Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                    Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
 
-                if (!DetectAndRead(Dst, Data))
-                    Log.Error(0, "Unsupported filesystem...");
+                    if (!DetectAndRead(Dst, Data))
+                        Log.Error(0, "Unsupported filesystem...");
+                }
+                else
+                {
+                    Log.Error(0, $"Invalid FIT image: hash is not equal.");
+                    return;
+                }
             }
             else
-            {
-                Log.Error(0, $"Invalid FIT image: hash is not equal.");
-                return;
-            }
+                Log.Warning(0, $"No hash node in ramdisk image node!");
         }
     }
 }

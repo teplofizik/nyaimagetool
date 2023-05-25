@@ -14,9 +14,9 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
         FlattenedDeviceTree.Types.Node KernelNode = null;
 
         // https://github.com/siemens/u-boot/blob/master/common/image.c
-        public FitReader(string Filename)
+        public FitReader(string Filename, string Config)
         {
-            Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(Filename).Read();
+            Fit = new FlattenedDeviceTree.Reader.FDTReader(Filename).Read();
 
             if (Fit.Root.Nodes.Count == 0)
             {
@@ -30,11 +30,17 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
                 Log.Error(0, $"Invalid FIT image {Filename}: no 'configuration' node.");
                 return;
             }
-            var DefaultConfig = Configurations.GetStringValue("default");
+            var DefaultConfig = (Config != null) ? Config : Configurations.GetStringValue("default");
 
             if (DefaultConfig == null)
             {
                 Log.Error(0, $"Invalid FIT image {Filename}: no 'default' parameter in 'configuration' node.");
+                Log.Write(0, "Available configurations:");
+                foreach (var C in Configurations.Nodes)
+                {
+                    Log.Write(0, C.Name);
+                }
+
                 return;
             }
 
@@ -115,27 +121,34 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
                 return;
             }
 
-            UInt32 EntryAddress = Entry.ReadUInt32BE(0);
-            UInt32 LoadAddress  = Load.ReadUInt32BE(0);
+            UInt64 EntryAddress = (Entry.Length == 8) ? Entry.ReadUInt64BE(0) : Entry.ReadUInt32BE(0);
+            UInt64 LoadAddress = (Load.Length == 8) ? Load.ReadUInt64BE(0) : Load.ReadUInt32BE(0);
 
             var Data = KernelNode.GetValue("data");
 
-            if (Helper.FitHelper.CheckHash(Data, KernelNode.GetNode("hash@1")))
+            var HashNode = Helper.FitHelper.GetHashNode(KernelNode);
+            if (HashNode != null)
             {
-                var Kernel = Helper.FitHelper.GetDecompressedData(Data, Compression);
-                Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
-                Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
-                Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
-                Dst.Info.DataLoadAddress = LoadAddress;
-                Dst.Info.EntryPointAddress = EntryAddress;
-                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
-                Dst.Image = Kernel;
+                if (Helper.FitHelper.CheckHash(Data, HashNode))
+                {
+                    var Kernel = Helper.FitHelper.GetDecompressedData(Data, Compression);
+                    Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
+                    Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                    Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
+                    Dst.Info.DataLoadAddress = LoadAddress;
+                    Dst.Info.EntryPointAddress = EntryAddress;
+                    Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
+                    Dst.Image = Kernel;
+                }
+                else
+                {
+                    Log.Error(0, $"Invalid FIT image: hash is not equal.");
+                    return;
+                }
             }
             else
-            {
-                Log.Error(0, $"Invalid FIT image: hash is not equal.");
-                return;
-            }
+                Log.Warning(0, $"No hash node in kernel image node!");
         }
+
     }
 }
