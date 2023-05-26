@@ -113,7 +113,7 @@ namespace NyaFsTest.Tests
             var Fn = "test.fit";
             var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
 
-            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.FitReader(Fn);
+            var Importer = new NyaFs.ImageFormat.Elements.Fs.Reader.FitReader(Fn, null);
             Importer.ReadToFs(Fs);
 
             Fs.Dump();
