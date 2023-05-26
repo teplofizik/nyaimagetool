@@ -29,7 +29,7 @@ namespace NyaFs.ImageFormat.Elements.Fs
         /// <summary>
         /// Is image loaded?
         /// </summary>
-        public bool Loaded => Fs.Loaded;
+        public bool Loaded => Fs.Loaded || (FilesystemType != Types.FsType.Unknown);
 
         public void Dump() => Fs.Dump();
 

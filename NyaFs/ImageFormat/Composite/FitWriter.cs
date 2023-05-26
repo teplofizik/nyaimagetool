@@ -122,6 +122,9 @@ namespace NyaFs.ImageFormat.Composite
                 RamDisk.AddStringValue("arch", Helper.FitHelper.GetCPUArchitecture(FS.Info.Architecture));
                 RamDisk.AddStringValue("os", Helper.FitHelper.GetOperatingSystem(FS.Info.OperatingSystem));
                 RamDisk.AddStringValue("compression", Helper.FitHelper.GetCompression(FS.Info.Compression));
+                RamDisk.AddUInt32Value("load", Convert.ToUInt32(FS.Info.DataLoadAddress & 0xFFFFFFFFUL));
+                RamDisk.AddUInt32Value("entry", Convert.ToUInt32(FS.Info.EntryPointAddress & 0xFFFFFFFFUL));
+
                 RamDisk.Nodes.Add(GetHashNode(Data));
 
                 Node.Nodes.Add(RamDisk);

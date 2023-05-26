@@ -95,6 +95,9 @@ namespace NyaFs.Processor.Scripting.Helper
             if (zImgMagic == 0x016F2818u) // big endian ??
                 return new Tuple<string, string>("kernel", "zimage");
 
+            if((Header == 0x474D4943u) && (Raw.Length > 0x82) && (Raw.ReadUInt16(0x80) == 0x8b1f))
+                return new Tuple<string, string>("ramfs", "cimg"); // TODO: diff to kernel
+
             // Detect archive headers:
             {
                 var Comp = ImageFormat.Helper.FitHelper.DetectCompression(Raw);

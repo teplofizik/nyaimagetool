@@ -10,10 +10,10 @@ namespace NyaFs.Processor.Scripting.Commands
         public Load() : base("load")
         {
             AddConfig(new Configs.ImageScriptArgsConfig(0, "kernel",
-                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android", "zimage" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "raw", "legacy", "fit", "android", "zimage", "cimg" }));
 
             AddConfig(new Configs.ImageScriptArgsConfig(1, "ramfs", 
-                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs", "cramfs" }));
+                new string[] { "gz", "gzip", "lzma", "lz4", "bz2", "lzo", "zstd", "bzip2", "bz2", "fit", "android", "legacy", "cpio", "ext2", "squashfs", "cramfs", "cimg" }));
 
 
             AddConfig(new Configs.ImageScriptArgsConfig(2, "devtree", 
@@ -151,6 +151,8 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "lzo":
                         var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                         return new ImageFormat.Elements.Kernel.Reader.ArchiveReader(Path, CompressionType);
+                    case "cimg":
+                        return new ImageFormat.Elements.Kernel.Reader.CImgReader(Path);
                     default:
                         return null;
                 }
@@ -249,6 +251,8 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "lzo":
                         var CompressionType = Helper.ArchiveHelper.GetCompressionFormat(Format);
                         return new ImageFormat.Elements.Fs.Reader.ArchiveReader(Path, CompressionType);
+                    case "cimg":
+                        return new ImageFormat.Elements.Fs.Reader.CImgReader(Path);
                     default:
                         return null;
                 }

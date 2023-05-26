@@ -34,7 +34,8 @@ namespace NyaFs.Processor
         public ImageProcessor(Scripting.ScriptParser Parser)
         {
             this.Parser = Parser;
-            LoadPlugins();
+            if(System.IO.Directory.Exists("plugins"))
+                LoadPlugins();
         }
 
         public void SetFs(LinuxFilesystem Fs) => Blob.SetFilesystem(0, Fs);

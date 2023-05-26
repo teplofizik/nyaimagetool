@@ -164,7 +164,7 @@ namespace NyaFs.Processor.Scripting
             {
                 // Check and select args configuration
                 var SArgs = Gen.GetArgs(Args);
-                if (SArgs != null)
+                if ((SArgs != null) && (SArgs.ArgConfig >= 0))
                 {
                     var Step = Gen.Get(SArgs);
                     Step.SetScriptInfo(Filename, Name, Line);
