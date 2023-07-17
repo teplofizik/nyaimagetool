@@ -53,11 +53,11 @@ ZStd compression is provided by ZstdSharp package.
 1. SFTP (server)
 SFTP server is available for fast inspecting a content of loaded filesystem.
 
-SFTP server is provided by (freesftpsharp)[https://github.com/mikaelliljedahl/freesftpsharp/] and (FxSsh)[https://github.com/Aimeast/FxSsh]. freesftpsharp is slightly rewrited and adopted for virtual fs.
+SFTP server is provided by [freesftpsharp](https://github.com/mikaelliljedahl/freesftpsharp/) and [FxSsh](https://github.com/Aimeast/FxSsh). freesftpsharp is slightly rewrited and adopted for virtual fs.
 
 2. TFTP (client/server)
 TFTP server is available to provide tftp-access to builded packages. TFTP client allow download and upload files.
-TFTP support is provided by tftp.net [https://github.com/Callisto82/tftp.net] library.
+TFTP support is provided by [tftp.net](https://github.com/Callisto82/tftp.net) library.
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
