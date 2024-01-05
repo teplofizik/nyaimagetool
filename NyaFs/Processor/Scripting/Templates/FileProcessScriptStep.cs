@@ -12,11 +12,16 @@ namespace NyaFs.Processor.Scripting.Templates
         /// <summary>
         /// Path to file or directory
         /// </summary>
-        private string Path;
+        private string[] Paths;
+
+        public FileProcessScriptStep(string Name, string[] Paths) : base(Name)
+        {
+            this.Paths = Paths;
+        }
 
         public FileProcessScriptStep(string Name, string Path) : base(Name)
         {
-            this.Path = Path;
+            this.Paths = new string[] { Path };
         }
 
         public override ScriptStepResult Exec(ImageProcessor Processor)
@@ -26,19 +31,33 @@ namespace NyaFs.Processor.Scripting.Templates
             if (Fs == null)
                 return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem is not loaded");
 
-            if (!Fs.Exists(Path))
-                return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem does not contains {Path}.");
-
-            var Element = Fs.GetElement(Path);
-            if (Element.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+            if ((Paths != null) && (Paths.Length > 0))
             {
-                // This is directory.
-                return ProcessDir(Fs, Path);
+                foreach (var Path in Paths)
+                {
+                    if (!Fs.Exists(Path))
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem does not contains {Path}.");
+
+                    var Element = Fs.GetElement(Path);
+                    if (Element.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+                    {
+                        // This is directory.
+                        var R = ProcessDir(Fs, Path);
+                        if (R.Status != ScriptStepStatus.Ok)
+                            return R;
+                    }
+                    else
+                    {
+                        var R = ProcessFile(Fs, Path);
+                        if (R.Status != ScriptStepStatus.Ok)
+                            return R;
+                    }
+                }
+
+                return new ScriptStepResult(ScriptStepStatus.Ok, $"Processing completed.");
             }
             else
-            {
-                return ProcessFile(Fs, Path);
-            }
+                return new ScriptStepResult(ScriptStepStatus.Error, $"No paths specified.");
         }
 
         /// <summary>
@@ -47,22 +66,29 @@ namespace NyaFs.Processor.Scripting.Templates
         /// <param name="Fs"></param>
         /// <param name="Path"></param>
         /// <returns></returns>
-        private ScriptStepResult ProcessDir(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Path)
+        protected ScriptStepResult ProcessDir(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Path)
         {
             var Dir = Fs.GetDirectory(Path);
             foreach (var E in Dir.Items)
             {
                 if (E.ItemType == Filesystem.Universal.Types.FilesystemItemType.File)
                 {
-                    var Res = ProcessFile(Fs, E.Filename);
-                    if(Res.Status != ScriptStepStatus.Ok)
-                        return Res;
+                    if (IsNeedProcessFile(E.Filename))
+                    {
+                        var Res = ProcessFile(Fs, E.Filename);
+                        if (Res.Status != ScriptStepStatus.Ok)
+                            return Res;
+                    }
                 }
-                //if (E.ItemType == NyaFs.Filesystem.Universal.Types.FilesystemItemType.Directory)
-                //{
-                //    if (!EncryptDir(Fs, E.Filename))
-                //        return false;
-                //}
+                if (E.ItemType == Filesystem.Universal.Types.FilesystemItemType.Directory)
+                {
+                    if (IsNeedProcessDir(E.Filename))
+                    {
+                        var Res = ProcessDir(Fs, E.Filename);
+                        if (Res.Status != ScriptStepStatus.Ok)
+                            return Res;
+                    }
+                }
             }
 
             return new ScriptStepResult(ScriptStepStatus.Ok, $"Processed {Path}");
@@ -74,7 +100,7 @@ namespace NyaFs.Processor.Scripting.Templates
         /// <param name="Fs"></param>
         /// <param name="Path"></param>
         /// <returns></returns>
-        private ScriptStepResult ProcessFile(NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Path)
+        protected ScriptStepResult ProcessFile(ImageFormat.Elements.Fs.LinuxFilesystem Fs, string Path)
         {
             var Original = GetFileContent(Fs, Path);
 
@@ -106,12 +132,21 @@ namespace NyaFs.Processor.Scripting.Templates
         }
 
         /// <summary>
+        /// Check is need to process dir
+        /// </summary>
+        /// <param name="Path"></param>
+        /// <returns></returns>
+        protected virtual bool IsNeedProcessDir(string Path)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Check is need to process file
         /// </summary>
         /// <param name="Path"></param>
-        /// <param name="Data"></param>
         /// <returns></returns>
-        protected virtual bool IsNeedProcessFile(string Path, byte[] Data)
+        protected virtual bool IsNeedProcessFile(string Path)
         {
             return false;
         }
