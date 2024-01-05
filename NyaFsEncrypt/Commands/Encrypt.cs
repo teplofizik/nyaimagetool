@@ -7,9 +7,9 @@ using System.Text;
 
 namespace NyaFsIncmEncrypt.Commands
 {
-    class Decrypt : ScriptStepGenerator
+    class Encrypt : ScriptStepGenerator
     {
-        public Decrypt() : base("decrypt")
+        public Encrypt() : base("encrypt")
         {
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[] {
                 new NyaFs.Processor.Scripting.Params.FsPathScriptArgsParam()
@@ -18,18 +18,18 @@ namespace NyaFsIncmEncrypt.Commands
 
         public override ScriptStep Get(ScriptArgs Args)
         {
-            return new DecryptScriptStep(Args.RawArgs[0]);
+            return new EncryptScriptStep(Args.RawArgs[0]);
         }
 
-        public class DecryptScriptStep : FileProcessScriptStep
+        public class EncryptScriptStep : FileProcessScriptStep
         {
-            public DecryptScriptStep(string Path) : base("decrypt", Path)
+            public EncryptScriptStep(string Path) : base("encrypt", Path)
             {
 
             }
 
             /// <summary>
-            /// Decrypt data in file
+            /// Encrypt data in file
             /// </summary>
             /// <param name="Path"></param>
             /// <param name="Data"></param>
@@ -38,9 +38,9 @@ namespace NyaFsIncmEncrypt.Commands
             {
                 byte[] Res = new byte[Data.Length];
 
-                // Simple EXAMPLE ADD+XOR decryption
+                // Simple EXAMPLE ADD+XOR encryption
                 for (int i = 0; i < Res.Length; i++)
-                    Res[i] = Convert.ToByte(((Data[i] ^ 0x55) - 0x12) & 0xFF);
+                    Res[i] = Convert.ToByte(((Data[i] + 0x12) ^ 0x55) & 0xFF);
 
                 return Res;
             }
