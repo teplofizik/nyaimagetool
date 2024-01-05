@@ -130,7 +130,25 @@ namespace NyaFs.ImageFormat.Elements.Fs.Reader
                 }
             }
             else
+            {
                 Log.Warning(0, $"No hash node in ramdisk image node!");
+
+                var Data = Helper.FitHelper.GetDecompressedData(CompressedData, Compression);
+
+                Dst.Info.Architecture = Helper.FitHelper.GetCPUArchitecture(Arch);
+                Dst.Info.OperatingSystem = Helper.FitHelper.GetOperatingSystem(Os);
+                Dst.Info.Name = null;
+                Dst.Info.DataLoadAddress = 0;
+                Dst.Info.EntryPointAddress = 0;
+                Dst.Info.Type = Helper.FitHelper.GetType(ImgType);
+                Dst.Info.Compression = Helper.FitHelper.GetCompression(Compression);
+
+                if (!DetectAndRead(Dst, Data))
+                    Log.Error(0, "Unsupported filesystem...");
+            }
         }
+
+
+
     }
 }

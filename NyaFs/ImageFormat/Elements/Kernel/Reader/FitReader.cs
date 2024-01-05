@@ -57,17 +57,17 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
             if (KernelNodeName == null)
             {
                 Log.Error(0, $"Invalid FIT image {Filename}: no 'kernel' parameter in 'configuration/{DefaultConfig}' node.");
-                return;
             }
-
-            KernelNode = Fit.Get($"images/{KernelNodeName}");
-            if (KernelNode == null)
+            else
             {
-                Log.Error(0, $"Invalid FIT image {Filename}: no '{KernelNodeName}' node.");
-                return;
+                KernelNode = Fit.Get($"images/{KernelNodeName}");
+                if (KernelNode == null)
+                {
+                    Log.Error(0, $"Invalid FIT image {Filename}: no '{KernelNodeName}' node.");
+                    return;
+                }
+                Loaded = true;
             }
-
-            Loaded = true;
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace NyaFs.ImageFormat.Elements.Kernel.Reader
             var Entry = KernelNode.GetValue("entry");
             if (Entry == null)
             {
-                Log.Error(0, $"Invalid FIT image: no 'entry' parameter in loaded ramdisk node.");
+                Log.Warning(0, $"Invalid FIT image: no 'entry' parameter in loaded ramdisk node.");
                 return;
             }
 

@@ -8,6 +8,10 @@ namespace NyaFs.ImageFormat.Composite
     {
         private readonly string Path;
 
+        private bool KernelAvailable = false;
+        private bool FsAvailable = false;
+        private bool DevtreeAvailable = false;
+
         public FitWriter(string Path)
         {
             this.Path = Path;
@@ -15,21 +19,24 @@ namespace NyaFs.ImageFormat.Composite
 
         public bool Write(BaseImageBlob Blob)
         {
-            if(!CheckFs(Blob.GetFilesystem(0)))
-            {
-                Log.Write(0, "There is required to set filesystem parameters");
-                return false;
-            }
+            if (!CheckFs(Blob.GetFilesystem(0)))
+                Log.Warning(0, "No filesystem!");
+            else
+                FsAvailable = true;
 
             if (!CheckKernel(Blob.GetKernel(0)))
-            {
-                Log.Write(0, "There is required to set filesystem parameters");
-                return false;
-            }
+                Log.Warning(0, "No kernel!");
+            else
+                KernelAvailable = true;
 
             if (!CheckDevTree(Blob.GetDevTree(0)))
+                Log.Warning(0, "No device tree!");
+            else
+                DevtreeAvailable = true;
+
+            if(!DevtreeAvailable && !KernelAvailable && !FsAvailable)
             {
-                Log.Write(0, "There is required to set device tree parameters");
+                Log.Error(0, "No images available for writing");
                 return false;
             }
 
@@ -52,9 +59,9 @@ namespace NyaFs.ImageFormat.Composite
 
             var Config = new FlattenedDeviceTree.Types.Node("config@default");
             Config.AddStringValue("description", "Image package");
-            Config.AddStringValue("kernel", "kernel@default");
-            Config.AddStringValue("fdt", "fdt@default");
-            Config.AddStringValue("ramdisk", "ramdisk@default");
+            if(KernelAvailable) Config.AddStringValue("kernel", "kernel@default");
+            if(DevtreeAvailable) Config.AddStringValue("fdt", "fdt@default");
+            if(FsAvailable) Config.AddStringValue("ramdisk", "ramdisk@default");
 
             Node.Nodes.Add(Config);
             return Node;
@@ -65,6 +72,7 @@ namespace NyaFs.ImageFormat.Composite
             var Node = new FlattenedDeviceTree.Types.Node("images");
             Node.AddUInt32Value("#address-cells", 1);
 
+            if(KernelAvailable)
             {
                 var K = Blob.GetKernel(0);
                 var Data = Helper.FitHelper.GetCompressedData(K.Image, K.Info.Compression);
@@ -91,6 +99,7 @@ namespace NyaFs.ImageFormat.Composite
                 Node.Nodes.Add(Kernel);
             }
 
+            if(DevtreeAvailable)
             {
                 var DT = Blob.GetDevTree(0);
                 var Raw = new FlattenedDeviceTree.Writer.FDTWriter(DT.DevTree).GetBinary();
@@ -107,6 +116,7 @@ namespace NyaFs.ImageFormat.Composite
                 Node.Nodes.Add(DevTree);
             }
 
+            if(FsAvailable)
             {
                 var FS = Blob.GetFilesystem(0);
                 var FsWriter = Elements.Fs.Writer.Writer.GetRawFilesystemWriter(FS);
@@ -143,7 +153,10 @@ namespace NyaFs.ImageFormat.Composite
 
         private bool CheckFs(Elements.Fs.LinuxFilesystem Fs)
         {
-            if(Fs.Info.Architecture == Types.CPU.IH_ARCH_INVALID)
+            if(Fs == null)
+                return false;
+
+            if (Fs.Info.Architecture == Types.CPU.IH_ARCH_INVALID)
             {
                 Log.Write(0, "Filesystem architecture is not setted.");
                 return false;
@@ -164,6 +177,9 @@ namespace NyaFs.ImageFormat.Composite
 
         private bool CheckKernel(Elements.Kernel.LinuxKernel Kernel)
         {
+            if (Kernel == null)
+                return false;
+
             if (Kernel.Info.Architecture == Types.CPU.IH_ARCH_INVALID)
             {
                 Log.Write(0, "Filesystem architecture is not setted.");
@@ -185,6 +201,9 @@ namespace NyaFs.ImageFormat.Composite
 
         private bool CheckDevTree(Elements.Dtb.DeviceTree DevTree)
         {
+            if (DevTree == null)
+                return false;
+
             if (DevTree.Info.Architecture == Types.CPU.IH_ARCH_INVALID)
             {
                 Log.Write(0, "Device tree architecture is not setted.");

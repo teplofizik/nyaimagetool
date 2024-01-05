@@ -67,20 +67,21 @@ namespace NyaFs.Processor.Scripting.Commands
                     case "fit":
                         {
                             var Kernel = Processor.GetKernel();
-                            if ((Kernel == null) || !Kernel.Loaded)
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel is not loaded!");
-
                             var Fs = Processor.GetFs();
-                            if ((Fs == null) || (Fs.Loaded == false))
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Filesystem is not loaded!");
-
                             var Dtb = Processor.GetDevTree();
-                            if ((Dtb == null) || !Dtb.Loaded)
-                                return new ScriptStepResult(ScriptStepStatus.Error, $"Device tree is not loaded!");
+                            if (((Kernel == null) || !Kernel.Loaded) &&
+                                ((Fs == null) || (Fs.Loaded == false)) &&
+                                ((Dtb == null) || !Dtb.Loaded))
+                                return new ScriptStepResult(ScriptStepStatus.Error, $"No images are loaded!");
 
-                            ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
-                            ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
-                            ImageFormat.Helper.LogHelper.DevtreeInfo(Dtb);
+                            if ((Kernel != null) && Kernel.Loaded)
+                                ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
+
+                            if ((Fs != null) && Fs.Loaded)
+                                ImageFormat.Helper.LogHelper.RamfsInfo(Fs);
+
+                            if ((Dtb != null) && Dtb.Loaded)
+                                ImageFormat.Helper.LogHelper.DevtreeInfo(Dtb);
 
                             var Writer = new ImageFormat.Composite.FitWriter(Path);
                             if(Writer.Write(Processor.GetBlob()))
