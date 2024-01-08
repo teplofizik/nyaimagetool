@@ -24,20 +24,14 @@ namespace FxSsh
         internal const int InitialLocalWindowSize = LocalChannelDataPacketSize * 32;
         internal const int LocalChannelDataPacketSize = 1024 * 32;
 
-        private static readonly RandomNumberGenerator _rng = new RNGCryptoServiceProvider();
         private static readonly Dictionary<byte, Type> _messagesMetadata;
-        internal static readonly Dictionary<string, Func<KexAlgorithm>> _keyExchangeAlgorithms =
-            new Dictionary<string, Func<KexAlgorithm>>();
-        internal static readonly Dictionary<string, Func<string, PublicKeyAlgorithm>> _publicKeyAlgorithms =
-            new Dictionary<string, Func<string, PublicKeyAlgorithm>>();
-        internal static readonly Dictionary<string, Func<CipherInfo>> _encryptionAlgorithms =
-            new Dictionary<string, Func<CipherInfo>>();
-        internal static readonly Dictionary<string, Func<HmacInfo>> _hmacAlgorithms =
-            new Dictionary<string, Func<HmacInfo>>();
-        internal static readonly Dictionary<string, Func<CompressionAlgorithm>> _compressionAlgorithms =
-            new Dictionary<string, Func<CompressionAlgorithm>>();
+        internal static readonly Dictionary<string, Func<KexAlgorithm>> _keyExchangeAlgorithms = new ();
+        internal static readonly Dictionary<string, Func<string, PublicKeyAlgorithm>> _publicKeyAlgorithms = new ();
+        internal static readonly Dictionary<string, Func<CipherInfo>> _encryptionAlgorithms = new ();
+        internal static readonly Dictionary<string, Func<HmacInfo>> _hmacAlgorithms = new ();
+        internal static readonly Dictionary<string, Func<CompressionAlgorithm>> _compressionAlgorithms = new ();
 
-        private readonly object _locker = new object();
+        private readonly object _locker = new ();
         private readonly Socket _socket;
 
         public EndPoint LocalEndpoint => _socket.LocalEndPoint;
@@ -56,8 +50,8 @@ namespace FxSsh
         private uint _inboundFlow;
         private Algorithms _algorithms = null;
         private ExchangeContext _exchangeContext = null;
-        private List<SshService> _services = new List<SshService>();
-        private ConcurrentQueue<Message> _blockedMessages = new ConcurrentQueue<Message>();
+        private List<SshService> _services = new ();
+        private ConcurrentQueue<Message> _blockedMessages = new ();
         private EventWaitHandle _hasBlockedMessagesWaitHandle = new ManualResetEvent(true);
 
         public string ServerVersion { get; private set; }
@@ -76,13 +70,13 @@ namespace FxSsh
             _publicKeyAlgorithms.Add("ssh-rsa", x => new RsaKey(x));
             _publicKeyAlgorithms.Add("ssh-dss", x => new DssKey(x));
 
-            _encryptionAlgorithms.Add("aes128-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 128, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes192-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 192, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes256-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 256, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes128-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 128, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("3des-cbc", () => new CipherInfo(new TripleDESCryptoServiceProvider(), 192, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("aes192-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 192, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("aes256-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 256, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes128-ctr", () => new CipherInfo(Aes.Create(), 128, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes192-ctr", () => new CipherInfo(Aes.Create(), 192, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes256-ctr", () => new CipherInfo(Aes.Create(), 256, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes128-cbc", () => new CipherInfo(Aes.Create(), 128, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("3des-cbc", () => new CipherInfo(TripleDES.Create(), 192, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes192-cbc", () => new CipherInfo(Aes.Create(), 192, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes256-cbc", () => new CipherInfo(Aes.Create(), 256, CipherModeEx.CBC));
 
             _hmacAlgorithms.Add("hmac-md5", () => new HmacInfo(new HMACMD5(), 128));
             _hmacAlgorithms.Add("hmac-sha1", () => new HmacInfo(new HMACSHA1(), 160));
@@ -114,8 +108,6 @@ namespace FxSsh
         public event EventHandler<SshService> ServiceRegistered;
 
         public event EventHandler<KeyExchangeArgs> KeysExchanged;
-
-        public event EventHandler<SshService> Check;
 
         internal void CheckService()
         {
@@ -164,8 +156,7 @@ namespace FxSsh
         {
             Disconnect(DisconnectReason.ByApplication, "Connection terminated by the server.");
 
-            if (Disconnected != null)
-                Disconnected(this, EventArgs.Empty);
+            Disconnected?.Invoke(this, EventArgs.Empty);
         }
 
         public void Disconnect(DisconnectReason reason, string description)
@@ -184,8 +175,7 @@ namespace FxSsh
             }
             catch { }
 
-            if (Disconnected != null)
-                Disconnected(this, EventArgs.Empty);
+            Disconnected?.Invoke(this, EventArgs.Empty);
         }
 
 #region Socket operations
@@ -413,8 +403,7 @@ namespace FxSsh
 
             var packetLength = (uint)payload.Length + paddingLength + 1;
 
-            var padding = new byte[paddingLength];
-            _rng.GetBytes(padding);
+            var padding = RandomNumberGenerator.GetBytes(paddingLength);
 
             using (var worker = new SshDataWorker())
             {
@@ -465,10 +454,9 @@ namespace FxSsh
 
         private void ContinueSendBlockedMessages()
         {
-            if (_blockedMessages.Count > 0)
+            if (!_blockedMessages.IsEmpty)
             {
-                Message message;
-                while (_blockedMessages.TryDequeue(out message))
+                while (_blockedMessages.TryDequeue(out Message message))
                 {
                     SendMessageInternal(message);
                 }
@@ -490,9 +478,9 @@ namespace FxSsh
             }
         }
 
-        private Message LoadKexInitMessage()
+        private static Message LoadKexInitMessage()
         {
-            var message = new KeyExchangeInitMessage();
+            KeyExchangeInitMessage message = new();
             message.KeyExchangeAlgorithms = _keyExchangeAlgorithms.Keys.ToArray();
             message.ServerHostKeyAlgorithms = _publicKeyAlgorithms.Keys.ToArray();
             message.EncryptionAlgorithmsClientToServer = _encryptionAlgorithms.Keys.ToArray();
@@ -568,8 +556,7 @@ namespace FxSsh
             var hostKeyAndCerts = hostKeyAlg.CreateKeyAndCertificatesData();
             var exchangeHash = ComputeExchangeHash(kexAlg, hostKeyAndCerts, clientExchangeValue, serverExchangeValue, sharedSecret);
 
-            if (SessionId == null)
-                SessionId = exchangeHash;
+            SessionId ??= exchangeHash;
 
             var clientCipherIV = ComputeEncryptionKey(kexAlg, exchangeHash, clientCipher.BlockSize >> 3, sharedSecret, 'A');
             var serverCipherIV = ComputeEncryptionKey(kexAlg, exchangeHash, serverCipher.BlockSize >> 3, sharedSecret, 'B');
@@ -637,19 +624,17 @@ namespace FxSsh
         private void HandleMessage(UserauthServiceMessage message)
         {
             var service = GetService<UserAuthService>();
-            if (service != null)
-                service.HandleMessageCore(message);
+            service?.HandleMessageCore(message);
         }
 
         private void HandleMessage(ConnectionServiceMessage message)
         {
             var service = GetService<ConnectionService>();
-            if (service != null)
-                service.HandleMessageCore(message);
+            service?.HandleMessageCore(message);
         }
 #endregion
 
-        private string ChooseAlgorithm(string[] serverAlgorithms, string[] clientAlgorithms)
+        private static string ChooseAlgorithm(string[] serverAlgorithms, string[] clientAlgorithms)
         {
             foreach (var client in clientAlgorithms)
                 foreach (var server in serverAlgorithms)
@@ -661,19 +646,17 @@ namespace FxSsh
 
         private byte[] ComputeExchangeHash(KexAlgorithm kexAlg, byte[] hostKeyAndCerts, byte[] clientExchangeValue, byte[] serverExchangeValue, byte[] sharedSecret)
         {
-            using (var worker = new SshDataWorker())
-            {
-                worker.Write(ClientVersion, Encoding.ASCII);
-                worker.Write(ServerVersion, Encoding.ASCII);
-                worker.WriteBinary(_exchangeContext.ClientKexInitPayload);
-                worker.WriteBinary(_exchangeContext.ServerKexInitPayload);
-                worker.WriteBinary(hostKeyAndCerts);
-                worker.WriteMpint(clientExchangeValue);
-                worker.WriteMpint(serverExchangeValue);
-                worker.WriteMpint(sharedSecret);
+            using var worker = new SshDataWorker();
+            worker.Write(ClientVersion, Encoding.ASCII);
+            worker.Write(ServerVersion, Encoding.ASCII);
+            worker.WriteBinary(_exchangeContext.ClientKexInitPayload);
+            worker.WriteBinary(_exchangeContext.ServerKexInitPayload);
+            worker.WriteBinary(hostKeyAndCerts);
+            worker.WriteMpint(clientExchangeValue);
+            worker.WriteMpint(serverExchangeValue);
+            worker.WriteMpint(sharedSecret);
 
-                return kexAlg.ComputeHash(worker.ToByteArray());
-            }
+            return kexAlg.ComputeHash(worker.ToByteArray());
         }
 
         private byte[] ComputeEncryptionKey(KexAlgorithm kexAlg, byte[] exchangeHash, int blockSize, byte[] sharedSecret, char letter)
@@ -712,15 +695,13 @@ namespace FxSsh
             return keyBuffer;
         }
 
-        private byte[] ComputeHmac(HmacAlgorithm alg, byte[] payload, uint seq)
+        private static byte[] ComputeHmac(HmacAlgorithm alg, byte[] payload, uint seq)
         {
-            using (var worker = new SshDataWorker())
-            {
-                worker.Write(seq);
-                worker.Write(payload);
+            using var worker = new SshDataWorker();
+            worker.Write(seq);
+            worker.Write(payload);
 
-                return alg.ComputeHash(worker.ToByteArray());
-            }
+            return alg.ComputeHash(worker.ToByteArray());
         }
 
         internal SshService RegisterService(string serviceName, UserAuthArgs auth = null)
@@ -741,8 +722,7 @@ namespace FxSsh
             }
             if (service != null)
             {
-                if (ServiceRegistered != null)
-                    ServiceRegistered(this, service);
+                ServiceRegistered?.Invoke(this, service);
 
                 _services.Add(service);
             }

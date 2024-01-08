@@ -64,10 +64,9 @@ namespace NyaFsSftp
             {
                 case "port":
                     {
-                        int Res;
-                        if(Int32.TryParse(Value, out Res))
+                        if (Int32.TryParse(Value, out int Res))
                         {
-                            if((Res > 0) && (Res < 64000))
+                            if ((Res > 0) && (Res < 64000))
                             {
                                 Port = Res;
                                 return;

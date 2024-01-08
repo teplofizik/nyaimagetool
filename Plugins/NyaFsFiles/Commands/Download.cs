@@ -2,7 +2,10 @@
 using NyaFs.Processor.Scripting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -28,8 +31,8 @@ namespace NyaFsFiles.Commands
 
         public class DownloadScriptStep : ScriptStep
         {
-            private string Filename;
-            private string Url;
+            private readonly string Filename;
+            private readonly string Url;
 
             public DownloadScriptStep(string Filename, string Url) : base("download")
             {
@@ -41,12 +44,32 @@ namespace NyaFsFiles.Commands
             {
                 try
                 {
-                    WebClient wc_ = new WebClient();
-                    wc_.Headers.Add(HttpRequestHeader.UserAgent, "Other");
-                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
-                    wc_.DownloadFile(Url, Filename);
+                    using HttpClient client = new();
 
-                    return new ScriptStepResult(ScriptStepStatus.Ok, null);
+                    client.BaseAddress = new Uri(Url);
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Add("User-Agent", "Other");
+                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
+
+                    var Req = client.GetAsync(Url); Req.Wait();
+                    HttpResponseMessage response = Req.Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        HttpContent content = response.Content;
+                        var contentStream = content.ReadAsStream();
+
+                        using (FileStream outputFileStream = new(Filename, FileMode.Create))
+                        {
+                            contentStream.CopyTo(outputFileStream);
+                        }
+
+                        return new ScriptStepResult(ScriptStepStatus.Ok, null);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException();
+                    }
                 }
                 catch (Exception E)
                 {

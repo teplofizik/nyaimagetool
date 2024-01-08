@@ -11,29 +11,22 @@ namespace FxSsh
         {
             Contract.Requires(sshkey != null);
 
-            using (var md5 = new MD5CryptoServiceProvider())
-            {
-                var bytes = Convert.FromBase64String(sshkey);
-                bytes = md5.ComputeHash(bytes);
-                return BitConverter.ToString(bytes).Replace('-', ':');
-            }
+            using var md5 = MD5.Create();
+            var bytes = Convert.FromBase64String(sshkey);
+            bytes = md5.ComputeHash(bytes);
+            return BitConverter.ToString(bytes).Replace('-', ':');
         }
 
         private static PublicKeyAlgorithm GetKeyAlgorithm(string type)
         {
             Contract.Requires(type != null);
 
-            switch (type)
+            return type switch
             {
-                case "ssh-rsa":
-                    return new RsaKey();
-
-                case "ssh-dss":
-                    return new DssKey();
-
-                default:
-                    throw new ArgumentOutOfRangeException("type");
-            }
+                "ssh-rsa" => new RsaKey(),
+                "ssh-dss" => new DssKey(),
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            };
         }
 
         public static string GeneratePrivateKey(string type)

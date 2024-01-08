@@ -80,11 +80,8 @@ namespace NyaFsLinux.Linux
 		{
 			// Base64 has an overhead of 4/3, so we need less bytes to get 8 resp. 16 chars.
 			int saltByteCount = algoType == TypeMD5 ? 6 : 12;
-			byte[] randomBytes = new byte[saltByteCount];
-			using (var random = new RNGCryptoServiceProvider())
-			{
-				random.GetNonZeroBytes(randomBytes);
-			}
+			byte[] randomBytes = RandomNumberGenerator.GetBytes(saltByteCount);
+
 			string roundsParam = "";
 			if (algoType != TypeMD5 && rounds != RoundsDefault)
 			{
@@ -103,16 +100,16 @@ namespace NyaFsLinux.Linux
 
 		// Define our magic string to mark salt for MD5 "encryption" replacement. This is meant to
 		// be the same as for other MD5 based encryption implementations.
-		private static ArrayPointer<byte> md5SaltPrefix = new ArrayPointer<byte>(new byte[] { (byte)'$', (byte)'1', (byte)'$', 0 });
-		private static ArrayPointer<byte> dollarSign = new ArrayPointer<byte>(new byte[] { (byte)'$', 0 });
+		private static ArrayPointer<byte> md5SaltPrefix = new(new byte[] { (byte)'$', (byte)'1', (byte)'$', 0 });
+        private static ArrayPointer<byte> dollarSign = new(new byte[] { (byte)'$', 0 });
 
 		// Define our magic string to mark salt for SHA256 "encryption" replacement.
-		private static ArrayPointer<byte> sha256SaltPrefix = new ArrayPointer<byte>(new byte[] { (byte)'$', (byte)'5', (byte)'$', 0 });
-		private static ArrayPointer<byte> sha512SaltPrefix = new ArrayPointer<byte>(new byte[] { (byte)'$', (byte)'6', (byte)'$', 0 });
+		private static ArrayPointer<byte> sha256SaltPrefix = new(new byte[] { (byte)'$', (byte)'5', (byte)'$', 0 });
+		private static ArrayPointer<byte> sha512SaltPrefix = new(new byte[] { (byte)'$', (byte)'6', (byte)'$', 0 });
 
 		// Prefix for optional rounds specification.
-		private static ArrayPointer<byte> sha256RoundsPrefix = new ArrayPointer<byte>(new byte[] { (byte)'r', (byte)'o', (byte)'u', (byte)'n', (byte)'d', (byte)'s', (byte)'=', 0 });
-		private static ArrayPointer<byte> sha512RoundsPrefix = new ArrayPointer<byte>(new byte[] { (byte)'r', (byte)'o', (byte)'u', (byte)'n', (byte)'d', (byte)'s', (byte)'=', 0 });
+		private static ArrayPointer<byte> sha256RoundsPrefix = new(new byte[] { (byte)'r', (byte)'o', (byte)'u', (byte)'n', (byte)'d', (byte)'s', (byte)'=', 0 });
+		private static ArrayPointer<byte> sha512RoundsPrefix = new(new byte[] { (byte)'r', (byte)'o', (byte)'u', (byte)'n', (byte)'d', (byte)'s', (byte)'=', 0 });
 
 		// Maximum salt string length
 		private const int SaltLenMax = 16;
@@ -818,8 +815,10 @@ namespace NyaFsLinux.Linux
 				str++;
 			}
 			endptr = str;
-			ulong.TryParse(num, out ulong value);
-			return value;
+			if (ulong.TryParse(num, out ulong value))
+				return value;
+			else
+				throw new ArgumentException(nameof(str));
 		}
 
 		private static ArrayPointer<byte> Stpncpy(ArrayPointer<byte> buffer, ArrayPointer<byte> source, int max)
@@ -907,7 +906,7 @@ namespace NyaFsLinux.Linux
 
 			public T Value
 			{
-				get => SourceArray[LongAddress];
+                get => SourceArray[LongAddress];
 				set => SourceArray[LongAddress] = value;
 			}
 

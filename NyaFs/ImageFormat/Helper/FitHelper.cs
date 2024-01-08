@@ -21,296 +21,287 @@ namespace NyaFs.ImageFormat.Helper
 
         public static string GetFilesystemType(Types.FsType Fs)
         {
-            switch(Fs)
+            return Fs switch
             {
-                case Types.FsType.Cpio: return "cpio";
-                case Types.FsType.Ext2: return "ext2";
-                case Types.FsType.SquashFs: return "squashfs";
-                case Types.FsType.CramFs: return "cramfs";
-                case Types.FsType.RomFs: return "romfs";
-                case Types.FsType.Unknown:
-                default:
-                    return "unknown";
-            }
+                Types.FsType.Cpio => "cpio",
+                Types.FsType.Ext2 => "ext2",
+                Types.FsType.SquashFs => "squashfs",
+                Types.FsType.CramFs => "cramfs",
+                Types.FsType.RomFs => "romfs",
+                _ => "unknown",
+            };
         }
 
         public static Types.FsType GetFilesystemType(string Fs)
         {
-            switch (Fs)
+            return Fs switch
             {
-                case "cpio": return Types.FsType.Cpio;
-                case "ext2": return Types.FsType.Ext2;
-                case "squashfs": return Types.FsType.SquashFs;
-                case "cramfs": return Types.FsType.CramFs;
-                case "romfs": return Types.FsType.RomFs;
-                default: return Types.FsType.Unknown;
-            }
+                "cpio" => Types.FsType.Cpio,
+                "ext2" => Types.FsType.Ext2,
+                "squashfs" => Types.FsType.SquashFs,
+                "cramfs" => Types.FsType.CramFs,
+                "romfs" => Types.FsType.RomFs,
+                _ => Types.FsType.Unknown,
+            };
         }
 
         public static Types.CompressionType DetectCompression(byte[] Raw)
         {
             var Header16 = Raw.ReadUInt16(0);
-            switch (Header16)
+            return Header16 switch
             {
-                case 0x5a42: return Types.CompressionType.IH_COMP_BZIP2;
-                case 0x4C89: return Types.CompressionType.IH_COMP_LZO;
-                case 0x8b1f: return Types.CompressionType.IH_COMP_GZIP;
-                case 0x005d: return Types.CompressionType.IH_COMP_LZMA;
-                case 0x2204: return Types.CompressionType.IH_COMP_LZ4;
-                case 0xb528: return Types.CompressionType.IH_COMP_ZSTD;
-                case 0xfd37: return Types.CompressionType.IH_COMP_XZ;
-                default: return Types.CompressionType.IH_COMP_NONE;
-            }
+                0x5a42 => Types.CompressionType.IH_COMP_BZIP2,
+                0x4C89 => Types.CompressionType.IH_COMP_LZO,
+                0x8b1f => Types.CompressionType.IH_COMP_GZIP,
+                0x005d => Types.CompressionType.IH_COMP_LZMA,
+                0x2204 => Types.CompressionType.IH_COMP_LZ4,
+                0xb528 => Types.CompressionType.IH_COMP_ZSTD,
+                0xfd37 => Types.CompressionType.IH_COMP_XZ,
+                _ => Types.CompressionType.IH_COMP_NONE,
+            };
         }
 
         public static bool Is64BitArchitecture(Types.CPU Arch)
         {
-            switch (Arch)
+            return Arch switch
             {
-                case Types.CPU.IH_ARCH_MIPS64:
-                case Types.CPU.IH_ARCH_ARM64:
-                case Types.CPU.IH_ARCH_IA64:
-                case Types.CPU.IH_ARCH_SPARC64:
-                case Types.CPU.IH_ARCH_X86_64:
-                    return true;
-                default: return false;
-            }
+                Types.CPU.IH_ARCH_MIPS64 or Types.CPU.IH_ARCH_ARM64 or Types.CPU.IH_ARCH_IA64 or Types.CPU.IH_ARCH_SPARC64 or Types.CPU.IH_ARCH_X86_64 => true,
+                _ => false,
+            };
         }
 
         public static string GetCPUArchitecture(Types.CPU Arch)
         {
-            switch (Arch)
+            return Arch switch
             {
-                case Types.CPU.IH_ARCH_ALPHA: return "alpha";
-                case Types.CPU.IH_ARCH_ARM: return "arm";
-                case Types.CPU.IH_ARCH_ARM64: return "arm64";
-                case Types.CPU.IH_ARCH_I386: return "x86";
-                case Types.CPU.IH_ARCH_IA64: return "ia64";
-                case Types.CPU.IH_ARCH_M68K: return "m68k";
-                case Types.CPU.IH_ARCH_MICROBLAZE: return "microblaze";
-                case Types.CPU.IH_ARCH_MIPS: return "mips";
-                case Types.CPU.IH_ARCH_MIPS64: return "mips64";
-                case Types.CPU.IH_ARCH_NIOS: return "nios";
-                case Types.CPU.IH_ARCH_NIOS2: return "nios2";
-                case Types.CPU.IH_ARCH_PPC: return "ppc";
-                case Types.CPU.IH_ARCH_S390: return "s390";
-                case Types.CPU.IH_ARCH_SH: return "sh";
-                case Types.CPU.IH_ARCH_SPARC: return "sparc";
-                case Types.CPU.IH_ARCH_SPARC64: return "sparc64";
-                case Types.CPU.IH_ARCH_BLACKFIN: return "blackfin";
-                case Types.CPU.IH_ARCH_AVR32: return "avr32";
-                case Types.CPU.IH_ARCH_NDS32: return "nds32";
-                case Types.CPU.IH_ARCH_OPENRISC: return "or1k";
-                case Types.CPU.IH_ARCH_SANDBOX: return "sandbox";
-                case Types.CPU.IH_ARCH_ARC: return "arc";
-                case Types.CPU.IH_ARCH_X86_64: return "x86_64";
-                case Types.CPU.IH_ARCH_XTENSA: return "xtensa";
-                case Types.CPU.IH_ARCH_RISCV: return "riscv";
-                default: return "invalid";
-            }
+                Types.CPU.IH_ARCH_ALPHA => "alpha",
+                Types.CPU.IH_ARCH_ARM => "arm",
+                Types.CPU.IH_ARCH_ARM64 => "arm64",
+                Types.CPU.IH_ARCH_I386 => "x86",
+                Types.CPU.IH_ARCH_IA64 => "ia64",
+                Types.CPU.IH_ARCH_M68K => "m68k",
+                Types.CPU.IH_ARCH_MICROBLAZE => "microblaze",
+                Types.CPU.IH_ARCH_MIPS => "mips",
+                Types.CPU.IH_ARCH_MIPS64 => "mips64",
+                Types.CPU.IH_ARCH_NIOS => "nios",
+                Types.CPU.IH_ARCH_NIOS2 => "nios2",
+                Types.CPU.IH_ARCH_PPC => "ppc",
+                Types.CPU.IH_ARCH_S390 => "s390",
+                Types.CPU.IH_ARCH_SH => "sh",
+                Types.CPU.IH_ARCH_SPARC => "sparc",
+                Types.CPU.IH_ARCH_SPARC64 => "sparc64",
+                Types.CPU.IH_ARCH_BLACKFIN => "blackfin",
+                Types.CPU.IH_ARCH_AVR32 => "avr32",
+                Types.CPU.IH_ARCH_NDS32 => "nds32",
+                Types.CPU.IH_ARCH_OPENRISC => "or1k",
+                Types.CPU.IH_ARCH_SANDBOX => "sandbox",
+                Types.CPU.IH_ARCH_ARC => "arc",
+                Types.CPU.IH_ARCH_X86_64 => "x86_64",
+                Types.CPU.IH_ARCH_XTENSA => "xtensa",
+                Types.CPU.IH_ARCH_RISCV => "riscv",
+                _ => "invalid",
+            };
         }
 
         public static Types.CPU GetCPUArchitecture(string Arch)
         {
-            switch (Arch)
+            return Arch switch
             {
-                case "alpha": return Types.CPU.IH_ARCH_ALPHA;
-                case "arm": return Types.CPU.IH_ARCH_ARM;
-                case "arm64": return Types.CPU.IH_ARCH_ARM64;
-                case "x86": return Types.CPU.IH_ARCH_I386;
-                case "ia64": return Types.CPU.IH_ARCH_IA64;
-                case "m68k": return Types.CPU.IH_ARCH_M68K;
-                case "microblaze": return Types.CPU.IH_ARCH_MICROBLAZE;
-                case "mips": return Types.CPU.IH_ARCH_MIPS;
-                case "mips64": return Types.CPU.IH_ARCH_MIPS64;
-                case "nios": return Types.CPU.IH_ARCH_NIOS;
-                case "nios2": return Types.CPU.IH_ARCH_NIOS2;
-                case "powerpc":
-                case "ppc": return Types.CPU.IH_ARCH_PPC;
-                case "s390": return Types.CPU.IH_ARCH_S390;
-                case "sh": return Types.CPU.IH_ARCH_SH;
-                case "sparc": return Types.CPU.IH_ARCH_SPARC;
-                case "sparc64": return Types.CPU.IH_ARCH_SPARC64;
-                case "blackfin": return Types.CPU.IH_ARCH_BLACKFIN;
-                case "avr32": return Types.CPU.IH_ARCH_AVR32;
-                case "nds32": return Types.CPU.IH_ARCH_NDS32;
-                case "or1k": return Types.CPU.IH_ARCH_OPENRISC;
-                case "sandbox": return Types.CPU.IH_ARCH_SANDBOX;
-                case "arc": return Types.CPU.IH_ARCH_ARC;
-                case "x86_64": return Types.CPU.IH_ARCH_X86_64;
-                case "xtensa": return Types.CPU.IH_ARCH_XTENSA;
-                case "riscv": return Types.CPU.IH_ARCH_RISCV;
-
-                default: return Types.CPU.IH_ARCH_INVALID;
-            }
+                "alpha" => Types.CPU.IH_ARCH_ALPHA,
+                "arm" => Types.CPU.IH_ARCH_ARM,
+                "arm64" => Types.CPU.IH_ARCH_ARM64,
+                "x86" => Types.CPU.IH_ARCH_I386,
+                "ia64" => Types.CPU.IH_ARCH_IA64,
+                "m68k" => Types.CPU.IH_ARCH_M68K,
+                "microblaze" => Types.CPU.IH_ARCH_MICROBLAZE,
+                "mips" => Types.CPU.IH_ARCH_MIPS,
+                "mips64" => Types.CPU.IH_ARCH_MIPS64,
+                "nios" => Types.CPU.IH_ARCH_NIOS,
+                "nios2" => Types.CPU.IH_ARCH_NIOS2,
+                "powerpc" or "ppc" => Types.CPU.IH_ARCH_PPC,
+                "s390" => Types.CPU.IH_ARCH_S390,
+                "sh" => Types.CPU.IH_ARCH_SH,
+                "sparc" => Types.CPU.IH_ARCH_SPARC,
+                "sparc64" => Types.CPU.IH_ARCH_SPARC64,
+                "blackfin" => Types.CPU.IH_ARCH_BLACKFIN,
+                "avr32" => Types.CPU.IH_ARCH_AVR32,
+                "nds32" => Types.CPU.IH_ARCH_NDS32,
+                "or1k" => Types.CPU.IH_ARCH_OPENRISC,
+                "sandbox" => Types.CPU.IH_ARCH_SANDBOX,
+                "arc" => Types.CPU.IH_ARCH_ARC,
+                "x86_64" => Types.CPU.IH_ARCH_X86_64,
+                "xtensa" => Types.CPU.IH_ARCH_XTENSA,
+                "riscv" => Types.CPU.IH_ARCH_RISCV,
+                _ => Types.CPU.IH_ARCH_INVALID,
+            };
         }
 
         public static string GetOperatingSystem(Types.OS Os)
         {
-            switch (Os)
+            return Os switch
             {
-                case Types.OS.IH_OS_INVALID: return "invalid";
-                case Types.OS.IH_OS_LINUX: return "linux";
-                case Types.OS.IH_OS_LYNXOS: return "lynxos";
-                case Types.OS.IH_OS_NETBSD: return "netbsd";
-                case Types.OS.IH_OS_OSE: return "ose"; // ENEA OSE RTOS
-                case Types.OS.IH_OS_PLAN9: return "plan9";
-                case Types.OS.IH_OS_RTEMS: return "rtems";
-                case Types.OS.IH_OS_TEE: return "tee";
-                case Types.OS.IH_OS_U_BOOT: return "u-boot";
-                case Types.OS.IH_OS_VXWORKS: return "vxworks";
-                case Types.OS.IH_OS_QNX: return "qnx";
-                case Types.OS.IH_OS_INTEGRITY: return "integrity";
-                case Types.OS.IH_OS_4_4BSD: return "4_4bsd";
-                case Types.OS.IH_OS_DELL: return "dell";
-                case Types.OS.IH_OS_ESIX: return "esix";
-                case Types.OS.IH_OS_FREEBSD: return "freebsd";
-                case Types.OS.IH_OS_IRIX: return "irix";
-                case Types.OS.IH_OS_NCR: return "ncr";
-                case Types.OS.IH_OS_OPENBSD: return "openbsd";
-                case Types.OS.IH_OS_PSOS: return "psos";
-                case Types.OS.IH_OS_SCO: return "sco";
-                case Types.OS.IH_OS_SOLARIS: return "solaris";
-                case Types.OS.IH_OS_SVR4: return "svr4";
-                case Types.OS.IH_OS_OPENRTOS: return "openrtos";
-                case Types.OS.IH_OS_OPENSBI: return "opensbi";
-                case Types.OS.IH_OS_EFI: return "efi";
+                Types.OS.IH_OS_INVALID => "invalid",
+                Types.OS.IH_OS_LINUX => "linux",
+                Types.OS.IH_OS_LYNXOS => "lynxos",
+                Types.OS.IH_OS_NETBSD => "netbsd",
+                Types.OS.IH_OS_OSE => "ose",// ENEA OSE RTOS
+                Types.OS.IH_OS_PLAN9 => "plan9",
+                Types.OS.IH_OS_RTEMS => "rtems",
+                Types.OS.IH_OS_TEE => "tee",
+                Types.OS.IH_OS_U_BOOT => "u-boot",
+                Types.OS.IH_OS_VXWORKS => "vxworks",
+                Types.OS.IH_OS_QNX => "qnx",
+                Types.OS.IH_OS_INTEGRITY => "integrity",
+                Types.OS.IH_OS_4_4BSD => "4_4bsd",
+                Types.OS.IH_OS_DELL => "dell",
+                Types.OS.IH_OS_ESIX => "esix",
+                Types.OS.IH_OS_FREEBSD => "freebsd",
+                Types.OS.IH_OS_IRIX => "irix",
+                Types.OS.IH_OS_NCR => "ncr",
+                Types.OS.IH_OS_OPENBSD => "openbsd",
+                Types.OS.IH_OS_PSOS => "psos",
+                Types.OS.IH_OS_SCO => "sco",
+                Types.OS.IH_OS_SOLARIS => "solaris",
+                Types.OS.IH_OS_SVR4 => "svr4",
+                Types.OS.IH_OS_OPENRTOS => "openrtos",
+                Types.OS.IH_OS_OPENSBI => "opensbi",
+                Types.OS.IH_OS_EFI => "efi",
                 //case Types.OS.IH_OS_ARTOS: return "artos";
                 //case Types.OS.IH_OS_UNITY: return "unity";
                 //case Types.OS.IH_OS_ARM_TRUSTED_FIRMWARE: return "armtrusted";
-                default: return "unknown";
-            }
+                _ => "unknown",
+            };
         }
 
         public static Types.OS GetOperatingSystem(string Os)
         {
-            switch (Os)
+            return Os switch
             {
-                case "linux": return ImageFormat.Types.OS.IH_OS_LINUX;
-                case "lynxos": return ImageFormat.Types.OS.IH_OS_LYNXOS;
-                case "netbsd": return ImageFormat.Types.OS.IH_OS_NETBSD;
-                case "ose": return ImageFormat.Types.OS.IH_OS_OSE; // ENEA OSE RTOS
-                case "plan9": return ImageFormat.Types.OS.IH_OS_PLAN9;
-                case "rtems": return ImageFormat.Types.OS.IH_OS_RTEMS;
-                case "tee": return ImageFormat.Types.OS.IH_OS_TEE;
-                case "u-boot": return ImageFormat.Types.OS.IH_OS_U_BOOT;
-                case "vxworks": return ImageFormat.Types.OS.IH_OS_VXWORKS;
-                case "qnx": return ImageFormat.Types.OS.IH_OS_QNX;
-                case "integrity": return ImageFormat.Types.OS.IH_OS_INTEGRITY;
-                case "4_4bsd": return ImageFormat.Types.OS.IH_OS_4_4BSD;
-                case "dell": return ImageFormat.Types.OS.IH_OS_DELL;
-                case "esix": return ImageFormat.Types.OS.IH_OS_ESIX;
-                case "freebsd": return ImageFormat.Types.OS.IH_OS_FREEBSD;
-                case "irix": return ImageFormat.Types.OS.IH_OS_IRIX;
-                case "ncr": return ImageFormat.Types.OS.IH_OS_NCR;
-                case "openbsd": return ImageFormat.Types.OS.IH_OS_OPENBSD;
-                case "psos": return ImageFormat.Types.OS.IH_OS_PSOS;
-                case "sco": return ImageFormat.Types.OS.IH_OS_SCO;
-                case "solaris": return ImageFormat.Types.OS.IH_OS_SOLARIS;
-                case "svr4": return ImageFormat.Types.OS.IH_OS_SVR4;
-                case "openrtos": return ImageFormat.Types.OS.IH_OS_OPENRTOS;
-                case "opensbi": return ImageFormat.Types.OS.IH_OS_OPENSBI;
-                case "efi": return ImageFormat.Types.OS.IH_OS_EFI;
+                "linux" => ImageFormat.Types.OS.IH_OS_LINUX,
+                "lynxos" => ImageFormat.Types.OS.IH_OS_LYNXOS,
+                "netbsd" => ImageFormat.Types.OS.IH_OS_NETBSD,
+                "ose" => ImageFormat.Types.OS.IH_OS_OSE,// ENEA OSE RTOS
+                "plan9" => ImageFormat.Types.OS.IH_OS_PLAN9,
+                "rtems" => ImageFormat.Types.OS.IH_OS_RTEMS,
+                "tee" => ImageFormat.Types.OS.IH_OS_TEE,
+                "u-boot" => ImageFormat.Types.OS.IH_OS_U_BOOT,
+                "vxworks" => ImageFormat.Types.OS.IH_OS_VXWORKS,
+                "qnx" => ImageFormat.Types.OS.IH_OS_QNX,
+                "integrity" => ImageFormat.Types.OS.IH_OS_INTEGRITY,
+                "4_4bsd" => ImageFormat.Types.OS.IH_OS_4_4BSD,
+                "dell" => ImageFormat.Types.OS.IH_OS_DELL,
+                "esix" => ImageFormat.Types.OS.IH_OS_ESIX,
+                "freebsd" => ImageFormat.Types.OS.IH_OS_FREEBSD,
+                "irix" => ImageFormat.Types.OS.IH_OS_IRIX,
+                "ncr" => ImageFormat.Types.OS.IH_OS_NCR,
+                "openbsd" => ImageFormat.Types.OS.IH_OS_OPENBSD,
+                "psos" => ImageFormat.Types.OS.IH_OS_PSOS,
+                "sco" => ImageFormat.Types.OS.IH_OS_SCO,
+                "solaris" => ImageFormat.Types.OS.IH_OS_SOLARIS,
+                "svr4" => ImageFormat.Types.OS.IH_OS_SVR4,
+                "openrtos" => ImageFormat.Types.OS.IH_OS_OPENRTOS,
+                "opensbi" => ImageFormat.Types.OS.IH_OS_OPENSBI,
+                "efi" => ImageFormat.Types.OS.IH_OS_EFI,
                 //case "artos": return ImageFormat.Types.OS.IH_OS_ARTOS;
                 //case "unity": return ImageFormat.Types.OS.IH_OS_UNITY;
                 //case "armtrusted": return ImageFormat.Types.OS.IH_OS_ARM_TRUSTED_FIRMWARE;
-                default: return Types.OS.IH_OS_INVALID;
-            }
+                _ => Types.OS.IH_OS_INVALID,
+            };
         }
 
         public static string GetType(Types.ImageType Type)
         {
-            switch (Type)
+            return Type switch
             {
-                case Types.ImageType.IH_TYPE_KERNEL: return "kernel";
-                case Types.ImageType.IH_TYPE_FLATDT: return "flat_dt";
-                case Types.ImageType.IH_TYPE_RAMDISK: return "ramdisk";
-                case Types.ImageType.IH_TYPE_AISIMAGE: return "aisimage";
-                case Types.ImageType.IH_TYPE_FILESYSTEM: return "filesystem";
-                case Types.ImageType.IH_TYPE_FIRMWARE: return "firmware";
-                case Types.ImageType.IH_TYPE_GPIMAGE: return "gpimage";
-                case Types.ImageType.IH_TYPE_KERNEL_NOLOAD: return "kernel_noload";
-                case Types.ImageType.IH_TYPE_KWBIMAGE: return "kwbimage";
-                case Types.ImageType.IH_TYPE_IMXIMAGE: return "imximage";
-                case Types.ImageType.IH_TYPE_IMX8IMAGE: return "imx8image";
-                case Types.ImageType.IH_TYPE_IMX8MIMAGE: return "imx8mimage";
-                case Types.ImageType.IH_TYPE_MULTI: return "multi";
-                case Types.ImageType.IH_TYPE_OMAPIMAGE: return "omapimage";
-                case Types.ImageType.IH_TYPE_PBLIMAGE: return "pblimage";
-                case Types.ImageType.IH_TYPE_SCRIPT: return "script";
-                case Types.ImageType.IH_TYPE_SOCFPGAIMAGE: return "socfpgaimage";
-                case Types.ImageType.IH_TYPE_SOCFPGAIMAGE_V1: return "socfpgaimage_v1";
-                case Types.ImageType.IH_TYPE_STANDALONE: return "standalone";
-                case Types.ImageType.IH_TYPE_UBLIMAGE: return "ublimage";
-                case Types.ImageType.IH_TYPE_MXSIMAGE: return "mxsimage";
-                case Types.ImageType.IH_TYPE_ATMELIMAGE: return "atmelimage";
-                case Types.ImageType.IH_TYPE_X86_SETUP: return "x86_setup";
-                case Types.ImageType.IH_TYPE_LPC32XXIMAGE: return "lpc32xximage";
-                case Types.ImageType.IH_TYPE_RKIMAGE: return "rkimage";
-                case Types.ImageType.IH_TYPE_RKSD: return "rksd";
-                case Types.ImageType.IH_TYPE_RKSPI: return "rkspi";
-                case Types.ImageType.IH_TYPE_VYBRIDIMAGE: return "vybridimage";
-                case Types.ImageType.IH_TYPE_ZYNQIMAGE: return "zynqimage";
-                case Types.ImageType.IH_TYPE_ZYNQMPIMAGE: return "zynqmpimage";
-                case Types.ImageType.IH_TYPE_ZYNQMPBIF: return "zynqmpbif";
-                case Types.ImageType.IH_TYPE_FPGA: return "fpga";
-                case Types.ImageType.IH_TYPE_TEE: return "tee";
-                case Types.ImageType.IH_TYPE_FIRMWARE_IVT: return "firmware_ivt";
-                case Types.ImageType.IH_TYPE_PMMC: return "pmmc";
-                case Types.ImageType.IH_TYPE_STM32IMAGE: return "stm32image";
-                case Types.ImageType.IH_TYPE_MTKIMAGE: return "mtk_image";
-                case Types.ImageType.IH_TYPE_COPRO: return "copro";
-                case Types.ImageType.IH_TYPE_SUNXI_EGON: return "sunxi_egon";
-                case Types.ImageType.IH_TYPE_INVALID: return "invalid";
-                default: return "unknown";
-            }
+                Types.ImageType.IH_TYPE_KERNEL => "kernel",
+                Types.ImageType.IH_TYPE_FLATDT => "flat_dt",
+                Types.ImageType.IH_TYPE_RAMDISK => "ramdisk",
+                Types.ImageType.IH_TYPE_AISIMAGE => "aisimage",
+                Types.ImageType.IH_TYPE_FILESYSTEM => "filesystem",
+                Types.ImageType.IH_TYPE_FIRMWARE => "firmware",
+                Types.ImageType.IH_TYPE_GPIMAGE => "gpimage",
+                Types.ImageType.IH_TYPE_KERNEL_NOLOAD => "kernel_noload",
+                Types.ImageType.IH_TYPE_KWBIMAGE => "kwbimage",
+                Types.ImageType.IH_TYPE_IMXIMAGE => "imximage",
+                Types.ImageType.IH_TYPE_IMX8IMAGE => "imx8image",
+                Types.ImageType.IH_TYPE_IMX8MIMAGE => "imx8mimage",
+                Types.ImageType.IH_TYPE_MULTI => "multi",
+                Types.ImageType.IH_TYPE_OMAPIMAGE => "omapimage",
+                Types.ImageType.IH_TYPE_PBLIMAGE => "pblimage",
+                Types.ImageType.IH_TYPE_SCRIPT => "script",
+                Types.ImageType.IH_TYPE_SOCFPGAIMAGE => "socfpgaimage",
+                Types.ImageType.IH_TYPE_SOCFPGAIMAGE_V1 => "socfpgaimage_v1",
+                Types.ImageType.IH_TYPE_STANDALONE => "standalone",
+                Types.ImageType.IH_TYPE_UBLIMAGE => "ublimage",
+                Types.ImageType.IH_TYPE_MXSIMAGE => "mxsimage",
+                Types.ImageType.IH_TYPE_ATMELIMAGE => "atmelimage",
+                Types.ImageType.IH_TYPE_X86_SETUP => "x86_setup",
+                Types.ImageType.IH_TYPE_LPC32XXIMAGE => "lpc32xximage",
+                Types.ImageType.IH_TYPE_RKIMAGE => "rkimage",
+                Types.ImageType.IH_TYPE_RKSD => "rksd",
+                Types.ImageType.IH_TYPE_RKSPI => "rkspi",
+                Types.ImageType.IH_TYPE_VYBRIDIMAGE => "vybridimage",
+                Types.ImageType.IH_TYPE_ZYNQIMAGE => "zynqimage",
+                Types.ImageType.IH_TYPE_ZYNQMPIMAGE => "zynqmpimage",
+                Types.ImageType.IH_TYPE_ZYNQMPBIF => "zynqmpbif",
+                Types.ImageType.IH_TYPE_FPGA => "fpga",
+                Types.ImageType.IH_TYPE_TEE => "tee",
+                Types.ImageType.IH_TYPE_FIRMWARE_IVT => "firmware_ivt",
+                Types.ImageType.IH_TYPE_PMMC => "pmmc",
+                Types.ImageType.IH_TYPE_STM32IMAGE => "stm32image",
+                Types.ImageType.IH_TYPE_MTKIMAGE => "mtk_image",
+                Types.ImageType.IH_TYPE_COPRO => "copro",
+                Types.ImageType.IH_TYPE_SUNXI_EGON => "sunxi_egon",
+                Types.ImageType.IH_TYPE_INVALID => "invalid",
+                _ => "unknown",
+            };
         }
 
         public static ImageFormat.Types.ImageType GetType(string Type)
         {
-            switch (Type)
+            return Type switch
             {
-                case "kernel": return ImageFormat.Types.ImageType.IH_TYPE_KERNEL;
-                case "flat_dt": return ImageFormat.Types.ImageType.IH_TYPE_FLATDT;
-                case "ramdisk": return ImageFormat.Types.ImageType.IH_TYPE_RAMDISK;
-                case "aisimage": return ImageFormat.Types.ImageType.IH_TYPE_AISIMAGE;
-                case "filesystem": return ImageFormat.Types.ImageType.IH_TYPE_FILESYSTEM;
-                case "firmware": return ImageFormat.Types.ImageType.IH_TYPE_FIRMWARE;
-                case "gpimage": return ImageFormat.Types.ImageType.IH_TYPE_GPIMAGE;
-                case "kernel_noload": return ImageFormat.Types.ImageType.IH_TYPE_KERNEL_NOLOAD;
-                case "kwbimage": return ImageFormat.Types.ImageType.IH_TYPE_KWBIMAGE;
-                case "imximage": return ImageFormat.Types.ImageType.IH_TYPE_IMXIMAGE;
-                case "imx8image": return ImageFormat.Types.ImageType.IH_TYPE_IMX8IMAGE;
-                case "imx8mimage": return ImageFormat.Types.ImageType.IH_TYPE_IMX8MIMAGE;
-                case "multi": return ImageFormat.Types.ImageType.IH_TYPE_MULTI;
-                case "omapimage": return ImageFormat.Types.ImageType.IH_TYPE_OMAPIMAGE;
-                case "pblimage": return ImageFormat.Types.ImageType.IH_TYPE_PBLIMAGE;
-                case "script": return ImageFormat.Types.ImageType.IH_TYPE_SCRIPT;
-                case "socfpgaimage": return ImageFormat.Types.ImageType.IH_TYPE_SOCFPGAIMAGE;
-                case "socfpgaimage_v1": return ImageFormat.Types.ImageType.IH_TYPE_SOCFPGAIMAGE_V1;
-                case "standalone": return ImageFormat.Types.ImageType.IH_TYPE_STANDALONE;
-                case "ublimage": return ImageFormat.Types.ImageType.IH_TYPE_UBLIMAGE;
-                case "mxsimage": return ImageFormat.Types.ImageType.IH_TYPE_MXSIMAGE;
-                case "atmelimage": return ImageFormat.Types.ImageType.IH_TYPE_ATMELIMAGE;
-                case "x86_setup": return ImageFormat.Types.ImageType.IH_TYPE_X86_SETUP;
-                case "lpc32xximage": return ImageFormat.Types.ImageType.IH_TYPE_LPC32XXIMAGE;
-                case "rkimage": return ImageFormat.Types.ImageType.IH_TYPE_RKIMAGE;
-                case "rksd": return ImageFormat.Types.ImageType.IH_TYPE_RKSD;
-                case "rkspi": return ImageFormat.Types.ImageType.IH_TYPE_RKSPI;
-                case "vybridimage": return ImageFormat.Types.ImageType.IH_TYPE_VYBRIDIMAGE;
-                case "zynqimage": return ImageFormat.Types.ImageType.IH_TYPE_ZYNQIMAGE;
-                case "zynqmpimage": return ImageFormat.Types.ImageType.IH_TYPE_ZYNQMPIMAGE;
-                case "zynqmpbif": return ImageFormat.Types.ImageType.IH_TYPE_ZYNQMPBIF;
-                case "fpga": return ImageFormat.Types.ImageType.IH_TYPE_FPGA;
-                case "tee": return ImageFormat.Types.ImageType.IH_TYPE_TEE;
-                case "firmware_ivt": return ImageFormat.Types.ImageType.IH_TYPE_FIRMWARE_IVT;
-                case "pmmc": return ImageFormat.Types.ImageType.IH_TYPE_PMMC;
-                case "stm32image": return ImageFormat.Types.ImageType.IH_TYPE_STM32IMAGE;
-                case "mtk_image": return ImageFormat.Types.ImageType.IH_TYPE_MTKIMAGE;
-                case "copro": return ImageFormat.Types.ImageType.IH_TYPE_COPRO;
-                case "sunxi_egon": return ImageFormat.Types.ImageType.IH_TYPE_SUNXI_EGON;
-                default: return ImageFormat.Types.ImageType.IH_TYPE_INVALID;
-            }
+                "kernel" => ImageFormat.Types.ImageType.IH_TYPE_KERNEL,
+                "flat_dt" => ImageFormat.Types.ImageType.IH_TYPE_FLATDT,
+                "ramdisk" => ImageFormat.Types.ImageType.IH_TYPE_RAMDISK,
+                "aisimage" => ImageFormat.Types.ImageType.IH_TYPE_AISIMAGE,
+                "filesystem" => ImageFormat.Types.ImageType.IH_TYPE_FILESYSTEM,
+                "firmware" => ImageFormat.Types.ImageType.IH_TYPE_FIRMWARE,
+                "gpimage" => ImageFormat.Types.ImageType.IH_TYPE_GPIMAGE,
+                "kernel_noload" => ImageFormat.Types.ImageType.IH_TYPE_KERNEL_NOLOAD,
+                "kwbimage" => ImageFormat.Types.ImageType.IH_TYPE_KWBIMAGE,
+                "imximage" => ImageFormat.Types.ImageType.IH_TYPE_IMXIMAGE,
+                "imx8image" => ImageFormat.Types.ImageType.IH_TYPE_IMX8IMAGE,
+                "imx8mimage" => ImageFormat.Types.ImageType.IH_TYPE_IMX8MIMAGE,
+                "multi" => ImageFormat.Types.ImageType.IH_TYPE_MULTI,
+                "omapimage" => ImageFormat.Types.ImageType.IH_TYPE_OMAPIMAGE,
+                "pblimage" => ImageFormat.Types.ImageType.IH_TYPE_PBLIMAGE,
+                "script" => ImageFormat.Types.ImageType.IH_TYPE_SCRIPT,
+                "socfpgaimage" => ImageFormat.Types.ImageType.IH_TYPE_SOCFPGAIMAGE,
+                "socfpgaimage_v1" => ImageFormat.Types.ImageType.IH_TYPE_SOCFPGAIMAGE_V1,
+                "standalone" => ImageFormat.Types.ImageType.IH_TYPE_STANDALONE,
+                "ublimage" => ImageFormat.Types.ImageType.IH_TYPE_UBLIMAGE,
+                "mxsimage" => ImageFormat.Types.ImageType.IH_TYPE_MXSIMAGE,
+                "atmelimage" => ImageFormat.Types.ImageType.IH_TYPE_ATMELIMAGE,
+                "x86_setup" => ImageFormat.Types.ImageType.IH_TYPE_X86_SETUP,
+                "lpc32xximage" => ImageFormat.Types.ImageType.IH_TYPE_LPC32XXIMAGE,
+                "rkimage" => ImageFormat.Types.ImageType.IH_TYPE_RKIMAGE,
+                "rksd" => ImageFormat.Types.ImageType.IH_TYPE_RKSD,
+                "rkspi" => ImageFormat.Types.ImageType.IH_TYPE_RKSPI,
+                "vybridimage" => ImageFormat.Types.ImageType.IH_TYPE_VYBRIDIMAGE,
+                "zynqimage" => ImageFormat.Types.ImageType.IH_TYPE_ZYNQIMAGE,
+                "zynqmpimage" => ImageFormat.Types.ImageType.IH_TYPE_ZYNQMPIMAGE,
+                "zynqmpbif" => ImageFormat.Types.ImageType.IH_TYPE_ZYNQMPBIF,
+                "fpga" => ImageFormat.Types.ImageType.IH_TYPE_FPGA,
+                "tee" => ImageFormat.Types.ImageType.IH_TYPE_TEE,
+                "firmware_ivt" => ImageFormat.Types.ImageType.IH_TYPE_FIRMWARE_IVT,
+                "pmmc" => ImageFormat.Types.ImageType.IH_TYPE_PMMC,
+                "stm32image" => ImageFormat.Types.ImageType.IH_TYPE_STM32IMAGE,
+                "mtk_image" => ImageFormat.Types.ImageType.IH_TYPE_MTKIMAGE,
+                "copro" => ImageFormat.Types.ImageType.IH_TYPE_COPRO,
+                "sunxi_egon" => ImageFormat.Types.ImageType.IH_TYPE_SUNXI_EGON,
+                _ => ImageFormat.Types.ImageType.IH_TYPE_INVALID,
+            };
         }
 
         public static string GetCompression(Filesystem.SquashFs.Types.SqCompressionType Compression)
@@ -434,18 +425,14 @@ namespace NyaFs.ImageFormat.Helper
 
         public static byte[] CalcSHA1Hash(byte[] Data)
         {
-            using (SHA1Managed sha1 = new SHA1Managed())
-            {
-                return sha1.ComputeHash(Data);
-            }
+            using SHA1 sha1 = SHA1.Create();
+            return sha1.ComputeHash(Data);
         }
 
         public static byte[] CalcSHA256Hash(byte[] Data)
         {
-            using (SHA256Managed sha256 = new SHA256Managed())
-            {
-                return sha256.ComputeHash(Data);
-            }
+            using SHA256 sha256 = SHA256.Create();
+            return sha256.ComputeHash(Data);
         }
     }
 }
