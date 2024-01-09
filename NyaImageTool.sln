@@ -50,7 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflow", "Workflow", "{D8
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaFsEncrypt", "NyaFsEncrypt\NyaFsEncrypt.csproj", "{C0B57D62-F526-4433-BEAC-2D4772111DA9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaFsEncrypt", "Plugins\NyaFsEncrypt\NyaFsEncrypt.csproj", "{C0B57D62-F526-4433-BEAC-2D4772111DA9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
 	EndProjectSection

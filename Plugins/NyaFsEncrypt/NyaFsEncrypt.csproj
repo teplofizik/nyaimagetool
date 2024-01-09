@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NyaFs\NyaFs.csproj" />
+    <ProjectReference Include="$(SolutionDir)\NyaFs\NyaFs.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
