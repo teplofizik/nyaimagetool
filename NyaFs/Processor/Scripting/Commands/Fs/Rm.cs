@@ -35,15 +35,55 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                 if (Fs == null)
                     return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem is not loaded");
 
-                if (Fs.Exists(Path))
+                if(Path.Contains('*'))
                 {
-                    // Есть старый файл в файловой системе. Удалим.
-                    Fs.Delete(Path);
+                    if (Path.StartsWith("/"))
+                    {
+                        // Это путь с маской
+                        var Items = Fs.Search(Path.Substring(1));
 
-                    return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted!");
+                        if(Items.Length > 0)
+                        {
+                            foreach(var I in Items)
+                                Fs.Delete(I);
+
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted {Items.Length} items!");
+                        }
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"{Path} not found!");
+                    }
+                    else
+                    {
+                        var Dir = Fs.GetDirectory(Processor.ActivePath);
+                        if(Dir != null)
+                        {
+                            var Items = Fs.Search(Dir, Path);
+                            if (Items.Length > 0)
+                            {
+                                foreach (var I in Items)
+                                    Fs.Delete(I);
+
+                                return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted {Items.Length} items!");
+                            }
+                            else
+                                return new ScriptStepResult(ScriptStepStatus.Warning, $"{Path} not found!");
+                        }
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"{Processor.ActivePath} not found!");
+                    }
                 }
                 else
-                    return new ScriptStepResult(ScriptStepStatus.Warning, $"{Path} not found!");
+                { 
+                    if (Fs.Exists(Path))
+                    {
+                        // Есть старый файл в файловой системе. Удалим.
+                        Fs.Delete(Path);
+
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Warning, $"{Path} not found!");
+                }
             }
         }
     }

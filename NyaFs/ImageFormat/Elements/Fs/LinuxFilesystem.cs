@@ -2,14 +2,16 @@
 using NyaFs.Filesystem.Universal.Items;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace NyaFs.ImageFormat.Elements.Fs
 {
 
     public class LinuxFilesystem
     {
-        public NyaFs.Filesystem.Universal.Filesystem Fs = new NyaFs.Filesystem.Universal.Filesystem();
+        public Filesystem.Universal.Filesystem Fs = new Filesystem.Universal.Filesystem();
 
         /// <summary>
         /// Filesystem type
@@ -54,11 +56,62 @@ namespace NyaFs.ImageFormat.Elements.Fs
         public long GetContentSize() => GetDirSize(Fs.Root);
 
         /// <summary>
+        /// Search filesystem items in dir by path with mask
+        /// </summary>
+        /// <param name="Dir">Directory for search</param>
+        /// <param name="Mask">Search mask</param>
+        /// <returns></returns>
+        public string[] Search(Dir Dir, string Mask)
+        {
+            string pattern = "^" + Regex.Escape(Mask).Replace("\\*", ".*");
+            
+            return Search(Dir, I => Regex.IsMatch(I.Filename, pattern));
+        }
+
+        /// <summary>
+        /// Search filesystem items by path with mask
+        /// </summary>
+        /// <param name="Mask"></param>
+        /// <returns></returns>
+        public string[] Search(string Mask) => Search(Fs.Root, Mask);
+
+        /// <summary>
+        /// Search elements by path
+        /// </summary>
+        /// <param name="Dir">Directory for search</param>
+        /// <param name="Condition"></param>
+        /// <returns></returns>
+        public string[] Search(Dir Dir, Func<FilesystemItem,bool> Condition)
+        {
+            var Res = new List<string>();
+
+            foreach (var I in Dir.Items)
+            {
+                switch (I.ItemType)
+                {
+                    case Filesystem.Universal.Types.FilesystemItemType.File:
+                    case Filesystem.Universal.Types.FilesystemItemType.SymLink:
+                        if (Condition(I))
+                            Res.Add(I.Filename);
+                        break;
+                    case Filesystem.Universal.Types.FilesystemItemType.Directory:
+                        if (Condition(I))
+                            Res.Add(I.Filename);
+                        else
+                            Res.AddRange(Search(I as Dir, Condition));
+                        break;
+                }
+            }
+
+            return Res.ToArray();
+        }
+
+        /// <summary>
         /// Calculate total amount of data over all files in directory (only content of regular files + text of symlinks)
         /// </summary>
         /// <param name="Dir">Directory to calc sum of files size</param>
         /// <returns>Total amount of data in deirectory</returns>
-        private long GetDirSize(Filesystem.Universal.Items.Dir Dir)
+        private long GetDirSize(Dir Dir)
         {
             long Res = 0;
 
@@ -71,7 +124,7 @@ namespace NyaFs.ImageFormat.Elements.Fs
                         Res += I.Size;
                         break;
                     case Filesystem.Universal.Types.FilesystemItemType.Directory:
-                        Res += GetDirSize(I as Filesystem.Universal.Items.Dir);
+                        Res += GetDirSize(I as Dir);
                         break;
                 }
             }
