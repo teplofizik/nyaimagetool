@@ -63,8 +63,8 @@ namespace NyaFs.ImageFormat.Elements.Fs
         /// <returns></returns>
         public string[] Search(Dir Dir, string Mask)
         {
-            string pattern = "^" + Regex.Escape(Mask).Replace("\\*", ".*");
-            
+            string pattern = "^" + Regex.Escape(Mask).Replace("\\*", ".*") + "$";
+
             return Search(Dir, I => Regex.IsMatch(I.Filename, pattern));
         }
 

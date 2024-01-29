@@ -348,9 +348,9 @@ Add fifo:
 fifo <path> <mode> <uid> <gid>
 ```
 
-Remove file or dir or etc (allowed * for mask):
+Remove file or dir or etc with excluded pathes (allowed * for mask):
 ```
-rm <path>
+rm <path1> [<path2>] [<path3>] [-<exclude1>] [-<exclude2>]
 ```
 
 Change file mode:
