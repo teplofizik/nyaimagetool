@@ -348,7 +348,7 @@ Add fifo:
 fifo <path> <mode> <uid> <gid>
 ```
 
-Remove file or dir or etc:
+Remove file or dir or etc (allowed * for mask):
 ```
 rm <path>
 ```
@@ -517,6 +517,12 @@ Remove file from local filesystem:
 ```
 remove <filename>
 ```
+
+Load local directory to filesystem:
+```loaddir <path> <localdir> <dirmode> <filemode> <user> <group>```
+Example:
+```loaddir /tmp/xxx include/xxx rwxr-xr-x rw-r--r-- 0 0```
+
 
 ## Linux-specific operations (NyaFsLinux.dll)
 List of all users (from /etc/passwd):

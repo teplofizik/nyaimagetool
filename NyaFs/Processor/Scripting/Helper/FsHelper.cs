@@ -4,9 +4,21 @@ using System.Text;
 
 namespace NyaFs.Processor.Scripting.Helper
 {
-    internal static class FsHelper
+    public static class FsHelper
     {
-        internal static string DetectFilePath(this ScriptStep S, string Path)
+        public static string DetectDirPath(this ScriptStep S, string Path)
+        {
+            if (System.IO.File.Exists(Path))
+                return Path;
+
+            var RelPath = System.IO.Path.Combine(S.ScriptPath, Path);
+            if (System.IO.Directory.Exists(RelPath))
+                return RelPath;
+
+            return null;
+        }
+
+        public static string DetectFilePath(this ScriptStep S, string Path)
         {
             if (System.IO.File.Exists(Path))
                 return Path;
@@ -46,7 +58,7 @@ namespace NyaFs.Processor.Scripting.Helper
                 return GetItem(Fs, CombinePath(Base, Path));
         }
 
-        internal static string CombinePath(string Base, string Name)
+        public static string CombinePath(string Base, string Name)
         {
             if ((Base == "/") || (Base == ".")) return Name;
 

@@ -1,0 +1,213 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using NyaFs;
+using NyaFs.Filesystem.Universal;
+using NyaFs.Filesystem.Universal.Items;
+using NyaFs.Filesystem.Universal.Types;
+using NyaFs.FlattenedDeviceTree.Types;
+using NyaFs.Processor;
+using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting.Helper;
+
+namespace NyaFsFiles.Commands
+{
+    public class LoadDir : ScriptStepGenerator
+    {
+        public LoadDir() : base("loaddir")
+        {
+            AddConfig(new ScriptArgsConfig(1, new ScriptArgsParam[] {
+                    new NyaFs.Processor.Scripting.Params.FsPathScriptArgsParam(),
+                    new NyaFs.Processor.Scripting.Params.LocalPathScriptArgsParam(),
+                    new NyaFs.Processor.Scripting.Params.ModeScriptArgsParam(),
+                    new NyaFs.Processor.Scripting.Params.ModeScriptArgsParam(),
+                    new NyaFs.Processor.Scripting.Params.NumberScriptArgsParam("user"),
+                    new NyaFs.Processor.Scripting.Params.NumberScriptArgsParam("group")
+                }));
+        }
+
+        public override ScriptStep Get(ScriptArgs Args)
+        {
+            var A = Args.RawArgs;
+
+            return new DirScriptStep(A[0], A[1], Utils.ConvertMode(A[2]), Utils.ConvertMode(A[3]), Convert.ToUInt32(A[4]), Convert.ToUInt32(A[5]));
+
+        }
+
+        public class DirScriptStep : ScriptStep
+        {
+            string Path = null;
+            string LocalPath = null;
+            uint User = uint.MaxValue;
+            uint Group = uint.MaxValue;
+            uint DirMode = uint.MaxValue;
+            uint FileMode = uint.MaxValue;
+
+            public DirScriptStep(string Path, string LocalPath, uint DirMode, uint FileMode, uint User, uint Group) : base("loaddir")
+            {
+                this.Path  = Path;
+                this.LocalPath = LocalPath;
+                this.User  = User;
+                this.Group = Group;
+                this.DirMode = DirMode;
+                this.FileMode = FileMode;
+            }
+
+            public override ScriptStepResult Exec(ImageProcessor Processor)
+            {
+                var Fs = Processor.GetFs();
+                // Проверим наличие загруженной файловой системы
+                if (Fs == null)
+                    return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem is not loaded");
+
+                var DetectedDir = this.DetectDirPath(LocalPath);
+                if (DetectedDir == null)
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"Local directory {LocalPath} is not found");
+
+                if (Fs.Exists(Path))
+                {
+                    var Item = Fs.GetElement(Path);
+                    if (Item.ItemType == FilesystemItemType.Directory)
+                    {
+                        var Dir = Item as Dir;
+
+                        Dir.Mode = DirMode;
+                        Dir.User = User;
+                        Dir.Group = Group;
+
+                        Dir.Modified = DateTime.Now;
+
+                        if(LoadDirectory(Dir, DetectedDir))
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} updated!");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot load items to {Path}!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} is not dir!");
+                }
+                else
+                {
+                    var Parent = Fs.GetParentDirectory(Path);
+                    if (Parent != null)
+                    {
+                        var Dir = new Dir(Path, User, Group, DirMode);
+
+                        Parent.Items.Add(Dir);
+
+                        if (LoadDirectory(Dir, DetectedDir))
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Dir {Path} added!");
+                        else
+                            return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot load items to {Path}!");
+                    }
+                    else
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"Parent dir for {Path} is not found!");
+                }
+            }
+
+            /// <summary>
+            /// Is item exists in filesystem
+            /// </summary>
+            /// <param name="dir"></param>
+            /// <param name="path"></param>
+            /// <returns></returns>
+            private FilesystemItem GetElement(Dir dir, string path)
+            {
+                foreach(var I in dir.Items)
+                {
+                    if(I.Filename == path) return I;
+                }
+
+                return null;
+            }
+
+            /// <summary>
+            /// Load file to directory
+            /// </summary>
+            /// <param name="Dir"></param>
+            /// <param name="Path"></param>
+            /// <returns></returns>
+            private void LoadFile(Dir dir, string path)
+            {
+                var DetectedFilename = this.DetectFilePath(path);
+                if (DetectedFilename != null)
+                {
+                    var FsPath = FsHelper.CombinePath(dir.Filename, System.IO.Path.GetFileName(DetectedFilename));
+                    var El = GetElement(dir, FsPath);
+                    
+                    if(El != null)
+                    {
+                        if (El.ItemType == FilesystemItemType.File)
+                        {
+                            var File = El as File;
+
+                            File.Mode = FileMode;
+                            File.User = User;
+                            File.Group = Group;
+
+                            File.Modified = DateTime.Now;
+                            File.Content = System.IO.File.ReadAllBytes(DetectedFilename);
+                            Log.Write(0, $"Updated {FsPath}!");
+                        }
+                        else
+                            Log.Warning(0, $"Cannot update {FsPath}: not file!");
+                    }
+                    else
+                    {
+                        var Content = System.IO.File.ReadAllBytes(DetectedFilename);
+                        var File = new File(Path, User, Group, FileMode, Content);
+
+                        dir.Items.Add(File);
+                        Log.Write(0, $"Added {FsPath}!");
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Load local directory to filesystem
+            /// </summary>
+            /// <param name="dir">Directory in filesystem</param>
+            /// <param name="path">Local path</param>
+            private bool LoadDirectory(Dir dir, string path)
+            {
+                var Dirs = System.IO.Directory.GetDirectories(path);
+                var Files = System.IO.Directory.GetFiles(path);
+
+                foreach(var Dir in Dirs)
+                {
+                    var FsPath = FsHelper.CombinePath(dir.Filename, System.IO.Path.GetFileName(Dir));
+                    var El = GetElement(dir, FsPath);
+                    if (El != null)
+                    {
+                        if (El.ItemType == FilesystemItemType.Directory)
+                        {
+                            var NDir = El as Dir;
+
+                            NDir.Mode = DirMode;
+                            NDir.User = User;
+                            NDir.Group = Group;
+
+                            NDir.Modified = DateTime.Now;
+                            Log.Write(2, $"Updated {FsPath}!");
+                        }
+                        else
+                            Log.Warning(0, $"Cannot update {FsPath}: not directory!");
+                    }
+                    else
+                    {
+                        var NDir = new Dir(FsPath, User, Group, DirMode);
+
+                        dir.Items.Add(NDir);
+                        Log.Write(2, $"Added dir {FsPath}!");
+
+                        LoadDirectory(NDir, Dir);
+                    }
+                }
+
+                foreach (var File in Files)
+                    LoadFile(dir, File);
+
+                return true;
+            }
+        }
+    }
+}

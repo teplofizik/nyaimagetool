@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace NyaFs.Processor.Scripting.Commands.Fs
@@ -44,8 +45,11 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
 
                         if(Items.Length > 0)
                         {
-                            foreach(var I in Items)
+                            foreach (var I in Items)
+                            {
+                                Log.Write(2, $"Deleted {I}!");
                                 Fs.Delete(I);
+                            }
 
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted {Items.Length} items!");
                         }
@@ -61,7 +65,10 @@ namespace NyaFs.Processor.Scripting.Commands.Fs
                             if (Items.Length > 0)
                             {
                                 foreach (var I in Items)
+                                {
+                                    Log.Write(2, $"Deleted {I}!");
                                     Fs.Delete(I);
+                                }
 
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"{Path} deleted {Items.Length} items!");
                             }

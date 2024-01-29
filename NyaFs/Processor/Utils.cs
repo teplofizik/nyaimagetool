@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NyaFs.Processor
 {
-    static class Utils
+    public static class Utils
     {
         public static bool CheckMode(string Text)
         {

@@ -15,7 +15,8 @@ namespace NyaFsFiles
             return new ScriptStepGenerator[] {
                 new Commands.Copy(),
                 new Commands.Download(),
-                new Commands.Remove()
+                new Commands.Remove(),
+                new Commands.LoadDir()
             };
         }
     }
