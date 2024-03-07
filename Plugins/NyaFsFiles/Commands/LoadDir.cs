@@ -154,7 +154,7 @@ namespace NyaFsFiles.Commands
                     else
                     {
                         var Content = System.IO.File.ReadAllBytes(DetectedFilename);
-                        var File = new File(Path, User, Group, FileMode, Content);
+                        var File = new File(FsPath, User, Group, FileMode, Content);
 
                         dir.Items.Add(File);
                         Log.Write(0, $"Added {FsPath}!");
@@ -188,6 +188,8 @@ namespace NyaFsFiles.Commands
 
                             NDir.Modified = DateTime.Now;
                             Log.Write(2, $"Updated {FsPath}!");
+
+                            LoadDirectory(NDir, Dir);
                         }
                         else
                             Log.Warning(0, $"Cannot update {FsPath}: not directory!");
