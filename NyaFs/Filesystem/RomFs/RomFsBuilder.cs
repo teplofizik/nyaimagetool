@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.RomFs
 {
-    class RomFsBuilder : IFilesystemBuilder
+    public class RomFsBuilder : IFilesystemBuilder
     {
         List<uint> InvalidGid = new List<uint>();
         List<uint> InvalidUid = new List<uint>();

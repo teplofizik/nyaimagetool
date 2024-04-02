@@ -8,7 +8,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.Ext2
 {
-    class Ext2FsBuilder : Ext2FsBase, IFilesystemBuilder
+    public class Ext2FsBuilder : Ext2FsBase, IFilesystemBuilder
     {
         uint DiskBlockSize;
         uint INodeIndex = 2;

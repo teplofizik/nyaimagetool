@@ -7,7 +7,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.Cpio
 {
-    class CpioFsBuilder : IFilesystemBuilder
+    public class CpioFsBuilder : IFilesystemBuilder
     {
         private List<Types.CpioNode> Files = new List<Types.CpioNode>();
 

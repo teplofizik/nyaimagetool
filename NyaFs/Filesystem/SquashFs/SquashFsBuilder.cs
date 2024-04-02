@@ -9,7 +9,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.SquashFs
 {
-    class SquashFsBuilder : IFilesystemBuilder
+    public class SquashFsBuilder : IFilesystemBuilder
     {
         private Compression.BaseCompressor Comp;
 

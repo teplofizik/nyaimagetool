@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NyaFs.Filesystem.CramFs
 {
-    class CramFsBuilder : IFilesystemBuilder
+    public class CramFsBuilder : IFilesystemBuilder
     {
         private int BlockSize = 4096;
 
