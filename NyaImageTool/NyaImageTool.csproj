@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Extensions\Extensions.csproj" />
+    <ProjectReference Include="..\Extensions\NyaExtensions.csproj" />
     <ProjectReference Include="..\NyaFs\NyaFs.csproj" />
   </ItemGroup>
 

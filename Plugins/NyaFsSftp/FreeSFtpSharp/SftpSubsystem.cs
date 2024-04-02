@@ -1,4 +1,4 @@
-﻿using Extension.Array;
+﻿using NyaExtensions.Array;
 using FxSsh;
 using FxSsh.Messages.Connection;
 using FxSsh.Services;

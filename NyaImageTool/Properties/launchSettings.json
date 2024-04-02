@@ -1,7 +1,8 @@
 {
   "profiles": {
     "NyaImageTool": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "test_loaddir.nyas"
     }
   }
 }

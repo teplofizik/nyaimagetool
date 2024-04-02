@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31105.61
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Extensions.csproj", "{578CE3A5-682A-466E-982F-DF676D6C78FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaExtensions", "NyaExtensions\NyaExtensions.csproj", "{578CE3A5-682A-466E-982F-DF676D6C78FE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFs", "NyaFs\NyaFs.csproj", "{17442459-436D-4B9E-8B4F-44D935B48A6E}"
 EndProject
@@ -50,10 +50,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflow", "Workflow", "{D8
 		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaFsEncrypt", "Plugins\NyaFsEncrypt\NyaFsEncrypt.csproj", "{C0B57D62-F526-4433-BEAC-2D4772111DA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsEncrypt", "Plugins\NyaFsEncrypt\NyaFsEncrypt.csproj", "{C0B57D62-F526-4433-BEAC-2D4772111DA9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsIncmEncrypt", "Plugins\NyaFsIncmEncrypt\NyaFsIncmEncrypt.csproj", "{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,6 +187,18 @@ Global
 		{C0B57D62-F526-4433-BEAC-2D4772111DA9}.Release|x64.Build.0 = Release|Any CPU
 		{C0B57D62-F526-4433-BEAC-2D4772111DA9}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0B57D62-F526-4433-BEAC-2D4772111DA9}.Release|x86.Build.0 = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|x64.Build.0 = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Debug|x86.Build.0 = Debug|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|x64.ActiveCfg = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|x64.Build.0 = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|x86.ActiveCfg = Release|Any CPU
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,6 +209,7 @@ Global
 		{4B64DF0F-CD57-4A68-BEB9-676EA490578A} = {D12DEDB5-FE5C-483B-9AF0-FC9E6C751BEC}
 		{2FFD947D-8EF4-417A-BE85-CDD8A456BDFD} = {D12DEDB5-FE5C-483B-9AF0-FC9E6C751BEC}
 		{C0B57D62-F526-4433-BEAC-2D4772111DA9} = {D12DEDB5-FE5C-483B-9AF0-FC9E6C751BEC}
+		{F4487EC7-7C65-40ED-8F0B-97DADA7BC762} = {D12DEDB5-FE5C-483B-9AF0-FC9E6C751BEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB408CED-798C-4B0A-911C-67380FEE10B7}
