@@ -1,8 +1,15 @@
 {
   "profiles": {
-    "NyaImageTool": {
+    "test_loaddir.nyas": {
       "commandName": "Project",
       "commandLineArgs": "test_loaddir.nyas"
+    },
+    "test_loadsqfs.nyas": {
+      "commandName": "Project",
+      "commandLineArgs": "test_loadsqfs.nyas"
+    },
+    "Interactive": {
+      "commandName": "Project"
     }
   }
 }

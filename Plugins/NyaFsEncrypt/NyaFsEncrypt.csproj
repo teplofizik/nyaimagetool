@@ -4,15 +4,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)\NyaFs\NyaFs.csproj" />
-  </ItemGroup>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Copy
-        SourceFiles="$(OutDir)\$(TargetName).dll;$(OutDir)\$(TargetName).pdb"
-        DestinationFolder="$(SolutionDir)\NyaImageTool\bin\Debug\netcoreapp3.1\plugins\"
-        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(OutDir)\$(TargetName).dll;$(OutDir)\$(TargetName).pdb" DestinationFolder="$(SolutionDir)\NyaImageTool\bin\Debug\netcoreapp3.1\plugins\" SkipUnchangedFiles="true" />
   </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\NyaFs\src\NyaFs\NyaFs.csproj" />
+  </ItemGroup>
 
 </Project>
