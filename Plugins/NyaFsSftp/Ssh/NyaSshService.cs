@@ -1,5 +1,4 @@
-﻿using NyaExtensions.Array;
-using FreeSFtpSharp;
+﻿using FreeSFtpSharp;
 using FxSsh;
 using FxSsh.Services;
 using NyaFs.Filesystem.Universal.Types;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using NyaIO.Data;
 
 namespace NyaFsSftp.Ssh
 {
