@@ -1,9 +1,0 @@
-[submodule "NyaLZO"]
-	path = NyaLZO
-	url = git@github.com:teplofizik/nyalzo.git
-[submodule "NyaExtensions"]
-	path = NyaExtensions
-	url = git@github.com:teplofizik/nyaextensions.git
-[submodule "NyaFs"]
-	path = NyaFs
-	url = git@github.com:teplofizik/nyafs.git

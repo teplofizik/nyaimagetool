@@ -3,17 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFs", "NyaFs\src\NyaFs\NyaFs.csproj", "{17442459-436D-4B9E-8B4F-44D935B48A6E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsTest", "NyaFsTest\NyaFsTest.csproj", "{1BA6938F-9B3A-4ADA-8AE6-E3CD8C7BA912}"
-	ProjectSection(ProjectDependencies) = postProject
-		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaImageTool", "NyaImageTool\NyaImageTool.csproj", "{62010B34-B500-4655-8972-5A0360D3123F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4B64DF0F-CD57-4A68-BEB9-676EA490578A} = {4B64DF0F-CD57-4A68-BEB9-676EA490578A}
-		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
 		{2FFD947D-8EF4-417A-BE85-CDD8A456BDFD} = {2FFD947D-8EF4-417A-BE85-CDD8A456BDFD}
 		{A88BD9AE-046F-4E84-B066-35CB6CFAC504} = {A88BD9AE-046F-4E84-B066-35CB6CFAC504}
 		{433FCFC8-B750-4057-8B34-BFF8E598AABF} = {433FCFC8-B750-4057-8B34-BFF8E598AABF}
@@ -28,14 +22,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{D12DEDB5-FE5C-483B-9AF0-FC9E6C751BEC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsSftp", "Plugins\NyaFsSftp\NyaFsSftp.csproj", "{433FCFC8-B750-4057-8B34-BFF8E598AABF}"
-	ProjectSection(ProjectDependencies) = postProject
-		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsFiles", "Plugins\NyaFsFiles\NyaFsFiles.csproj", "{A88BD9AE-046F-4E84-B066-35CB6CFAC504}"
-	ProjectSection(ProjectDependencies) = postProject
-		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsLinux", "Plugins\NyaFsLinux\NyaFsLinux.csproj", "{4B64DF0F-CD57-4A68-BEB9-676EA490578A}"
 EndProject
@@ -47,9 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflow", "Workflow", "{D8
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsEncrypt", "Plugins\NyaFsEncrypt\NyaFsEncrypt.csproj", "{C0B57D62-F526-4433-BEAC-2D4772111DA9}"
-	ProjectSection(ProjectDependencies) = postProject
-		{17442459-436D-4B9E-8B4F-44D935B48A6E} = {17442459-436D-4B9E-8B4F-44D935B48A6E}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,18 +46,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|x64.Build.0 = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Debug|x86.Build.0 = Debug|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|x64.ActiveCfg = Release|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|x64.Build.0 = Release|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|x86.ActiveCfg = Release|Any CPU
-		{17442459-436D-4B9E-8B4F-44D935B48A6E}.Release|x86.Build.0 = Release|Any CPU
 		{1BA6938F-9B3A-4ADA-8AE6-E3CD8C7BA912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1BA6938F-9B3A-4ADA-8AE6-E3CD8C7BA912}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BA6938F-9B3A-4ADA-8AE6-E3CD8C7BA912}.Debug|x64.ActiveCfg = Debug|Any CPU

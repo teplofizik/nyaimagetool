@@ -9,8 +9,4 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\NyaFs\src\NyaFs\NyaFs.csproj" />
-  </ItemGroup>
-
 </Project>

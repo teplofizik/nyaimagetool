@@ -9,7 +9,7 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NyaFs\src\NyaFs\NyaFs.csproj" />
+    <PackageReference Include="NyaFs" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
