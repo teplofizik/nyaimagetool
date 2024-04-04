@@ -1,5 +1,4 @@
-﻿using NyaExtensions.Array;
-using FxSsh;
+﻿using FxSsh;
 using FxSsh.Messages.Connection;
 using FxSsh.Services;
 using System;
@@ -11,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using NyaIO.Data;
 
 namespace FreeSFtpSharp
 {
