@@ -16,7 +16,8 @@ namespace NyaFsFiles
                 new Commands.Copy(),
                 new Commands.Download(),
                 new Commands.Remove(),
-                new Commands.LoadDir()
+                new Commands.LoadDir(),
+                new Commands.LoadZip()
             };
         }
     }

@@ -523,6 +523,11 @@ Load local directory to filesystem:
 Example:
 ```loaddir /tmp/xxx include/xxx rwxr-xr-x rw-r--r-- 0 0```
 
+Load files from zip archive to filesystem:
+```loadzip <path> <zippath> <dirmode> <filemode> <user> <group>```
+Example:
+```loadzip /www www.zip rwxr-xr-x rw-r--r-- 0 0```
+
 
 ## Linux-specific operations (NyaFsLinux.dll)
 List of all users (from /etc/passwd):
