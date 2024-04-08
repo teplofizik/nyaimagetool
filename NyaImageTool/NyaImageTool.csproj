@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.0" />
+    <ProjectReference Include="..\NyaFs\src\NyaFs\NyaFs.csproj" />
   </ItemGroup>
 
 </Project>

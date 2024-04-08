@@ -1,0 +1,3 @@
+[submodule "NyaFs"]
+	path = NyaFs
+	url = git@github.com:teplofizik/NyaFs.git
