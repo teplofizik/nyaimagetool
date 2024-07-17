@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 
 namespace NyaImageTool
 {
@@ -25,11 +28,29 @@ namespace NyaImageTool
             }
         }
 
+        static string[] GetAppPluginsDirs()
+        {
+            var Res = new List<string>();
+            Res.Add("plugins");
+
+            var AppPath = Assembly.GetEntryAssembly().CodeBase;
+            if(AppPath != null)
+            {
+                var AppDir = Path.GetDirectoryName(AppPath);
+                if(AppDir != null)
+                {
+                    Res.Add(Path.Combine(AppDir, "plugins"));
+                }
+            }
+
+            return Res.ToArray();
+        }
+
         static void LoadScript(string FN, string[] Params)
         {
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
             var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
-            var Processor = new NyaFs.Processor.ImageProcessor(Parser);
+            var Processor = new NyaFs.Processor.ImageProcessor(Parser, GetAppPluginsDirs());
 
             var Script = Parser.ParseScript(FN);
 
