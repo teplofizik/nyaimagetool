@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutDir)\$(TargetName).dll;$(OutDir)\$(TargetName).pdb" DestinationFolder="$(SolutionDir)\NyaImageTool\bin\Debug\netcoreapp3.1\plugins\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Core.Renci.SshNet" Version="2021.10.2" />
+    <PackageReference Include="NyaFs" Version="1.0.7" />
+  </ItemGroup>
+
+</Project>
