@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,7 +9,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.7" />
+    <PackageReference Include="NyaFs" Version="1.0.8" />
   </ItemGroup>
 
 </Project>

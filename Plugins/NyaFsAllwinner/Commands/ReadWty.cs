@@ -2,7 +2,7 @@
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsAllwinner.Types;
-using NyaFsRockchip.Loader;
+using NyaFsAllwinner.Loader;
 using System;
 using System.Collections.Generic;
 using System.IO;

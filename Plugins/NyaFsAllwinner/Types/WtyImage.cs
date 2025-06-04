@@ -142,6 +142,15 @@ namespace NyaFsAllwinner.Types
                 }
             }
 
+            int Index = 0;
+            if (int.TryParse(Name, out Index))
+            {
+                if (Index < FileHeaders.Length)
+                {
+                    return GetContent(FileHeaders[Index]);
+                }
+            }
+
             return null;
         }
 

@@ -10,7 +10,7 @@ using NyaFs;
 using NyaIO.Data;
 using ZstdSharp;
 
-namespace NyaFsRockchip.Loader
+namespace NyaFsAllwinner.Loader
 {
     class WtyFsReader : NyaFs.ImageFormat.Elements.Fs.Reader.Reader
     {
