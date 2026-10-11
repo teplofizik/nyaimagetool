@@ -80,11 +80,7 @@ namespace NyaFsLinux.Linux
 		{
 			// Base64 has an overhead of 4/3, so we need less bytes to get 8 resp. 16 chars.
 			int saltByteCount = algoType == TypeMD5 ? 6 : 12;
-			byte[] randomBytes = new byte[saltByteCount];
-			using (var random = new RNGCryptoServiceProvider())
-			{
-				random.GetNonZeroBytes(randomBytes);
-			}
+			byte[] randomBytes = RandomNumberGenerator.GetBytes(saltByteCount);
 			string roundsParam = "";
 			if (algoType != TypeMD5 && rounds != RoundsDefault)
 			{

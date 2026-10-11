@@ -11,7 +11,7 @@ namespace FxSsh
         {
             Contract.Requires(sshkey != null);
 
-            using (var md5 = new MD5CryptoServiceProvider())
+            using (var md5 = MD5.Create())
             {
                 var bytes = Convert.FromBase64String(sshkey);
                 bytes = md5.ComputeHash(bytes);

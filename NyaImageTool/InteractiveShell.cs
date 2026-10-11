@@ -38,7 +38,7 @@ namespace NyaImageTool
         private void RunCommand(string Line)
         {
             var Script = Processor.Parser.ParseScript("cmd", new string[] { Line });
-
+            
             Processor.Process(Script);
         }
     }

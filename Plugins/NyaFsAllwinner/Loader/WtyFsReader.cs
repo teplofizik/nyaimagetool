@@ -55,7 +55,6 @@ namespace NyaFsAllwinner.Loader
                     else
                         Log.Error(0, "Unsupported firmware image: unknown ramfs format");
                 }
-                Log.Error(0, "Unsupported firmware image: unknown ramfs format");
             }
             else
                 Log.Error(0, "Unsupported firmware image: no ramfs part");

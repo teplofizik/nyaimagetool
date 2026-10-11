@@ -139,16 +139,11 @@ namespace NyaFsLinux.Linux.Users
             {
                 if ((Hash != null) && (Hash.Length > 3))
                 {
-                    var Type = Hash.Substring(0, 3);
-                    switch(Type)
-                    {
-                        case "$1$": return "MD5";
-                        case "$2a$": return "Blowfish";
-                        case "$2y$": return "Blowfish";
-                        case "$5$": return "SHA-256";
-                        case "$6$": return "SHA-512";
-                        default: return "Unknown";
-                    }
+                    if (Hash.StartsWith("$1$")) return "MD5";
+                    if (Hash.StartsWith("$2a$") || Hash.StartsWith("$2b$") || Hash.StartsWith("$2y$")) return "Blowfish";
+                    if (Hash.StartsWith("$5$")) return "SHA-256";
+                    if (Hash.StartsWith("$6$")) return "SHA-512";
+                    return "Unknown";
                 }
                 else
                     return "Unknown";

@@ -36,5 +36,16 @@ namespace NyaFsBmu.Types
         }
 
         public bool Correct => (getLength() > 0x800);
+
+        public static bool IsBmuImage(byte[] Data)
+        {
+            if (Data.Length < 0x800)
+                return false;
+
+            if (Data[0] != 0x26)
+                return false;
+
+            return true;
+        }
     }
 }

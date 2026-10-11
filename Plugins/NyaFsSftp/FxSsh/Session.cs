@@ -24,7 +24,7 @@ namespace FxSsh
         internal const int InitialLocalWindowSize = LocalChannelDataPacketSize * 32;
         internal const int LocalChannelDataPacketSize = 1024 * 32;
 
-        private static readonly RandomNumberGenerator _rng = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
         private static readonly Dictionary<byte, Type> _messagesMetadata;
         internal static readonly Dictionary<string, Func<KexAlgorithm>> _keyExchangeAlgorithms =
             new Dictionary<string, Func<KexAlgorithm>>();
@@ -76,13 +76,13 @@ namespace FxSsh
             _publicKeyAlgorithms.Add("ssh-rsa", x => new RsaKey(x));
             _publicKeyAlgorithms.Add("ssh-dss", x => new DssKey(x));
 
-            _encryptionAlgorithms.Add("aes128-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 128, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes192-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 192, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes256-ctr", () => new CipherInfo(new AesCryptoServiceProvider(), 256, CipherModeEx.CTR));
-            _encryptionAlgorithms.Add("aes128-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 128, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("3des-cbc", () => new CipherInfo(new TripleDESCryptoServiceProvider(), 192, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("aes192-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 192, CipherModeEx.CBC));
-            _encryptionAlgorithms.Add("aes256-cbc", () => new CipherInfo(new AesCryptoServiceProvider(), 256, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes128-ctr", () => new CipherInfo(Aes.Create(), 128, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes192-ctr", () => new CipherInfo(Aes.Create(), 192, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes256-ctr", () => new CipherInfo(Aes.Create(), 256, CipherModeEx.CTR));
+            _encryptionAlgorithms.Add("aes128-cbc", () => new CipherInfo(Aes.Create(), 128, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("3des-cbc", () => new CipherInfo(TripleDES.Create(), 192, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes192-cbc", () => new CipherInfo(Aes.Create(), 192, CipherModeEx.CBC));
+            _encryptionAlgorithms.Add("aes256-cbc", () => new CipherInfo(Aes.Create(), 256, CipherModeEx.CBC));
 
             _hmacAlgorithms.Add("hmac-md5", () => new HmacInfo(new HMACMD5(), 128));
             _hmacAlgorithms.Add("hmac-sha1", () => new HmacInfo(new HMACSHA1(), 160));
@@ -114,8 +114,6 @@ namespace FxSsh
         public event EventHandler<SshService> ServiceRegistered;
 
         public event EventHandler<KeyExchangeArgs> KeysExchanged;
-
-        public event EventHandler<SshService> Check;
 
         internal void CheckService()
         {

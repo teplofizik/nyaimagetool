@@ -61,7 +61,7 @@ namespace NyaFsRockchip.Commands
                                 File.WriteAllBytes(Dest, Raw);
                                 return new ScriptStepResult(ScriptStepStatus.Ok, $"Allwinner wty image's partition {Partname} is exported to {Dest}!");
                             }
-                            catch (Exception E)
+                            catch (Exception)
                             {
                                 return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot save partition with name {Partname} to file {Dest}!");
                             }

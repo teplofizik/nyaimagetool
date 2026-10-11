@@ -2,9 +2,7 @@
 using NyaFs.Processor.Scripting;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+using System.Net.Http;
 using System.Text;
 
 namespace NyaFsFiles.Commands
@@ -41,10 +39,17 @@ namespace NyaFsFiles.Commands
             {
                 try
                 {
-                    WebClient wc_ = new WebClient();
-                    wc_.Headers.Add(HttpRequestHeader.UserAgent, "Other");
-                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidateServerCertificate);
-                    wc_.DownloadFile(Url, Filename);
+                    using (var handler = new HttpClientHandler())
+                    {
+                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+
+                        using (var client = new HttpClient(handler))
+                        {
+                            client.DefaultRequestHeaders.UserAgent.ParseAdd("Other");
+                            var Data = client.GetByteArrayAsync(Url).GetAwaiter().GetResult();
+                            System.IO.File.WriteAllBytes(Filename, Data);
+                        }
+                    }
 
                     return new ScriptStepResult(ScriptStepStatus.Ok, null);
                 }
@@ -52,11 +57,6 @@ namespace NyaFsFiles.Commands
                 {
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot download '{Filename} from {Url}: {E.Message}'");
                 }
-            }
-
-            private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-            {
-                return true;
             }
         }
     }

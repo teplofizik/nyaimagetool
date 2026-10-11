@@ -86,7 +86,7 @@ namespace NyaFsRemote.Commands
 
                     if(Fs.Exists(BuildedPath))
                     {
-                        var Item = Fs.GetElement(Filename);
+                        var Item = Fs.GetElement(BuildedPath);
                         if(Item.ItemType == FilesystemItemType.Directory)
                         {
                             CurrentDir = Item as Dir;

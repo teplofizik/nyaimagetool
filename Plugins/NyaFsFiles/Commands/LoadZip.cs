@@ -71,7 +71,7 @@ namespace NyaFsFiles.Commands
                 {
                     Zip = new ZipArchive(new System.IO.FileStream(DetectedFile, System.IO.FileMode.Open), ZipArchiveMode.Read);
                 }
-                catch (System.IO.IOException e)
+                catch (System.IO.IOException)
                 {
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot open zip archive {LocalPath}");
                 }

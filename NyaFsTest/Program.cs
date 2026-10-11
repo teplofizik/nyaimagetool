@@ -11,9 +11,15 @@ namespace NyaFsTest
         static void Main(string[] args)
         {
             //PackageTest.TestPackageSave();
+            TestUbiFs();
+            //CreateSquashFs();
+            // Ext2Fs.DumpFs();
+        }
 
-            CreateSquashFs();
-           // Ext2Fs.DumpFs();
+        static void TestUbiFs()
+        {
+            var fs = new NyaFs.Filesystem.UbiFs.UbiFsReader(File.ReadAllBytes("G:\\Projects\\Асик конфиг\\nyaimagetool_dev\\NyaImageTool\\bin\\Debug\\netcoreapp3.1\\abterm-minimal-t113i-fet113-spinand-800x480.rootfs.ubi"));
+
         }
 
         static void CreateSquashFs()

@@ -12,6 +12,7 @@ namespace NyaFsBmu.Types
         RAMFS = 3,
         UNK1 = 4,
         UNK2 = 5,
-        UNK3 = 6
+        UNK3 = 6,
+        COMPOSITE = 9
     }
 }

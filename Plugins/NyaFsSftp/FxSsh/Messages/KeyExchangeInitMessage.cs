@@ -8,7 +8,7 @@ namespace FxSsh.Messages
     {
         private const byte MessageNumber = 20;
 
-        private static readonly RandomNumberGenerator _rng = new RNGCryptoServiceProvider();
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
         public KeyExchangeInitMessage()
         {

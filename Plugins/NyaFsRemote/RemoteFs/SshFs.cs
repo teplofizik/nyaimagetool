@@ -148,8 +148,7 @@ namespace NyaFsRemote.RemoteFs
 
                 sc.EndExecute(AS);
 
-                var Temp = MS.GetBuffer();
-                return Temp;
+                return MS.ToArray();
             }
 
             return null;
