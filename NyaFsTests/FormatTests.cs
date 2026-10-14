@@ -45,12 +45,13 @@ namespace NyaFsTests
         }
 
         [Fact]
-        public void FitPlugin_Detects_Fdt_Magic_Not_Android()
+        public void FitPlugin_Requires_Real_Fit_Not_Bare_Fdt_Magic()
         {
             var plugin = new NyaFs.ImageFormat.Plugins.ImagePlugins.CompositeImagePlugins.FitPlugin();
 
-            Assert.True(plugin.DetectImage(new byte[] { 0xD0, 0x0D, 0xFE, 0xED }));
-            Assert.False(plugin.DetectImage(System.Text.Encoding.ASCII.GetBytes("ANDROID!")));
+            // A bare FDT magic is a DTB, not a FIT (no 'configurations'/'images' nodes).
+            Assert.False(plugin.DetectImage(new NyaFs.ImageFormat.ImageData(new byte[] { 0xD0, 0x0D, 0xFE, 0xED })));
+            Assert.False(plugin.DetectImage(new NyaFs.ImageFormat.ImageData(System.Text.Encoding.ASCII.GetBytes("ANDROID!"))));
         }
     }
 }

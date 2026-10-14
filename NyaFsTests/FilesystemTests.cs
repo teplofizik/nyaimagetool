@@ -131,5 +131,20 @@ namespace NyaFsTests
 
             Assert.Equal(content, r.Read("/test.txt"));
         }
+
+        [Fact]
+        public void SquashFs_Lzo_FileContent_RoundTrip()
+        {
+            var content = Encoding.UTF8.GetBytes("hello lzo squashfs " + string.Concat(Enumerable.Repeat("lzopayload", 800)));
+
+            var b = new NyaFs.Filesystem.SquashFs.SquashFsBuilder(NyaFs.Filesystem.SquashFs.Types.SqCompressionType.Lzo);
+            b.Directory("/", 0, 0, 493);
+            b.File("/test.txt", content, 0, 0, 420);
+
+            var image = b.GetFilesystemImage();
+            var r = new NyaFs.Filesystem.SquashFs.SquashFsReader(image);
+
+            Assert.Equal(content, r.Read("/test.txt"));
+        }
     }
 }

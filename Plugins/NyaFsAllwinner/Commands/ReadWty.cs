@@ -62,7 +62,7 @@ namespace NyaFsAllwinner.Commands
                             System.IO.File.WriteAllBytes(Dest, Raw);
                             return new ScriptStepResult(ScriptStepStatus.Ok, $"Allwinner wty image's partition {Filename} is exported to {Dest}!");
                         }
-                        catch (Exception E)
+                        catch (Exception)
                         {
                             return new ScriptStepResult(ScriptStepStatus.Error, $"Cannot save partition with name {Filename} to file {Dest}!");
                         }

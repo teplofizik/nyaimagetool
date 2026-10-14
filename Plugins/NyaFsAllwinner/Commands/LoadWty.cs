@@ -117,6 +117,7 @@ namespace NyaFsAllwinner.Commands
                 else
                     return new ScriptStepResult(ScriptStepStatus.Error, $"No rootfs partition in firmware package!");
             }
+
         }
     }
 }

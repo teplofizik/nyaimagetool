@@ -31,17 +31,11 @@ namespace NyaImageTool
         static string[] GetAppPluginsDirs()
         {
             var Res = new List<string>();
-            Res.Add("plugins");
 
-            var AppPath = Assembly.GetEntryAssembly().CodeBase;
-            if(AppPath != null)
-            {
-                var AppDir = Path.GetDirectoryName(AppPath);
-                if(AppDir != null)
-                {
-                    Res.Add(Path.Combine(AppDir, "plugins"));
-                }
-            }
+            // Plugins are loaded relative to the application location (and, additionally,
+            // relative to the working directory).
+            Res.Add(Path.Combine(AppContext.BaseDirectory, "plugins"));
+            Res.Add("plugins");
 
             return Res.ToArray();
         }
@@ -50,7 +44,7 @@ namespace NyaImageTool
         {
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
             var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
-            var Processor = new NyaFs.Processor.ImageProcessor(Parser, GetAppPluginsDirs());
+            var Processor = new NyaFs.Processor.ImageProcessor(Parser, GetAppPluginsDirs(), true);
 
             var Script = Parser.ParseScript(FN);
 

@@ -4,6 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 Plugins/NyaFsIncmEncrypt
+Plugins/NyaFsFanvil
+NyaImageToolInternal.sln
+docs/formats/fanvil_image.md
 
 # User-specific files
 *.rsuser
