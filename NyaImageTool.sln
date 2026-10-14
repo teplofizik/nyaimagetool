@@ -52,6 +52,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsAllwinner", "Plugins\N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsInnosilicon", "Plugins\NyaFsInnosilicon\NyaFsInnosilicon.csproj", "{9010C27A-D9CE-450B-B66A-DDCC74BF0A38}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsFanvil", "Plugins\NyaFsFanvil\NyaFsFanvil.csproj", "{836E94A4-62F1-4D46-8B4C-8F3F2285C9D5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NyaFsIncmEncrypt", "Plugins\NyaFsIncmEncrypt\NyaFsIncmEncrypt.csproj", "{8726D966-58E4-4BA5-AA4F-FF854E3460E7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NyaFsTests", "NyaFsTests\NyaFsTests.csproj", "{B3773C8F-202F-4846-A66D-C72A0D712926}"
 EndProject
 Global
