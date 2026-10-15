@@ -83,6 +83,7 @@ namespace NyaFsTests.Regression
                 var parser = new ScriptParser(new ScriptBaseAll());
                 var proc = new ImageProcessor(parser, new string[0]);
                 proc.Plugins.Load(new NyaFsMcuFs.LittleFsFilesystemPlugin());
+                proc.Plugins.Load(new NyaFsMcuFs.SpiffsFilesystemPlugin());
 
                 try
                 {
