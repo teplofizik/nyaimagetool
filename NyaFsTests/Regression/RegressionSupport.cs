@@ -80,16 +80,17 @@ namespace NyaFsTests.Regression
 
             try
             {
-                var det = ArchiveHelper.DetectImageFormat(path);
-                if (det != null)
-                    sig.Detected = det.Item1 + "/" + det.Item2;
-            }
-            catch { }
-
-            try
-            {
                 var parser = new ScriptParser(new ScriptBaseAll());
                 var proc = new ImageProcessor(parser, new string[0]);
+                proc.Plugins.Load(new NyaFsMcuFs.LittleFsFilesystemPlugin());
+
+                try
+                {
+                    var inspector = new NyaFs.ImageFormat.ImageInspector(proc.Plugins);
+                    sig.Detected = BuildDetected(inspector.Inspect(fi.Name, File.ReadAllBytes(path)));
+                }
+                catch { }
+
                 var script = parser.ParseScript("regress", new[] { "load \"" + path + "\"" });
 
                 if (script.HasErrors)
@@ -121,6 +122,72 @@ namespace NyaFsTests.Regression
             }
 
             return sig;
+        }
+
+        /// <summary>
+        /// Builds the "detected" chain from the plugin-driven inspector, preserving the
+        /// container and compression, e.g. "ramfs/tar/gzip", "all/fit", "kernel/raw/xz".
+        /// </summary>
+        private static string BuildDetected(NyaFs.ImageFormat.ImageNode Root)
+        {
+            if (Root == null) return null;
+
+            if (Root.Children.Count > 0)
+            {
+                var Container = Root.Container ?? Root.Format;
+                return (Container != null) ? (Category(Root) + "/" + Container) : Category(Root);
+            }
+
+            if ((Root.Kind == NyaFs.ImageFormat.ImageKind.Unknown) && (Root.Format == null))
+                return null;
+
+            var Res = Category(Root.Kind) + "/" + (Root.Format ?? "?");
+
+            var Comp = CompressionName(Root.Compression);
+            if (Comp != null)
+                Res += "/" + Comp;
+
+            return Res;
+        }
+
+        private static string Category(NyaFs.ImageFormat.ImageNode Node)
+        {
+            if (Node.Children.Count > 0)
+            {
+                var Cats = new System.Collections.Generic.HashSet<string>();
+                foreach (var C in Node.Children)
+                    Cats.Add(Category(C));
+
+                return (Cats.Count == 1) ? System.Linq.Enumerable.First(Cats) : "all";
+            }
+
+            return Category(Node.Kind);
+        }
+
+        private static string Category(NyaFs.ImageFormat.ImageKind Kind)
+        {
+            switch (Kind)
+            {
+                case NyaFs.ImageFormat.ImageKind.Filesystem: return "ramfs";
+                case NyaFs.ImageFormat.ImageKind.Kernel: return "kernel";
+                case NyaFs.ImageFormat.ImageKind.Devtree: return "devtree";
+                default: return "unknown";
+            }
+        }
+
+        private static string CompressionName(NyaFs.ImageFormat.Types.CompressionType C)
+        {
+            switch (C)
+            {
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_GZIP: return "gzip";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_BZIP2: return "bzip2";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_LZMA: return "lzma";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_LZ4: return "lz4";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_LZO: return "lzo";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_XZ: return "xz";
+                case NyaFs.ImageFormat.Types.CompressionType.IH_COMP_ZSTD: return "zstd";
+                default: return null;
+            }
         }
 
         private static List<FsEntry> WalkFs(NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem fs)

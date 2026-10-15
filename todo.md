@@ -2,13 +2,32 @@
 
 ## Filesystems
 CramFS Big Endian (select+detection)
-TAR
 VFAT
 EXT3 BASE
 EXT4 BASE
 
 Detection of filesystem limitations before writing! Uid/Gid, mode.
 Scan filesystem: detect elf arch, etc...
+
+## Not supported (later)
+
+### Filesystems
+VFAT/exFAT, EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS, F2FS, EROFS,
+JFFS2, YAFFS, UDF, ISO9660.
+UBIFS: reader only (partial), no writer.
+
+### Compression
+- LZO write (lzop container) — read-only.
+- Brotli, lzip (.lz), compress (.Z), 7z/LZMA2-container, zpaq, rzip — not implemented.
+- XZ write via NyaXZ is LZMA2-only: no BCJ/delta filters, full-reset chunks
+  (lower ratio than native xz). Read side (SharpCompress) handles BCJ.
+
+### Composite / vendor images
+Android boot v3-v4 reader, TVIP firmware, OpenWRT, legacy multiimage, and most
+vendor image types present in `ImageType` (imx, stm32, sunxi, rk*, zynq*, ...).
+
+### TAR specifics
+Hard links (stored as regular files), sparse files, pax extended headers, GNU sparse.
 
 ## Bugfix
 Root node mode!..
