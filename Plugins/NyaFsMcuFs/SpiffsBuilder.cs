@@ -19,7 +19,9 @@ namespace NyaFsMcuFs
         private const int IxHeaderSize = 45;
         private const int NameLen = 32;
         private const int DataSize = PageSize - PageHeaderSize;   // 251
+        private const int IxSize = 8;                             // p_hdr(5) + align(3)
         private const int HeaderIxLen = (PageSize - IxHeaderSize) / 2; // 105
+        private const int IxLen = (PageSize - IxSize) / 2;             // 124
 
         private const int IxFlag = 0x8000;
         private const byte TypeFile = 1;
@@ -85,17 +87,22 @@ namespace NyaFsMcuFs
                 return NextPage;
             }
 
-            var Objs = new List<(int Id, string Name, byte[] Content, int IxPage, List<int> DataPages)>();
+            var Objs = new List<(int Id, string Name, byte[] Content, int IxPage, List<int> ContPages, List<int> DataPages)>();
 
             int Id = 1;
             foreach (var F in Files)
             {
                 int IxPage = AllocPage();
                 int Spans = (F.Content.Length + DataSize - 1) / DataSize;
+
                 var DataPages = new List<int>();
                 for (int s = 0; s < Spans; s++) DataPages.Add(AllocPage());
 
-                Objs.Add((Id++, F.Name, F.Content, IxPage, DataPages));
+                int ContCount = (Spans > HeaderIxLen) ? ((Spans - HeaderIxLen + IxLen - 1) / IxLen) : 0;
+                var ContPages = new List<int>();
+                for (int k = 0; k < ContCount; k++) ContPages.Add(AllocPage());
+
+                Objs.Add((Id++, F.Name, F.Content, IxPage, ContPages, DataPages));
             }
 
             int Blocks = (NextPage / PagesPerBlock) + 1;
@@ -120,8 +127,25 @@ namespace NyaFsMcuFs
                 Array.Copy(Name, 0, Image, Po + 13, NameCopy);
                 for (int i = NameCopy; i < NameLen; i++) Image[Po + 13 + i] = 0; // NUL padding
 
-                for (int s = 0; s < O.DataPages.Count; s++)
+                for (int s = 0; (s < O.DataPages.Count) && (s < HeaderIxLen); s++)
                     WriteU16(Image, Po + IxHeaderSize + s * 2, (ushort)O.DataPages[s]);
+
+                // continuation index pages (for files with more than HeaderIxLen data spans)
+                for (int k = 0; k < O.ContPages.Count; k++)
+                {
+                    int Cp = O.ContPages[k] * PageSize;
+                    WriteU16(Image, Cp, (ushort)(O.Id | IxFlag));
+                    WriteU16(Image, Cp + 2, (ushort)(k + 1));
+                    Image[Cp + 4] = 0xF8;
+                    Image[Cp + 5] = 0; Image[Cp + 6] = 0; Image[Cp + 7] = 0;
+
+                    for (int e = 0; e < IxLen; e++)
+                    {
+                        int Span = HeaderIxLen + k * IxLen + e;
+                        if (Span >= O.DataPages.Count) break;
+                        WriteU16(Image, Cp + IxSize + e * 2, (ushort)O.DataPages[Span]);
+                    }
+                }
 
                 for (int s = 0; s < O.DataPages.Count; s++)
                 {
@@ -136,6 +160,7 @@ namespace NyaFsMcuFs
                 }
 
                 SetLookup(Image, O.IxPage, (ushort)(O.Id | IxFlag));
+                foreach (var Cp in O.ContPages) SetLookup(Image, Cp, (ushort)(O.Id | IxFlag));
                 foreach (var Dp in O.DataPages) SetLookup(Image, Dp, (ushort)O.Id);
             }
 
