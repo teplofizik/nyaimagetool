@@ -15,8 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.20" />
+    <PackageReference Include="NyaFs" Version="1.0.21" />
   </ItemGroup>
 
 </Project>
+
 

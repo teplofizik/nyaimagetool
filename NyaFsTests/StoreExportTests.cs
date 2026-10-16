@@ -84,6 +84,48 @@ namespace NyaFsTests
             AssertFs(Reload(Path));
         }
 
+        private static ImageProcessor McuProcessor()
+        {
+            var Parser = new ScriptParser(new ScriptBaseAll());
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.Plugins.Load(new NyaFsMcuFs.LittleFsFilesystemPlugin());
+            Proc.Plugins.Load(new NyaFsMcuFs.SpiffsFilesystemPlugin());
+            return Proc;
+        }
+
+        private static LinuxFilesystem McuFs()
+        {
+            var Fs = new LinuxFilesystem();
+            Fs.FsSize = 1 << 20; // 1 MiB
+            Fs.Fs.Root.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/hostname", 0, 0, 420, Encoding.ASCII.GetBytes("nyafs")));
+            return Fs;
+        }
+
+        [Theory]
+        [InlineData("littlefs")]
+        [InlineData("spiffs")]
+        public void Store_Ramfs_McuFs_RoundTrip(string Format)
+        {
+            var Dir = TempDir();
+            var Path = System.IO.Path.Combine(Dir, "out.bin");
+
+            var Proc = McuProcessor();
+            Proc.SetFs(McuFs());
+
+            var Res = RunStore(Proc, Path, Format);
+            Assert.Equal(ScriptStepStatus.Ok, Res.Status);
+            Assert.True(File.Exists(Path), $"store did not write {Format}");
+
+            // reload through the plugin
+            var Proc2 = McuProcessor();
+            Proc2.Process(Proc2.Parser.ParseScript("t", new[] { "load \"" + Path + "\"" }));
+            var Fs = Proc2.GetFs();
+            Assert.NotNull(Fs);
+            Assert.True(Fs.Loaded);
+            Assert.Equal(Encoding.ASCII.GetBytes("nyafs"),
+                ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("etc/hostname")).Content);
+        }
+
         [Fact]
         public void Extract_Whole_File_Is_Byte_Identical()
         {
