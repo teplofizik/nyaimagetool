@@ -10,10 +10,12 @@
 
   <ItemGroup>
     <PackageReference Include="Core.Renci.SshNet" Version="2021.10.2" />
-    <PackageReference Include="NyaFs" Version="1.0.23" />
+    <PackageReference Include="NyaFs" Version="1.0.25" />
   </ItemGroup>
 
 </Project>
+
+
 
 
 
