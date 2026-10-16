@@ -5,6 +5,7 @@
 
 Plugins/NyaFsIncmEncrypt
 Plugins/NyaFsFanvil
+Plugins/NyaFsAmlogicEncrypted
 NyaImageToolInternal.sln
 docs/formats/fanvil_image.md
 
