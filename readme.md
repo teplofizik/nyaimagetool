@@ -31,6 +31,8 @@ Supported at now:
 3. SquashFs (RW)
 4. CramFs (RW)
 5. RomFs (RW)
+6. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external
+   node) and per-file compression (ZSTD/LZ4/LZO/LZORLE, configurable cluster size).
 
 ## Supported compression types
 Supported at now:
@@ -255,13 +257,20 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs' or 'cpio'.
 
 Change squash compression type:
 ```
 set ramfs squashfs.compression <compression>
 ```
 (compression) is one of "gzip", "lzma", "lz4", "zstd"
+
+F2FS per-file compression and compression cluster size:
+```
+set ramfs f2fs.compression <none|zstd|lz4|lzo|lzorle>
+set ramfs f2fs.compression.cluster <16K|32K|64K|...|1M>
+```
+Cluster size must be a power of two between 16K and 1M (default 16K).
 
 Update target OS for image:
 ```
@@ -362,6 +371,37 @@ Change file owner:
 ```
 chown <user>
 chown <user> <group>
+```
+
+Set an extended attribute (UTF-8 value, or `0x`-hex; `-` removes):
+```
+xattr <path> <name> <value>
+```
+
+## Packages
+
+A package is one file (`.nyapkg`): gzip(tar) with a `PACKAGE` control file
+(`key: value` lines; unknown keys are preserved, so the format is extensible)
+and a `data/` tree. Metadata can carry name, version, arch, os, description and
+arbitrary extra fields; configuration/settings files can be shipped inside a
+package as ordinary files. Extended attributes are preserved in the package
+(PAX `SCHILY.xattr.*`) and restored on `pkg add`.
+
+Create a package from a subtree of the current in-memory filesystem:
+```
+pkg create <file.nyapkg> <fs-path> <name> <version>
+```
+If target arch/os are set (`set ... arch/os`), they are stored in the metadata.
+
+Print package metadata:
+```
+pkg info <file.nyapkg>
+```
+
+Install package data into the current filesystem; the package is skipped when
+its arch/os does not match the target:
+```
+pkg add <file.nyapkg>
 ```
 
 ## Services

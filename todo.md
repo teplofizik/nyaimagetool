@@ -6,13 +6,41 @@ VFAT
 EXT3 BASE
 EXT4 BASE
 
+F2FS writer (reader+writer ready; NyaFs 1.0.4x):
+* compression: ZSTD/LZ4/LZO/LZORLE done (`set ramfs f2fs.compression zstd|lz4|lzo|lzorle`).
+  LZORLE currently emits a plain LZO1X stream (kernel decompresses it with
+  `lzo1x_decompress_safe`), i.e. valid but without the RLE ratio gain; add a real
+  `lzorle1x_1` compressor later if desired.
+* compression supports inode + 2 direct nodes + 2 indirect + double-indirect;
+  cluster size configurable: `set ramfs f2fs.compression.cluster 16K|32K|...|1M`
+  (log 2..8, fixed previously at log=2/16 KiB).
+* unified raw-stream API in `ImageFormat.Compressors` (no container headers) for
+  LZ4/LZO/LZORLE — partially done (`Lz4Raw`, NyaLZO raw).
+
 Detection of filesystem limitations before writing! Uid/Gid, mode.
 Scan filesystem: detect elf arch, etc...
+
+## Packages (MVP, NyaFs 1.0.47)
+One package = one file: gzip(tar) with `PACKAGE` control (key: value, unknown keys
+preserved — extensible) and a `data/` tree. Commands: `pkg info <file>`,
+`pkg add <file>` (arch/os filter), `pkg create <file> <fs-path> <name> <version>`.
+Examples in `common/`: `pkg_scp.nyam` -> `scp.nyapkg`, `pkg_root.nyam` ->
+`root.nyapkg` (settings shipped as a package). Documented in `readme.md`
+(Packages, xattr, F2FS compression).
+TODO:
+* xattr: DONE — preserved via PAX `SCHILY.xattr.*` (TarFsBuilder emits PAX,
+  TarFsReader reads it, installed by `pkg add`).
+* richer metadata: depends/conflicts/provides, version constraints, matching policy.
+* create from a local directory (CLI), compression choice (gzip now, zstd later).
+* long paths (ustar prefix/PAX), special files in data/.
+
+## Docs
+* Add UBIFS and EXT3/EXT4 to readme (supported formats/filesystems, writers).
 
 ## Not supported (later)
 
 ### Filesystems
-VFAT/exFAT, EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS, F2FS, EROFS,
+VFAT/exFAT, EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS, EROFS,
 JFFS2, YAFFS, UDF, ISO9660.
 UBIFS: reader only (partial), no writer.
 
