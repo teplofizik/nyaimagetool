@@ -27,12 +27,19 @@ dotnet ./NyaImageTool.dll
 ## Supported filesystems
 Supported at now:
 1. CPIO ASCII (RW)
-2. EXT2 (RW)
-3. SquashFs (RW)
-4. CramFs (RW)
-5. RomFs (RW)
-6. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external
+2. TAR (RW, GNU long names, PAX xattrs)
+3. EXT2 / EXT3 / EXT4 (RW)
+4. SquashFs (RW)
+5. CramFs (RW)
+6. RomFs (RW)
+7. FAT12 / FAT16 / FAT32 (RW, VFAT long names)
+8. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external
    node) and per-file compression (ZSTD/LZ4/LZO/LZORLE, configurable cluster size).
+9. UBIFS (RW): writer with LZO/Zlib/Zstd data compression, big LPT/LSAVE.
+10. LittleFS / SPIFFS (RW, plugins).
+
+Extended attributes are kept in the generic filesystem model; they are written
+for F2FS and preserved inside packages (tar PAX).
 
 ## Supported compression types
 Supported at now:
@@ -385,7 +392,8 @@ A package is one file (`.nyapkg`): gzip(tar) with a `PACKAGE` control file
 and a `data/` tree. Metadata can carry name, version, arch, os, description and
 arbitrary extra fields; configuration/settings files can be shipped inside a
 package as ordinary files. Extended attributes are preserved in the package
-(PAX `SCHILY.xattr.*`) and restored on `pkg add`.
+(PAX `SCHILY.xattr.*`) and restored on `pkg add`; device nodes and FIFOs are
+preserved as tar entry types.
 
 Create a package from a subtree of the current in-memory filesystem:
 ```

@@ -32,10 +32,7 @@ TODO:
   TarFsReader reads it, installed by `pkg add`).
 * richer metadata: depends/conflicts/provides, version constraints, matching policy.
 * create from a local directory (CLI), compression choice (gzip now, zstd later).
-* long paths (ustar prefix/PAX), special files in data/.
-
-## Docs
-* Add UBIFS and EXT3/EXT4 to readme (supported formats/filesystems, writers).
+* long paths are handled (GNU long name); special files (char/block/fifo) supported.
 
 ## Not supported (later)
 
