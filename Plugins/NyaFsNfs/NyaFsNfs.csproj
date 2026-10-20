@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb" DestinationFolder="$(MSBuildThisFileDirectory)../../NyaImageTool/bin/$(Configuration)/$(TargetFramework)/plugins/" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="NyaFs" Version="1.0.57" />
+  </ItemGroup>
+
+</Project>

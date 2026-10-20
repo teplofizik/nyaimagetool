@@ -20,6 +20,7 @@
     <ProjectReference Include="..\Plugins\NyaFsLinux\NyaFsLinux.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsMcuFs\NyaFsMcuFs.csproj" />
+    <ProjectReference Include="..\Plugins\NyaFsNfs\NyaFsNfs.csproj" />
 
   </ItemGroup>
 

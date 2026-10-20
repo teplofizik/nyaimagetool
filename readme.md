@@ -487,6 +487,7 @@ Available plugins:
 4. NyaFsFiles.dll
 5. NyaFsRemote.dll
 6. NyaFsFtp.dll
+7. NyaFsNfs.dll
 Plugins must be placed at 'plugins' folder, then they will be loaded on app startup.
 
 ## SFTP plugin (NyaFsSftp.dll)
@@ -508,6 +509,30 @@ Port selection (while server is stopped):
 service sftp set port <port>
 ```
 The server answers OpenSSH keepalive requests (`keepalive@openssh.com`), so the WinSCP "send null packets" workaround is no longer required.
+
+## NFS plugin (NyaFsNfs.dll)
+Exports the loaded filesystem over NFSv3 (TCP and UDP, MOUNTv3 and portmapper included).
+Start server:
+```
+service nfs start
+```
+Stop server:
+```
+service nfs stop
+```
+Information and options (before start):
+```
+service nfs info
+service nfs set port <port>          # default 2049
+service nfs set mountport <port>     # default 20048
+service nfs set portmap <port>       # 0 disables, default 111
+```
+Linux mount example:
+```
+sudo mount -t nfs -o nfsvers=3,proto=tcp,port=2049,mountport=20048,nolock 192.168.1.10:/ /mnt/nya
+```
+Changes are in memory; use `store` to save the image. There is no authentication or locking — use only on a trusted network and with `nolock`.
+See [docs/nfs.md](docs/nfs.md) for details.
 
 ## TFTP plugin (NyaFsTFtp.dll)
 Default server port is 69.

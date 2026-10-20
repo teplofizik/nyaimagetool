@@ -142,3 +142,5 @@ work. To support FTP only, ship `NyaFsFtp.dll` without
 The FTP transport was additionally verified end-to-end against a local
 `pyftpdlib` server (file, directory, upload). Live SSH/SCP/SFTP need a reachable
 device or server and are not part of the unit suite.
+
+For the opposite direction (exporting the loaded filesystem over NFS), see [nfs.md](nfs.md).

@@ -184,7 +184,7 @@ is absent, the corpus-based tests skip; on Linux set:
 export NYAIMAGETOOL_IMAGES=/path/to/Images
 ```
 
-The expected result for the public repository is **143/143**. The golden file is
+The expected result for the public repository is **145/145**. The golden file is
 ignored by Git; update it only intentionally and keep a backup before
 regenerating (`NYAIMAGETOOL_REGEN=1`).
 
@@ -223,7 +223,7 @@ folder: it already contains the app, dependencies and `plugins`.
 ## 8. Plugins
 
 Public `NyaImageTool.sln` builds Allwinner, Bmu, Encrypt, Files, Innosilicon,
-Linux, McuFs, Remote, Ftp, Rockchip, Sftp and Tftp plugins. The remote transfer
+Linux, McuFs, Remote, Ftp, Rockchip, Sftp, Tftp and Nfs plugins. The remote transfer
 contract (`NyaFs.Remote`) lives in the core `NyaFs` package; plugins only provide
 protocol transports. `NyaImageToolInternal.sln` adds Fanvil and IncmEncrypt. The private `NyaFsAmlogicEncrypted` plugin is not in
 either solution; build it directly (its PostBuild copies it to the app plugins
