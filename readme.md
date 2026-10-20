@@ -507,7 +507,7 @@ Port selection (while server is stopped):
 ```
 service sftp set port <port>
 ```
-There are need to setup in WinSCP connection settings sending null packets every 20-30 sec to keep connection alive. Timeout is 45 seconds.
+The server answers OpenSSH keepalive requests (`keepalive@openssh.com`), so the WinSCP "send null packets" workaround is no longer required.
 
 ## TFTP plugin (NyaFsTFtp.dll)
 Default server port is 69.

@@ -93,7 +93,14 @@ namespace FxSsh.Services
 
         private void HandleMessage(ShouldIgnoreMessage message)
         {
-            _session.SendMessage(message); // this could be used like a ping / pong message used for keepAlive, but it seems we should not reply
+        }
+
+        private void HandleMessage(GlobalRequestMessage message)
+        {
+            var Known = (message.RequestName == "keepalive@openssh.com");
+
+            if (message.WantReply)
+                _session.SendMessage(Known ? (ConnectionServiceMessage)new RequestSuccessMessage() : new RequestFailureMessage());
         }
 
 
