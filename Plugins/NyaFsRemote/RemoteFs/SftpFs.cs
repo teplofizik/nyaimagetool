@@ -1,4 +1,4 @@
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 using Renci.SshNet.Sftp;
@@ -12,26 +12,18 @@ namespace NyaFsRemote.RemoteFs
     {
         private readonly string Host;
         private readonly int Port;
-        private readonly string User;
-        private readonly string Password;
+        private readonly RemoteAuth Auth;
 
         private SftpClient Client;
 
-        public SftpFs(string Host, int Port, string User, string Password)
+        public SftpFs(string Host, int Port, RemoteAuth Auth)
         {
             this.Host = Host;
             this.Port = Port;
-            this.User = User;
-            this.Password = Password;
+            this.Auth = Auth;
         }
 
-        private ConnectionInfo CreateConnectionInfo()
-        {
-            var Info = new ConnectionInfo(Host, Port, User,
-                new PasswordAuthenticationMethod(User, Password));
-            Info.Timeout = TimeSpan.FromSeconds(30);
-            return Info;
-        }
+        private ConnectionInfo CreateConnectionInfo() => SshConnection.Create(Host, Port, Auth);
 
         public void Connect()
         {

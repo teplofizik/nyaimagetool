@@ -8,7 +8,7 @@ next to the executable.
 
 - **.NET SDK 10.0.x** (the project targets `net10.0`; .NET 3.1/6/8/9 SDKs are not enough).
 - **A local NuGet feed** with the packages below. They are not all available on nuget.org:
-  - `NyaFs` **1.0.53** (nuget.org currently has only 1.0.8),
+  - `NyaFs` **1.0.57** (nuget.org currently has only 1.0.8),
   - `NyaXZ` **1.0.0** (not published on nuget.org),
   - `NyaLZO` **1.0.2** (also available on nuget.org).
 - The other dependencies (`NyaIO`, `SharpCompress`, `SharpZipLib`, `ZstdSharp.Port`,
@@ -45,7 +45,7 @@ Copy the `.nupkg` files from an existing feed (or build them), then register the
 
 ```bash
 mkdir -p ~/nyafs-nuget
-cp /path/to/NyaFs.1.0.53.nupkg   ~/nyafs-nuget/
+cp /path/to/NyaFs.1.0.57.nupkg   ~/nyafs-nuget/
 cp /path/to/NyaXZ.1.0.0.nupkg    ~/nyafs-nuget/
 cp /path/to/NyaLZO.1.0.2.nupkg   ~/nyafs-nuget/
 
@@ -184,7 +184,7 @@ is absent, the corpus-based tests skip; on Linux set:
 export NYAIMAGETOOL_IMAGES=/path/to/Images
 ```
 
-The expected result for the public repository is **141/141**. The golden file is
+The expected result for the public repository is **143/143**. The golden file is
 ignored by Git; update it only intentionally and keep a backup before
 regenerating (`NYAIMAGETOOL_REGEN=1`).
 
@@ -223,9 +223,9 @@ folder: it already contains the app, dependencies and `plugins`.
 ## 8. Plugins
 
 Public `NyaImageTool.sln` builds Allwinner, Bmu, Encrypt, Files, Innosilicon,
-Linux, McuFs, Remote, Ftp, Rockchip, Sftp and Tftp plugins, plus the shared
-`NyaFsRemoteCore` library. `NyaImageToolInternal.sln`
-adds Fanvil and IncmEncrypt. The private `NyaFsAmlogicEncrypted` plugin is not in
+Linux, McuFs, Remote, Ftp, Rockchip, Sftp and Tftp plugins. The remote transfer
+contract (`NyaFs.Remote`) lives in the core `NyaFs` package; plugins only provide
+protocol transports. `NyaImageToolInternal.sln` adds Fanvil and IncmEncrypt. The private `NyaFsAmlogicEncrypted` plugin is not in
 either solution; build it directly (its PostBuild copies it to the app plugins
 folder):
 
@@ -245,7 +245,9 @@ list so it lands in the `plugins` folder.
 
 `NyaFsRemote` is optional: omit it (and its SSH.NET/BouncyCastle DLLs) from
 `plugins` if remote SCP/SFTP/SSH transfers are not needed. `NyaFsFtp` (FTP) and
-HTTP downloads use the built-in .NET implementations and add no DLLs.
+HTTP downloads use the built-in .NET implementations and add no DLLs. The core
+`remoteget`/`remoteput` commands are always available; without a matching
+protocol plugin they report that the protocol is unavailable.
 
 ## 9. Updating NyaFs
 

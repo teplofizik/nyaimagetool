@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 
 namespace NyaFsFtp
 {
@@ -12,15 +12,16 @@ namespace NyaFsFtp
     {
         private readonly string Host;
         private readonly int Port;
-        private readonly string User;
-        private readonly string Password;
+        private readonly RemoteAuth Auth;
 
-        public FtpFs(string Host, int Port, string User, string Password)
+        public FtpFs(string Host, int Port, RemoteAuth Auth)
         {
             this.Host = Host;
             this.Port = Port;
-            this.User = User;
-            this.Password = Password;
+            this.Auth = Auth;
+
+            if (!Auth.HasPassword)
+                throw new NotSupportedException("FTP supports password authentication only");
         }
 
         public void Connect()
@@ -45,7 +46,7 @@ namespace NyaFsFtp
         {
             var Req = (FtpWebRequest)WebRequest.Create(Url(Path));
             Req.Method = Method;
-            Req.Credentials = new NetworkCredential(User, Password);
+            Req.Credentials = new NetworkCredential(Auth.Login, Auth.Password);
             Req.UseBinary = true;
             Req.UsePassive = true;
             Req.KeepAlive = false;

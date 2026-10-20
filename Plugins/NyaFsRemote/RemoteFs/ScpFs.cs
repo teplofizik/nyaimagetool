@@ -1,3 +1,4 @@
+using NyaFs.Remote;
 using Renci.SshNet;
 using System;
 using System.IO;
@@ -11,8 +12,8 @@ namespace NyaFsRemote.RemoteFs
     {
         private ScpClient Scp;
 
-        public ScpFs(string Host, int Port, string User, string Password)
-            : base(Host, Port, User, Password)
+        public ScpFs(string Host, int Port, RemoteAuth Auth)
+            : base(Host, Port, Auth)
         {
         }
 

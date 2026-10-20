@@ -1,4 +1,4 @@
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 using Renci.SshNet;
 using System;
 using System.Collections.Generic;
@@ -17,26 +17,18 @@ namespace NyaFsRemote.RemoteFs
     {
         protected readonly string Host;
         protected readonly int Port;
-        protected readonly string User;
-        protected readonly string Password;
+        protected readonly RemoteAuth Auth;
 
         protected SshClient Client;
 
-        public SshFs(string Host, int Port, string User, string Password)
+        public SshFs(string Host, int Port, RemoteAuth Auth)
         {
             this.Host = Host;
             this.Port = Port;
-            this.User = User;
-            this.Password = Password;
+            this.Auth = Auth;
         }
 
-        protected ConnectionInfo CreateConnectionInfo()
-        {
-            var Info = new ConnectionInfo(Host, Port, User,
-                new PasswordAuthenticationMethod(User, Password));
-            Info.Timeout = TimeSpan.FromSeconds(30);
-            return Info;
-        }
+        protected ConnectionInfo CreateConnectionInfo() => SshConnection.Create(Host, Port, Auth);
 
         public virtual void Connect()
         {

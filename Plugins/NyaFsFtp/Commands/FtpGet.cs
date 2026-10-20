@@ -1,6 +1,6 @@
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 using System;
 
 namespace NyaFsFtp.Commands
@@ -49,7 +49,8 @@ namespace NyaFsFtp.Commands
                 try
                 {
                     var (RemoteHost, Port) = RemoteUri.SplitHostPort(Host, 21);
-                    using (var Remote = new FtpFs(RemoteHost, Port, Login, Password))
+                    var Auth = RemoteAuthResolver.Resolve(Login, Password);
+                    using (var Remote = new FtpFs(RemoteHost, Port, Auth))
                     {
                         Remote.Connect();
                         RemoteTransfer.Download(Remote, RemotePath, Fs, FsPath);

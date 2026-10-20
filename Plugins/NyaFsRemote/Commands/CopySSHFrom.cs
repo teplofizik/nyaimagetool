@@ -1,7 +1,7 @@
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsRemote.RemoteFs;
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 using System;
 
 namespace NyaFsRemote.Commands
@@ -53,7 +53,8 @@ namespace NyaFsRemote.Commands
                 try
                 {
                     var (RemoteHost, Port) = RemoteUri.SplitHostPort(Host, 22);
-                    using (var Remote = new SshFs(RemoteHost, Port, Login, Password))
+                    var Auth = RemoteAuthResolver.Resolve(Login, Password);
+                    using (var Remote = new SshFs(RemoteHost, Port, Auth))
                     {
                         Remote.Connect();
                         RemoteTransfer.Download(Remote, RemotePath, Fs, FsPath);

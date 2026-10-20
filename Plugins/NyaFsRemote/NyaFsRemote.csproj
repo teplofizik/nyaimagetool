@@ -16,12 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NyaFsRemoteCore\NyaFsRemoteCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2026.0.0" />
-    <PackageReference Include="NyaFs" Version="1.0.53" />
+    <PackageReference Include="NyaFs" Version="1.0.57" />
   </ItemGroup>
 
 </Project>

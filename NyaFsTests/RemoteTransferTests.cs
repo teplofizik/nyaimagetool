@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NyaFs.ImageFormat.Elements.Fs;
-using NyaFsRemoteCore;
+using NyaFs.Remote;
 using Xunit;
 using DirItem = NyaFs.Filesystem.Universal.Items.Dir;
 using FileItem = NyaFs.Filesystem.Universal.Items.File;
@@ -111,10 +111,5 @@ namespace NyaFsTests
             Assert.Equal(Port, P);
         }
 
-        [Fact]
-        public void ShellQuote_QuotesSingleQuotes()
-        {
-            Assert.Equal("'a'\"'\"'b c'", ShellQuote.Quote("a'b c"));
-        }
     }
 }

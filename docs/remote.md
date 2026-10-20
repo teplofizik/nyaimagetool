@@ -1,13 +1,14 @@
 # Remote file transfer
 
-Remote transfers are split into two optional plugins:
+The remote transfer layer lives in the **NyaFs core** (`NyaFs.Remote`): recursive
+get/put, metadata, symlinks, host/port parsing. Protocol support is provided by
+optional plugins:
 
 - **`NyaFsRemote`** — `ssh`, `scp`, `sftp`;
 - **`NyaFsFtp`** — `ftp` (built-in `FtpWebRequest`, no SSH dependency).
 
-Both use the shared `NyaFsRemoteCore` transfer layer (recursive get/put,
-metadata, symlinks). HTTP/HTTPS downloads are handled by the `download` command
-in `NyaFsFiles` (no external dependencies).
+HTTP/HTTPS downloads are handled by the `download` command in `NyaFsFiles`
+(no external dependencies).
 
 ## Protocols
 
@@ -24,7 +25,13 @@ remoteget <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
 remoteput <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
 ```
 
-`<protocol>` is `ssh`, `scp` or `sftp`.
+`<protocol>` is `ssh`, `scp`, `sftp` or `ftp`. If no loaded plugin provides the
+requested protocol, the command fails with
+`Protocol '<name>' is not available: no remote plugin is loaded`.
+
+The `<login> <pass>` pair can be replaced by an auth profile:
+`@profile -` (the second argument is ignored). Profiles keep passwords and key
+paths out of `.nyas` scripts; see [Auth profiles](#auth-profiles).
 
 ```
 ftpget <host[:port]> <login> <pass> <fs-path> <remote-path>
@@ -41,7 +48,8 @@ ftpput <host[:port]> <login> <pass> <fs-path> <remote-path>
 - Existing files are overwritten; parent directories are created.
 
 The old `copysshfrom <host[:port]> <login> <pass> <fs-path> <remote-path>`
-command remains as an alias for `remoteget ssh ...`.
+command remains as an alias for `remoteget ssh ...`. Likewise `ftpget`/`ftpput`
+remain as aliases for `remoteget ftp`/`remoteput ftp`.
 
 ## Examples
 
@@ -56,38 +64,81 @@ remoteput ssh 192.168.1.10 root secret /tmp/firmware.bin /tmp/firmware.bin
 remoteget sftp 192.168.1.10 root secret /usr/share/flags /usr/share/flags
 
 # FTP (passive mode, NyaFsFtp plugin)
-ftpget 192.168.1.20 user pass /pub/rootfs.bin /rootfs.bin
-ftpput 192.168.1.20 user pass /tmp/log.txt /upload/log.txt
+remoteget ftp 192.168.1.20 user pass /pub/rootfs.bin /rootfs.bin
+remoteput ftp 192.168.1.20 user pass /tmp/log.txt /upload/log.txt
 
 # HTTP/HTTPS download (NyaFsFiles plugin)
 download F:\TEMP\rootfs.bin https://example.org/rootfs.bin
 ```
 
-Credentials are passed as script arguments, so keep scripts containing
-passwords out of version control.
+## Auth profiles
+
+Credentials are stored outside scripts in a small profile file:
+
+```
+remoteauth
+remoteauth list
+remoteauth path
+remoteauth show <name>
+remoteauth add <name> <login> <password>
+remoteauth addkey <name> <login> <key-file> [passphrase]
+remoteauth remove <name>
+```
+
+- `remoteauth` with no arguments is the same as `remoteauth list`.
+- `-` as `<passphrase>` means an empty passphrase; on inline commands `-` passes
+  an empty password to the server.
+- `addkey` supports OpenSSH and PEM private keys; an encrypted key needs its
+  passphrase.
+- An SSH profile may contain a password, a key, or both. FTP supports password
+  authentication only.
+- `show` and `list` never print passwords or passphrases.
+
+Storage location:
+
+- Windows: `%APPDATA%\NyaFs\auth.txt`
+- Linux/Unix: `$XDG_CONFIG_HOME/nyafs/auth.txt` or `~/.config/nyafs/auth.txt`
+- Override with `NYAFS_AUTH_FILE`.
+
+The file stores values as base64 and is created with mode `0600` on Unix. It is
+still a secret file: do not commit it. Windows DPAPI encryption is not applied
+yet.
+
+Examples:
+
+```text
+# Save a password profile and use it
+remoteauth add device root secret
+remoteget ssh 192.168.1.10 @device - /etc/config /etc/config
+
+# Save a private-key profile
+remoteauth addkey device root C:\keys\id_ed25519
+remoteput sftp 192.168.1.10 @device - /tmp/firmware.bin /tmp/firmware.bin
+```
 
 ## Device requirements for `ssh`
 
 The remote shell must provide the usual BusyBox/GNU utilities:
-`stat`, `ls`, `cat`, `mkdir`, `readlink`, `test`. `ssh` uses password
-authentication; key/agent authentication is not exposed in the command yet.
+`stat`, `ls`, `cat`, `mkdir`, `readlink`, `test`. `ssh` supports password and
+private-key authentication (with passphrase); ssh-agent is not supported yet.
 
 ## Plugin dependencies
 
+- The core transfer layer is part of `NyaFs.dll`; no separate core DLL is
+  shipped.
 - `NyaFsRemote` pulls SSH.NET (and its BouncyCastle dependency).
 - `NyaFsFtp` uses the built-in .NET FTP implementation and adds no DLLs.
-- `NyaFsRemoteCore` contains the shared transfer logic and has no external
-  dependencies.
 
 If remote access is not needed, omit these plugin DLLs (and the SSH.NET/
 BouncyCastle DLLs) from the `plugins` folder; the base application continues to
-work. To support FTP only, ship `NyaFsFtp.dll` + `NyaFsRemoteCore.dll` without
+work. To support FTP only, ship `NyaFsFtp.dll` without
 `NyaFsRemote`/SSH.NET.
 
 ## Verification
 
 `NyaFsTests/RemoteTransferTests` covers the protocol-independent transfer logic
-(recursive get/put, metadata, symlinks, host/port parsing, shell quoting).
+(recursive get/put, metadata, symlinks, host/port parsing);
+`NyaFsTests/RemoteAuthTests` covers profile storage and `@profile` resolution.
 The FTP transport was additionally verified end-to-end against a local
 `pyftpdlib` server (file, directory, upload). Live SSH/SCP/SFTP need a reachable
 device or server and are not part of the unit suite.

@@ -1,4 +1,4 @@
-namespace NyaFsRemoteCore
+namespace NyaFsRemote.RemoteFs
 {
     public static class ShellQuote
     {

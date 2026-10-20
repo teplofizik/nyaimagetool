@@ -63,8 +63,9 @@ SFTP server is provided by [freesftpsharp](https://github.com/mikaelliljedahl/fr
 TFTP server is available to provide tftp-access to builded packages. TFTP client allow download and upload files.
 TFTP support is provided by [tftp.net](https://github.com/Callisto82/tftp.net) library.
 
-3. Remote filesystem clients (NyaFsRemote.dll)
+3. Remote filesystem transfers (NyaFs core + `NyaFsRemote.dll` / `NyaFsFtp.dll`)
 SCP, SFTP, FTP and SSH `cat` transfers between the loaded filesystem and a device.
+The core provides the transfer logic; plugins provide the protocols.
 See [docs/remote.md](docs/remote.md).
 
 ## How to
@@ -484,7 +485,8 @@ Available plugins:
 2. NyaFsLinux.dll
 3. NyaFsTFtp.dll
 4. NyaFsFiles.dll
-5. NyaFsRemote.dll\n6. NyaFsFtp.dll
+5. NyaFsRemote.dll
+6. NyaFsFtp.dll
 Plugins must be placed at 'plugins' folder, then they will be loaded on app startup.
 
 ## SFTP plugin (NyaFsSftp.dll)
@@ -546,7 +548,7 @@ tftpput <filename> <server> <remotefilename>
 (server) - ip or hostname of remote server
 (remotefilename) - filename of target file on server
 
-## Remote plugin (NyaFsRemote.dll)
+## Remote transfers (NyaFs core + NyaFsRemote.dll / NyaFsFtp.dll)
 
 Copy a file or directory between the loaded filesystem and a remote device:
 ```
@@ -554,9 +556,20 @@ remoteget <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
 remoteput <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
 ```
 Protocols: `ssh`, `scp`, `sftp`, `ftp`. `ssh` uses a `cat` exec channel and works
-on devices without SFTP/SCP. Directory transfers are recursive.
-The old `copysshfrom` command remains as an alias for `remoteget ssh`.
-See [docs/remote.md](docs/remote.md) for details and examples.
+on devices without SFTP/SCP. Directory transfers are recursive. `ssh`/`scp`/`sftp`
+require `NyaFsRemote.dll`; `ftp` requires `NyaFsFtp.dll`. The old `copysshfrom`
+command remains as an alias for `remoteget ssh`; `ftpget`/`ftpput` remain as
+aliases for `remoteget ftp`/`remoteput ftp`.
+
+Instead of `<login> <pass>`, use an auth profile to keep secrets out of scripts:
+```
+remoteauth add <name> <login> <password>
+remoteauth addkey <name> <login> <key-file> [passphrase]
+remoteget ssh <host[:port]> @<name> - <fs-path> <remote-path>
+```
+`remoteauth list`, `show`, `remove`, `path` manage profiles. SSH supports
+passwords and private keys (with passphrase); FTP is password-only.
+See [docs/remote.md](docs/remote.md) for storage paths and details.
 
 ## Operations with local files (NyaFsFiles.dll)
 Copy file on local filesystem:
