@@ -3,19 +3,10 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
-## Install
+## Install / build
 
-## Windows
-Install .NET Core 3.1 runtime
-
-## Linux
-Download dotnet binaries for your system (for example dotnet-runtime-3.1.32-linux-x64.tar.gz for x64 linux):
-```
-mkdir ~/.dotnet
-tar -xf dotnet-runtime-3.1.32-linux-x64.tar.gz -C ~/.dotnet/
-export PATH=~/.dotnet:$PATH
-dotnet ./NyaImageTool.dll
-```
+See [docs/BUILDING.md](docs/BUILDING.md) for Windows and Ubuntu instructions:
+.NET 10 SDK, local NuGet feed (`NyaFs`, `NyaXZ`), build, tests, run and publish.
 
 ![Run on linux](/docs/images/linux.png)
 
@@ -28,18 +19,22 @@ dotnet ./NyaImageTool.dll
 Supported at now:
 1. CPIO ASCII (RW)
 2. TAR (RW, GNU long names, PAX xattrs)
-3. EXT2 / EXT3 / EXT4 (RW)
-4. SquashFs (RW)
+3. EXT2 / EXT3 / EXT4 (RW; xattr: external block + inline/EA-inode read)
+4. SquashFs (RW; extended inodes + xattr table)
 5. CramFs (RW)
 6. RomFs (RW)
 7. FAT12 / FAT16 / FAT32 (RW, VFAT long names)
 8. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external
    node) and per-file compression (ZSTD/LZ4/LZO/LZORLE, configurable cluster size).
-9. UBIFS (RW): writer with LZO/Zlib/Zstd data compression, big LPT/LSAVE.
+9. UBIFS (RW): writer with LZO/Zlib/Zstd data compression, big LPT/LSAVE, xattr
+   (XENT + hidden xattr inodes).
 10. LittleFS / SPIFFS (RW, plugins).
 
 Extended attributes are kept in the generic filesystem model; they are written
-for F2FS and preserved inside packages (tar PAX).
+for EXT2/3/4 (external block; inline and EA-inode values are read), F2FS
+(inline/external), SquashFS (extended inodes + xattr table, including out-of-line
+values), UBIFS (XENT + hidden xattr inodes) and preserved inside packages
+(tar PAX, including root xattrs).
 
 ## Supported compression types
 Supported at now:
@@ -67,6 +62,10 @@ SFTP server is provided by [freesftpsharp](https://github.com/mikaelliljedahl/fr
 2. TFTP (client/server)
 TFTP server is available to provide tftp-access to builded packages. TFTP client allow download and upload files.
 TFTP support is provided by [tftp.net](https://github.com/Callisto82/tftp.net) library.
+
+3. Remote filesystem clients (NyaFsRemote.dll)
+SCP, SFTP, FTP and SSH `cat` transfers between the loaded filesystem and a device.
+See [docs/remote.md](docs/remote.md).
 
 ## How to
 There are need to add scp support to image and add version information (device id or other info).
@@ -485,6 +484,7 @@ Available plugins:
 2. NyaFsLinux.dll
 3. NyaFsTFtp.dll
 4. NyaFsFiles.dll
+5. NyaFsRemote.dll\n6. NyaFsFtp.dll
 Plugins must be placed at 'plugins' folder, then they will be loaded on app startup.
 
 ## SFTP plugin (NyaFsSftp.dll)
@@ -545,6 +545,18 @@ tftpput <filename> <server> <remotefilename>
 (filename) - filename with content of sended file
 (server) - ip or hostname of remote server
 (remotefilename) - filename of target file on server
+
+## Remote plugin (NyaFsRemote.dll)
+
+Copy a file or directory between the loaded filesystem and a remote device:
+```
+remoteget <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
+remoteput <protocol> <host[:port]> <login> <pass> <fs-path> <remote-path>
+```
+Protocols: `ssh`, `scp`, `sftp`, `ftp`. `ssh` uses a `cat` exec channel and works
+on devices without SFTP/SCP. Directory transfers are recursive.
+The old `copysshfrom` command remains as an alias for `remoteget ssh`.
+See [docs/remote.md](docs/remote.md) for details and examples.
 
 ## Operations with local files (NyaFsFiles.dll)
 Copy file on local filesystem:

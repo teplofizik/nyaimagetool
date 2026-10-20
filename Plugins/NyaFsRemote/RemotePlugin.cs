@@ -13,7 +13,9 @@ namespace NyaFsRemote
         public override ScriptStepGenerator[] GetGenerators()
         {
             return new ScriptStepGenerator[] {
-                new Commands.CopySSHFrom()
+                new Commands.CopySSHFrom(),
+                new Commands.RemoteGet(),
+                new Commands.RemotePut()
             };
         }
     }
