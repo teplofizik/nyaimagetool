@@ -8,7 +8,7 @@ next to the executable.
 
 - **.NET SDK 10.0.x** (the project targets `net10.0`; .NET 3.1/6/8/9 SDKs are not enough).
 - **A local NuGet feed** with the packages below. They are not all available on nuget.org:
-  - `NyaFs` **1.0.57** (nuget.org currently has only 1.0.8),
+  - `NyaFs` **1.0.58** (nuget.org currently has only 1.0.8),
   - `NyaXZ` **1.0.0** (not published on nuget.org),
   - `NyaLZO` **1.0.2** (also available on nuget.org).
 - The other dependencies (`NyaIO`, `SharpCompress`, `SharpZipLib`, `ZstdSharp.Port`,
@@ -45,7 +45,7 @@ Copy the `.nupkg` files from an existing feed (or build them), then register the
 
 ```bash
 mkdir -p ~/nyafs-nuget
-cp /path/to/NyaFs.1.0.57.nupkg   ~/nyafs-nuget/
+cp /path/to/NyaFs.1.0.58.nupkg   ~/nyafs-nuget/
 cp /path/to/NyaXZ.1.0.0.nupkg    ~/nyafs-nuget/
 cp /path/to/NyaLZO.1.0.2.nupkg   ~/nyafs-nuget/
 
@@ -184,7 +184,7 @@ is absent, the corpus-based tests skip; on Linux set:
 export NYAIMAGETOOL_IMAGES=/path/to/Images
 ```
 
-The expected result for the public repository is **146/146**. The golden file is
+The expected result for the public repository is **148/148**. The golden file is
 ignored by Git; update it only intentionally and keep a backup before
 regenerating (`NYAIMAGETOOL_REGEN=1`).
 

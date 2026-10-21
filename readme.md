@@ -8,6 +8,8 @@ There is possible to add or update files in ramfs image.
 See [docs/BUILDING.md](docs/BUILDING.md) for Windows and Ubuntu instructions:
 .NET 10 SDK, local NuGet feed (`NyaFs`, `NyaXZ`), build, tests, run and publish.
 
+Manual/live testing checklist: [docs/manual-testing.md](docs/manual-testing.md).
+
 ![Run on linux](/docs/images/linux.png)
 
 ## Supported image formats
@@ -21,7 +23,7 @@ Supported at now:
 2. TAR (RW, GNU long names, PAX xattrs)
 3. EXT2 / EXT3 / EXT4 (RW; xattr: external block + inline/EA-inode read)
 4. SquashFs (RW; extended inodes + xattr table)
-5. CramFs (RW)
+5. CramFs (RW; little- and big-endian detection, selectable output endian)
 6. RomFs (RW)
 7. FAT12 / FAT16 / FAT32 (RW, VFAT long names)
 8. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external
@@ -265,6 +267,11 @@ Update filesystem type:
 set ramfs filesystem <fs>
 ```
 (fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs' or 'cpio'.
+
+CramFS output endian (default little-endian; auto-detected on load):
+```
+set ramfs cramfs.endian <big|be|little|le>
+```
 
 Change squash compression type:
 ```
