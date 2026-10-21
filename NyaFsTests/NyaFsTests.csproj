@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsMcuFs\NyaFsMcuFs.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsNfs\NyaFsNfs.csproj" />
+    <ProjectReference Include="..\Plugins\NyaFsTftp\NyaFsTftp.csproj" />
 
   </ItemGroup>
 

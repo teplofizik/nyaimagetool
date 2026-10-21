@@ -557,6 +557,18 @@ Directory selection (while server is stopped):
 service tftp set dir <directory>
 ```
 
+Serve different images by requested filename:
+```
+tftpimage add zImage loaded:kernel
+tftpimage add board.dtb loaded:dtb
+tftpimage add rootfs.cpio loaded:fs:cpio
+tftpimage add file.bin C:\images\file.bin
+tftpimage list
+tftpimage remove zImage
+```
+`loaded:fs[:format]` builds the current filesystem (default format is native, or CPIO when unknown). This is useful for netboot: the device asks for `zImage`/`rootfs.cpio`/`board.dtb`, and the server returns the loaded image parts. The same mapping is available as `service tftp set image <name>=<source>`.
+See [docs/tftp.md](docs/tftp.md) for details.
+
 Downloading from remote tftp server:
 ```
 tftpget <filename> <server> <remotefilename>

@@ -184,7 +184,7 @@ is absent, the corpus-based tests skip; on Linux set:
 export NYAIMAGETOOL_IMAGES=/path/to/Images
 ```
 
-The expected result for the public repository is **145/145**. The golden file is
+The expected result for the public repository is **146/146**. The golden file is
 ignored by Git; update it only intentionally and keep a backup before
 regenerating (`NYAIMAGETOOL_REGEN=1`).
 
