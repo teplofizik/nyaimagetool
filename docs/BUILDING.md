@@ -8,9 +8,9 @@ next to the executable.
 
 - **.NET SDK 10.0.x** (the project targets `net10.0`; .NET 3.1/6/8/9 SDKs are not enough).
 - **A local NuGet feed** with the packages below. They are not all available on nuget.org:
-  - `NyaFs` **1.0.58** (nuget.org currently has only 1.0.8),
-  - `NyaXZ` **1.0.0** (not published on nuget.org),
-  - `NyaLZO` **1.0.2** (also available on nuget.org).
+  - `NyaFs` **1.0.60** (nuget.org currently has only 1.0.8),
+  - `NyaXZ` **1.0.1** (not published on nuget.org),
+  - `NyaLZO` **1.0.3** (also available on nuget.org).
 - The other dependencies (`NyaIO`, `SharpCompress`, `SharpZipLib`, `ZstdSharp.Port`,
   `CrcSharp`, `FT.LZ4`, `LZMA-SDK`, xunit, ...) restore from nuget.org.
 - Git (optional; needed only if you build `NyaFs`/`NyaXZ` from source).
@@ -23,7 +23,7 @@ The repository has no `NuGet.config`; the feed is configured per user with
 ### Windows
 
 If the feed already exists in this workspace, use `G:\Projects\local.nuget`.
-Otherwise create it and pack `NyaFs` (requires `NyaXZ.1.0.0.nupkg` in the feed):
+Otherwise create it and pack `NyaFs` (requires `NyaXZ.1.0.1.nupkg` in the feed):
 
 ```powershell
 New-Item -ItemType Directory -Force G:\Projects\local.nuget
@@ -45,9 +45,9 @@ Copy the `.nupkg` files from an existing feed (or build them), then register the
 
 ```bash
 mkdir -p ~/nyafs-nuget
-cp /path/to/NyaFs.1.0.58.nupkg   ~/nyafs-nuget/
-cp /path/to/NyaXZ.1.0.0.nupkg    ~/nyafs-nuget/
-cp /path/to/NyaLZO.1.0.2.nupkg   ~/nyafs-nuget/
+cp /path/to/NyaFs.1.0.60.nupkg   ~/nyafs-nuget/
+cp /path/to/NyaXZ.1.0.1.nupkg    ~/nyafs-nuget/
+cp /path/to/NyaLZO.1.0.3.nupkg   ~/nyafs-nuget/
 
 dotnet nuget add source ~/nyafs-nuget --name nyafs-local
 dotnet nuget list source
@@ -184,7 +184,7 @@ is absent, the corpus-based tests skip; on Linux set:
 export NYAIMAGETOOL_IMAGES=/path/to/Images
 ```
 
-The expected result for the public repository is **148/148**. The golden file is
+The expected result for the public repository is **149/149**. The golden file is
 ignored by Git; update it only intentionally and keep a backup before
 regenerating (`NYAIMAGETOOL_REGEN=1`).
 
@@ -259,6 +259,10 @@ When `NyaFs` changes:
 3. In every `*.csproj` of `nyaimagetool` update
    `Include="NyaFs" Version="..."` to the new version.
 4. `dotnet restore` + `dotnet build NyaImageTool.sln` and run the tests.
+5. Every NuGet package (`NyaFs`, `NyaXZ`, `NyaLZO`) must contain `README.md`:
+   set `<PackageReadmeFile>README.md</PackageReadmeFile>` and include
+   `<None Include="..\..\README.md" Pack="true" PackagePath="\" />`.
+   Verify the file is present in the resulting `.nupkg`.
 
 ## 10. Troubleshooting
 

@@ -43,6 +43,7 @@ namespace NyaImageTool
         static void LoadScript(string FN, string[] Params)
         {
             var Base = new NyaFs.Processor.Scripting.ScriptBaseAll();
+            Base.Add(new Commands.Version());
             var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
             var Processor = new NyaFs.Processor.ImageProcessor(Parser, GetAppPluginsDirs(), true);
 

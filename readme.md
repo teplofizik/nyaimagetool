@@ -107,6 +107,11 @@ Information about loaded images:
 info
 ```
 
+Versions of NyaImageTool, NyaFs, NyaLZO, NyaXZ and available plugins:
+```
+version
+```
+
 Reset program state, drop all images:
 ```
 reset

@@ -11,6 +11,7 @@ namespace NyaImageTool
         public InteractiveShell()
         {
             var Base = new NyaFs.Processor.Scripting.ScriptBaseInteractive();
+            Base.Add(new Commands.Version());
             var Parser = new NyaFs.Processor.Scripting.ScriptParser(Base);
 
             Processor = new NyaFs.Processor.ImageProcessor(Parser);
