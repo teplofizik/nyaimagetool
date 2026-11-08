@@ -33,7 +33,7 @@ Supported at now:
 10. LittleFS / SPIFFS (RW, plugins).
 11. ISO9660 (RW; Rock Ridge metadata, Joliet read fallback).
 12. exFAT (RW; files/directories, UTF-16 names, allocation bitmap and up-case table).
-13. EROFS (read-only; uncompressed flat/inline inodes; compressed/chunked pending).
+13. EROFS (read-only; flat/inline, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, chunk-based, whole-file fragments).
 
 Extended attributes are kept in the generic filesystem model; they are written
 for EXT2/3/4 (external block; inline and EA-inode values are read), F2FS

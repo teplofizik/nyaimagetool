@@ -42,6 +42,47 @@ namespace NyaFsTests
             Assert.Equal(100000, Content.Length);
         }
 
+        [Theory]
+        [InlineData("erofs_compact.img")]
+        [InlineData("erofs_full.img")]
+        [InlineData("erofs_bigpcl.img")]
+        [InlineData("erofs_ztail.img")]
+        [InlineData("erofs_frag.img")]
+        [InlineData("erofs_dircomp.img")]
+        [InlineData("erofs_full_bigpcl.img")]
+        [InlineData("erofs_deflate.img")]
+        [InlineData("erofs_zstd.img")]
+        [InlineData("erofs_lzma.img")]
+        public void EroFs_ReadCompressedFile(string FixtureName)
+        {
+            var Data = File.ReadAllBytes(Fixture(FixtureName));
+            var Reader = new NyaFs.Filesystem.EroFs.EroFsReader(Data);
+
+            Assert.Equal(Encoding.ASCII.GetBytes("hello"), Reader.Read("/hello.txt"));
+            Assert.Equal(ExpectedBigText(), Reader.Read("/big.txt"));
+            Assert.Equal("hello.txt", Reader.ReadLink("/link"));
+        }
+
+        [Theory]
+        [InlineData("erofs_chunk.img")]
+        [InlineData("erofs_chunk_idx.img")]
+        public void EroFs_ReadChunkBasedFile(string FixtureName)
+        {
+            var Data = File.ReadAllBytes(Fixture(FixtureName));
+            var Reader = new NyaFs.Filesystem.EroFs.EroFsReader(Data);
+
+            Assert.Equal(ExpectedBigText(), Reader.Read("/big.txt"));
+            Assert.Equal(Encoding.ASCII.GetBytes("hello"), Reader.Read("/hello.txt"));
+        }
+
+        private static byte[] ExpectedBigText()
+        {
+            var Text = new StringBuilder();
+            for (int i = 0; i < 1500; i++)
+                Text.Append($"line {i:D6} abcdefghijklmnopqrstuvwxyz0123456789 {new string('x', 20)}\n");
+
+            return Encoding.ASCII.GetBytes(Text.ToString());
+        }
         private static string Fixture(string Name) =>
             Path.Combine(AppContext.BaseDirectory, "Fixtures", Name);
     }

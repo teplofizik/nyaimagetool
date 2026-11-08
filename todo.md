@@ -5,7 +5,7 @@ CramFS Big Endian (done)
 VFAT, EXT3/EXT4 base (done)
 ISO9660 (done)
 exFAT (done)
-EROFS (read-only: uncompressed flat/inline; compressed/chunked pending)
+EROFS (read-only: uncompressed, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, chunks, whole-file fragments)
 
 F2FS writer (reader+writer ready; NyaFs 1.0.4x):
 * compression: ZSTD/LZ4/LZO/LZORLE done (`set ramfs f2fs.compression zstd|lz4|lzo|lzorle`).
