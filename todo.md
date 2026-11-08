@@ -38,7 +38,7 @@ TODO:
 
 ### Filesystems
 VFAT/exFAT, EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS, EROFS,
-JFFS2, YAFFS, UDF, ISO9660.
+JFFS2, YAFFS, UDF.
 UBIFS: reader only (partial), no writer.
 
 ### Compression

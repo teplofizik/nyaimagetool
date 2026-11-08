@@ -31,6 +31,7 @@ Supported at now:
 9. UBIFS (RW): writer with LZO/Zlib/Zstd data compression, big LPT/LSAVE, xattr
    (XENT + hidden xattr inodes).
 10. LittleFS / SPIFFS (RW, plugins).
+11. ISO9660 (RW; Rock Ridge metadata, Joliet read fallback).
 
 Extended attributes are kept in the generic filesystem model; they are written
 for EXT2/3/4 (external block; inline and EA-inode values are read), F2FS
@@ -271,7 +272,7 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs', 'iso9660' or 'cpio'.
 
 CramFS output endian (default little-endian; auto-detected on load):
 ```
