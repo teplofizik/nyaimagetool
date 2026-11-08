@@ -1,10 +1,11 @@
 # TODO
 
 ## Filesystems
-CramFS Big Endian (select+detection)
-VFAT
-EXT3 BASE
-EXT4 BASE
+CramFS Big Endian (done)
+VFAT, EXT3/EXT4 base (done)
+ISO9660 (done)
+exFAT (done)
+EROFS (read-only: uncompressed flat/inline; compressed/chunked pending)
 
 F2FS writer (reader+writer ready; NyaFs 1.0.4x):
 * compression: ZSTD/LZ4/LZO/LZORLE done (`set ramfs f2fs.compression zstd|lz4|lzo|lzorle`).
@@ -37,9 +38,9 @@ TODO:
 ## Not supported (later)
 
 ### Filesystems
-VFAT/exFAT, EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS, EROFS,
+EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS,
 JFFS2, YAFFS, UDF.
-UBIFS: reader only (partial), no writer.
+UBIFS: reader + writer.
 
 ### Compression
 - LZO write (lzop container) — read-only.
@@ -56,6 +57,12 @@ Hard links (stored as regular files), sparse files, pax extended headers, GNU sp
 
 ## Bugfix
 Root node mode!..
+
+## Boot sectors / arbitrary image elements
+
+- ISO9660: сохранять загрузочный сектор / El Torito boot image как отдельный
+  элемент образа, а не терять при `load`/`store`.
+- Зависит от общего хранения произвольных (свободных) типов элементов образа.
 
 ## Composite Images
 Android boot image: v3-4 reader v0-4 writer

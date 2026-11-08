@@ -15,7 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.61" />
+    <None Include="Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NyaFs" Version="1.0.63" />
     <PackageReference Include="NyaLZO" Version="1.0.3" />
     <ProjectReference Include="..\Plugins\NyaFsLinux\NyaFsLinux.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
