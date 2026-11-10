@@ -1,6 +1,6 @@
 # EROFS
 
-`NyaFs` can read EROFS images (read-only filesystem).
+`NyaFs` can read EROFS images and write uncompressed EROFS images.
 
 ## Commands
 
@@ -11,7 +11,11 @@ load system.erofs
 export out/
 ```
 
-EROFS is read-only; `store ... erofs` is not implemented.
+Write an LZ4-compressed image (incompressible extents fall back to plain):
+
+```text
+store out.erofs ramfs erofs
+```
 
 ## Supported layout
 
@@ -27,16 +31,26 @@ EROFS is read-only; `store ... erofs` is not implemented.
   - LZ4/LZ4HC, LZMA (MicroLZMA), DEFLATE and Zstd streams;
   - big pclusters (`-C`);
   - `ztailpacking`;
-  - whole-file fragments stored in the packed inode.
+  - whole-file and tail fragments stored in the packed inode.
 - Directories, regular files, symlinks, device nodes, modes/uid/gid.
-- Inline filesystem xattrs are not exposed in the generic model yet.
+- Inline, shared and long-prefix filesystem xattrs are read and written (`user.*`, `trusted.*`, `security.*`, `lustre.*`, POSIX ACLs).
+
+## Writer limits
+
+- LZ4, using compact 4B/2B indexes for normal pclusters and full indexes for big pclusters;
+- ztailpacking when the final compressed pcluster fits into the inode metadata block;
+- whole-file fragments in the packed inode (enable with `EroFsBuilder.Fragments`);
+- 4 KiB blocks, 64-byte extended inodes;
+- partial tail fragments are reader-only;
+- none of the standard EROFS features remain unimplemented for the writer;
+- external devices are reader-only for now.
 
 ## Not supported yet
 
 - external-device chunk indexes (`device_id != 0`);
-- partial tail-fragment mappings (some layouts need the packed-inode tail);
+- legacy full-index fragment offsets above 4 GiB;
 - shared xattr prefixes;
-- writing/rebuilding EROFS.
+- LZMA/DEFLATE/Zstd writing.
 
 Unsupported compressed data is skipped with a warning; the directory tree is
 still shown wherever the metadata can be decoded.

@@ -33,7 +33,10 @@ Supported at now:
 10. LittleFS / SPIFFS (RW, plugins).
 11. ISO9660 (RW; Rock Ridge metadata, Joliet read fallback).
 12. exFAT (RW; files/directories, UTF-16 names, allocation bitmap and up-case table).
-13. EROFS (read-only; flat/inline, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, chunk-based, whole-file fragments).
+13. EROFS (RW; LZ4 compact 4B/2B, big pcluster, ztailpacking, whole-file/tail fragments, inline/shared/long-prefix xattrs).
+14. UDF (RW basic; ECMA-167/OSTA, ICB FE/EFE, directories, files, symlinks, VAT/sparable read/write).
+15. YAFFS2 (RW basic; raw NAND page/OOB auto-detection, files, dirs, symlinks, special files).
+16. JFFS2 (RW basic; raw MTD, little/big endian, zlib/rtime/lzo, cleanmarkers, xattrs).
 
 Extended attributes are kept in the generic filesystem model; they are written
 for EXT2/3/4 (external block; inline and EA-inode values are read), F2FS
@@ -236,6 +239,11 @@ Store fs as ext2 image:
 store <filename.ext2> ramfs ext2
 ```
 
+Store fs as EROFS image (LZ4, with uncompressed fallback):
+```
+store <filename.erofs> ramfs erofs
+```
+
 Store fs as cpio file:
 ```
 store <filename.cpio> ramfs cpio
@@ -274,7 +282,7 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs', 'iso9660', 'exfat' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs', 'iso9660', 'exfat', 'erofs', 'yaffs2', 'jffs2' or 'cpio'.
 
 CramFS output endian (default little-endian; auto-detected on load):
 ```
@@ -389,11 +397,28 @@ Change file mode:
 chmod <path> <mode>
 ```
 
-Change file owner:
+Change file owner and group (names are resolved through `/etc/passwd` and
+`/etc/group`; numeric ids still work):
 ```
-chown <user>
-chown <user> <group>
+chown <path> <user>[:<group>]
+chown <path> <user> <group>
+chgrp <path> <group>
 ```
+
+User/group database editing (`/etc/passwd` and `/etc/group` are updated in the
+loaded filesystem; `/etc/shadow` is not touched):
+```
+user list
+user add <name> <uid> <gid> [home] [shell]
+user del <name>
+group list
+group add <name> <gid>
+group del <name>
+group adduser <user> <group>
+group deluser <user> <group>
+```
+
+See [`docs/identity.md`](docs/identity.md) for details.
 
 Set an extended attribute (UTF-8 value, or `0x`-hex; `-` removes):
 ```
@@ -655,10 +680,25 @@ Example:
 
 
 ## Linux-specific operations (NyaFsLinux.dll)
-List of all users (from /etc/passwd):
+List of all users (from /etc/passwd; names/groups come from the core identity
+database, shadow status from /etc/shadow):
 ```
 lsusr
 ```
+
+Linux account administration (requires `NyaFsLinux`):
+```
+useradd <name> <uid> <gid> [home] [shell]
+usermod <name> <home> <shell>
+usermod <name> <uid> <gid> <home> <shell>
+userdel <name>
+groupadd <name> <gid>
+groupdel <name>
+```
+
+`useradd` creates the home directory when its parent exists and adds a locked
+shadow entry (`!`) when `/etc/shadow` is present.
+
 List of password hashes (from /etc/shadow):
 ```
 lshashes

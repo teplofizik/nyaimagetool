@@ -1,4 +1,5 @@
-﻿using System;
+using NyaFs.Filesystem.Universal.Identity;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -82,6 +83,20 @@ namespace NyaFsLinux.Linux.Users
             }
             else
                 throw new ArgumentException("Unknown passwd format");
+        }
+
+        public User(UserRecord Record, string ShadowLine)
+        {
+            Name = Record.Name;
+            UID = (int)Record.Uid;
+            GID = (int)Record.Gid;
+            Comment = Record.Gecos;
+            Home = Record.Home;
+            Shell = Record.Shell;
+            EncryptedPassword = Record.Password == "x";
+
+            if (ShadowLine != null)
+                ProcessShadow(ShadowLine);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using System;
 
 namespace NyaFsLinux
@@ -17,7 +17,12 @@ namespace NyaFsLinux
                 new Commands.LsHashes(),
                 new Commands.Passwd(),
                 new Commands.Mkpasswd(),
-                new Commands.FindPasswd()
+                new Commands.FindPasswd(),
+                new Commands.UserAdd(),
+                new Commands.Usermod(),
+                new Commands.UserDel(),
+                new Commands.GroupAdd(),
+                new Commands.GroupDel()
             };
         }
     }

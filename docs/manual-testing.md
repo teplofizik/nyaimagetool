@@ -22,7 +22,7 @@ remote-клиенты. Отмечайте пункты `[x]`; при ошибк�
 - [ ] Зафиксированы: ОС тестера, клиент (WinSCP/Linux mount/tftp), модель
       устройства, версия прошивки, SHA256 образа.
 - [ ] Базовый прогон тестов (если есть dev-репозиторий):
-      `dev 217/217`, `nyaimagetool 165/165`.
+      `dev 264/264`, `nyaimagetool 212/212`.
 
 ## 1. SFTP-сервер (NyaFsSftp)
 
@@ -160,10 +160,26 @@ remote-клиенты. Отмечайте пункты `[x]`; при ошибк�
 - [ ] Проверить symlink и режимы/uid/gid.
 - [ ] Проверить сжатые образы LZ4, LZMA, DEFLATE, Zstd: `big.txt` совпадает с исходником.
 - [ ] Проверить full-index (`-E legacy-compress`) и compact-index образы.
-- [ ] Проверить big pcluster (`-C 8192`), `ztailpacking`, chunk-based (`--chunksize`) и fragments (`-E all-fragments`).
+- [ ] Проверить big pcluster (`-C 8192`), `ztailpacking`, chunk-based (`--chunksize`), whole-file (`-E all-fragments`) и tail (`-E fragments`) fragments.
 - [ ] Сверить вывод с `dump.erofs -s/-S/-e` и распакованными файлами.
+- [ ] `store out.erofs ramfs erofs`; `fsck.erofs out.erofs` завершается с кодом 0.
+- [ ] Загрузить записанный образ, `export` и сравнить файлы с исходными (включая большой каталог).
+- [ ] Для повторяющихся данных проверить сжатие: `dump.erofs` показывает Layout 1 и on-disk size меньше исходного.
+- [ ] Для несжимаемых данных проверить fallback на plain-экстенты.
+- [ ] Для big pcluster проверить Layout 1, `compr_cfgs big_pcluster` и физический экстент больше одного блока.
+- [ ] Для ztailpacking проверить, что последний pcluster не занимает data-блок и `fsck.erofs` проходит.
+- [ ] Для whole-file fragments проверить `packed nid`, feature `fragments` и чтение файлов из packed inode.
+- [ ] Для xattrs проверить `fsck.erofs --xattrs`, inline/shared/long-prefix атрибуты, чтение root/файловых атрибутов через API.
+- [ ] Проверить CLI-опции `set ramfs filesystem erofs`, `erofs.fragments`, `erofs.tail-fragments`, `erofs.shared-xattrs`, `erofs.compression-level`, `erofs.xattr-prefix`.
 
-## 9. F2FS: образы больше 512 МБ
+## 9. UDF
+
+- [ ] `load` UDF-образа, созданного `mkudffs`; проверить `hello.txt`, вложенный каталог и symlink.
+- [ ] Сравнить содержимое с исходным деревом.
+- [ ] `fsck`/`mount` образа (Ubuntu) — без ошибок.
+- [ ] `store out.udf ramfs udf`; `mount -t udf -o loop,ro out.udf` и сравнить файлы.
+
+## 10. F2FS: образы больше 512 МБ
 
 - [ ] `set ramfs size 600M`, `store ... ramfs f2fs` — образ создаётся.
 - [ ] `fsck.f2fs -f --dry-run <image>` (Ubuntu/WSL) — `Done`, без ошибок.
@@ -173,7 +189,7 @@ remote-клиенты. Отмечайте пункты `[x]`; при ошибк�
 - [ ] Убедиться, что старые образы <=512M по-прежнему собираются и проходят `fsck`.
 - [ ] Проверить, что при нехватке места/некорректном размере ошибка понятная, без падения.
 
-## 10. Общие проверки после правок
+## 11. Общие проверки после правок
 
 - [ ] `store` в исходном формате, `load` заново, `export`/сравнение.
 - [ ] xattr/права/uid/gid не потеряны (если проверяемый образ их содержит).
@@ -182,7 +198,7 @@ remote-клиенты. Отмечайте пункты `[x]`; при ошибк�
 - [ ] Повторный полный прогон тестов зелёный (единичный golden-flake
       `bug-0002` — перепроверить повторным запуском, не менять golden).
 
-## 11. Что считать ошибкой
+## 12. Что считать ошибкой
 
 Прикладывайте:
 
@@ -192,7 +208,7 @@ remote-клиенты. Отмечайте пункты `[x]`; при ошибк�
 4. SHA256 образа до/после.
 5. Версию ОС/клиента и модель устройства.
 
-## 12. Известные ограничения
+## 13. Известные ограничения
 
 - SFTP-сервер: принимает любые креды, нет нормальной аутентификации.
 - NFS: NFSv3, без auth/locking, нет hardlink/MKNOD, portmapper 111 может

@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor;
+using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using System;
 using System.Collections.Generic;
@@ -40,10 +40,7 @@ namespace NyaFsLinux.Commands
                 if (!Fs.Exists("/etc/shadow"))
                     NyaFs.Log.Warning(0, "Filesystem does not contains /etc/shadow file.");
 
-                var PwLines = GetFileContent(Fs, "/etc/passwd");
-                var ShLines = GetFileContent(Fs, "/etc/shadow");
-
-                var Users = Linux.Users.UserParser.ParseUsers(PwLines, ShLines);
+                var Users = Linux.Users.UserLookup.Load(Fs);
 
                 NyaFs.Log.Write(0, $"{"Name".PadRight(12)} {"Type".PadRight(8)} {"Salt".PadRight(18)} Hash");
                 foreach (var U in Users)

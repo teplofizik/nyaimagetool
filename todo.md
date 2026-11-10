@@ -5,7 +5,7 @@ CramFS Big Endian (done)
 VFAT, EXT3/EXT4 base (done)
 ISO9660 (done)
 exFAT (done)
-EROFS (read-only: uncompressed, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, chunks, whole-file fragments)
+EROFS (reader: uncompressed, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, chunks, fragments; writer: LZ4 compact 4B/2B + big pcluster + ztailpacking + whole-file/tail fragments + inline/shared/long-prefix xattrs with plain fallback; CLI options)
 
 F2FS writer (reader+writer ready; NyaFs 1.0.4x):
 * compression: ZSTD/LZ4/LZO/LZORLE done (`set ramfs f2fs.compression zstd|lz4|lzo|lzorle`).
@@ -39,7 +39,7 @@ TODO:
 
 ### Filesystems
 EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS,
-JFFS2, YAFFS, UDF.
+
 UBIFS: reader + writer.
 
 ### Compression
@@ -79,7 +79,7 @@ Plugin system
 * Change all compressors as plugins
 * Change all image formats as plugins
 * Change all commands to plugin
-Editing filesystem: change users, groups, rights
+Editing filesystem: change users/groups/rights (partial: FsIdentityDatabase, named chown/chgrp, user/group list/add/del)
 Lua scripts as commands: open file, edit, save
 
 Filesystem i/o
