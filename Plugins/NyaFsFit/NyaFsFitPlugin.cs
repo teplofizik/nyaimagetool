@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using NyaFs.Processor.Scripting.Plugins;
 using System;
 
@@ -12,7 +12,8 @@ namespace NyaFsFit
         {
             return new ScriptStepGenerator[]
             {
-                new Commands.ExportFit()
+                new Commands.ExportFit(),
+                new Commands.ImportFit()
             };
         }
     }

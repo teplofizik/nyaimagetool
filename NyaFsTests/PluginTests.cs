@@ -70,6 +70,44 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void LinuxPlugin_AddUser_And_Groupmod_Work()
+        {
+            var Fs = new LinuxFilesystem();
+            var Etc = new NyaFs.Filesystem.Universal.Items.Dir("etc", 0, 0, 493);
+            var Home = new NyaFs.Filesystem.Universal.Items.Dir("home", 0, 0, 493);
+            Fs.Fs.Root.Items.Add(Etc);
+            Fs.Fs.Root.Items.Add(Home);
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/passwd", 0, 0, 420,
+                Encoding.ASCII.GetBytes("root:x:0:0:root:/root:/bin/sh\n")));
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/group", 0, 0, 420,
+                Encoding.ASCII.GetBytes("root:x:0:\n")));
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/shadow", 0, 0, 400,
+                Encoding.ASCII.GetBytes("root:!:::::::\n")));
+
+            var Base = new ScriptBaseAll();
+            foreach (var Generator in new NyaFsLinux.LinuxPlugin().GetGenerators())
+                Base.Add(Generator);
+            var Parser = new ScriptParser(Base);
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.SetFs(Fs);
+
+            Proc.Process(Parser.ParseScript("t", new[]
+            {
+                "adduser app 2000",
+                "groupmod app 2500"
+            }));
+
+            var User = Fs.Identities.FindUser("app");
+            var Group = Fs.Identities.FindGroup("app");
+            Assert.NotNull(User);
+            Assert.NotNull(Group);
+            Assert.Equal(2500u, Group.Gid);
+            Assert.Equal(2500u, User.Gid);
+            Assert.Contains("app:!", Encoding.UTF8.GetString(
+                ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("etc/shadow")).Content));
+        }
+
+        [Fact]
         public void BmuImage_Detects_Own_Magic()
         {
             var data = new byte[0x800];

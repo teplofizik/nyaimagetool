@@ -76,6 +76,11 @@ namespace NyaFsTests
             Assert.Contains("configurations", Text);
             Assert.True(File.Exists(System.IO.Path.Combine(OutDir, "blobs", "kernel_1.bin")));
             Assert.True(new FileInfo(System.IO.Path.Combine(OutDir, "blobs", "kernel_1.bin")).Length > 0);
+
+            var Rebuilt = System.IO.Path.Combine(OutDir, "rebuilt.fit");
+            Assert.True(new NyaFsFit.FitSourceImporter().Import(Its, Rebuilt, out Error), Error);
+            var Read = Load(Rebuilt);
+            Assert.Equal(4, Read.GetBlob().BuildPlan.Root.Configurations.Count);
         }
 
         [Fact]

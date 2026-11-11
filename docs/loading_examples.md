@@ -13,6 +13,7 @@ containers/formats we support. Run from a `.nyas` script or the interactive shel
 | `use <path>` | select an element of the loaded build plan for editing |
 | `import <file> <subpath> [target]` | replace an element from a part of another image |
 | `exportfit <file> <dir>` | export FIT as `.its` plus sidecar binary blobs |
+| `importfit <file.its> <out.fit>` | build FIT from an exported `.its` and its blobs |
 | `extract <file> <subpath> <out>` | write a sub-image to a file, byte for byte |
 | `store <out> <type> <format>` | write the loaded image back (see below) |
 | `export <dir>` | dump the loaded filesystem to a directory |
@@ -79,7 +80,9 @@ extract F:\TEMP\Images\fit\amlogic-a113d.fit ramdisk@a113d F:\TEMP\out\ramdisk.g
 `exportfit` writes a U-Boot `.its` file and a `blobs/` directory. Image
 `data` properties become `/incbin/("./blobs/...")` references; the blobs contain
 the exact payload bytes stored in the FIT, not hex text. The command currently
-exports only; importing `.its` back into FIT is the next step.
+and `importfit` builds a FIT from that source again. The importer supports
+strings, cells, byte arrays and `/incbin/`; advanced DTS syntax/labels are not
+supported yet.
 
 FIT configuration and image descriptions are preserved on rebuild, as are
 `load`/`entry` values for kernel, FDT and ramdisk images. Hash verification

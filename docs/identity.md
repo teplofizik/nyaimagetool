@@ -58,19 +58,24 @@ The optional `NyaFsLinux` plugin reuses `Fs.Identities` for `/etc/passwd` and
 ```text
 lsusr
 lshashes
+adduser <name> <uid> [gid] [home] [shell]
 useradd <name> <uid> <gid> [home] [shell]
 usermod <name> <home> <shell>
 usermod <name> <uid> <gid> <home> <shell>
 userdel <name>
 groupadd <name> <gid>
+groupmod <name> <gid>
 groupdel <name>
 mkpasswd <user> <password>
 passwd <user> [password]
 findpasswd <user> <listfile>
 ```
 
-`useradd` adds a locked shadow entry (`!`) when `/etc/shadow` exists, and creates
-the home directory if its parent directory exists. `userdel` removes the shadow
+`adduser` creates a matching primary group when GID is omitted. `useradd` adds a
+locked shadow entry (`!`) when `/etc/shadow` exists (and creates the empty file
+when the parent directory exists), and creates the home directory if its parent
+directory exists. `groupmod` updates the GID and the primary GID of users that
+referenced the old value. `userdel` removes the shadow
 entry. Password commands still operate only on `/etc/shadow`.
 
 `ls` uses the database for display, with numeric fallback:

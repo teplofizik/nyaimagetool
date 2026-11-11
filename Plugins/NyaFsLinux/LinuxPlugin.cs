@@ -22,7 +22,9 @@ namespace NyaFsLinux
                 new Commands.Usermod(),
                 new Commands.UserDel(),
                 new Commands.GroupAdd(),
-                new Commands.GroupDel()
+                new Commands.GroupDel(),
+                new Commands.AddUser(),
+                new Commands.GroupMod()
             };
         }
     }
