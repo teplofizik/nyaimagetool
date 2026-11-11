@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2026.0.0" />
-    <PackageReference Include="NyaFs" Version="1.0.101" />
+    <PackageReference Include="NyaFs" Version="1.0.105" />
   </ItemGroup>
 
 </Project>

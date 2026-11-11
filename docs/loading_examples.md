@@ -8,14 +8,43 @@ containers/formats we support. Run from a `.nyas` script or the interactive shel
 | command | purpose |
 |---------|---------|
 | `inspect <file>` | print the discovered sub-image tree with **stable paths** |
-| `load <file>` | load the whole image (auto-detect through the plugin pipeline) |
-| `load.sub <file> <subpath>` | load exactly one sub-image by its stable path |
+| `load <file>` | open a new workspace and load the whole image |
+| `load.sub <file> <subpath>` | load exactly one sub-image without resetting the workspace |
+| `use <path>` | select an element of the loaded build plan for editing |
+| `import <file> <subpath> [target]` | replace an element from a part of another image |
 | `extract <file> <subpath> <out>` | write a sub-image to a file, byte for byte |
 | `store <out> <type> <format>` | write the loaded image back (see below) |
 | `export <dir>` | dump the loaded filesystem to a directory |
 
 Typical flow: `inspect <file>` → pick a path → `load.sub` (to work with it) or
 `extract` (to get the raw bytes). Empty subpath (`""` or `"."`) means the whole file.
+
+## Workspace and active element
+
+`load <file>` resets the current workspace (plan, active element and options).
+`load.sub` and `import` do not reset it: they add or replace a single part.
+
+Once a container is loaded, `use` selects an element for FS/kernel/DTB commands:
+
+```
+load boot.emmc
+use all/cimg/fit/kernel
+set kernel entry 0x100090000
+use all/cimg/fit/devtree
+use all/cimg/fit/ramdisk@1
+file etc/hostname hostname.txt
+store out.emmc
+```
+
+`import` replaces the active element from another image part:
+
+```
+load boot.emmc
+use all/cimg/fit/kernel
+import F:\other.fit all/fit/kernel
+```
+
+`cd` remains filesystem navigation; `use` is container-plan navigation.
 
 ## Whole images
 
@@ -138,8 +167,25 @@ store F:\TEMP\out\rpi.dtb devtree dtb
 `store <out> <type> <format>`: `type` is `kernel` | `ramfs` | `devtree` | `all`.
 Formats: kernel `raw|gz|lzma|lz4|bz2|xz|zstd|legacy`; ramfs
 `cpio|tar|gz|xz|zstd|legacy|ext2|squashfs|cramfs|romfs|littlefs|spiffs` and
-`tar.gz|tar.xz|tar.bz2|tar.zstd|tar.lz4|tar.lzma`; devtree `dtb`; one-arg
-`store <out>` writes a FIT.
+`tar.gz|tar.xz|tar.bz2|tar.zstd|tar.lz4|tar.lzma`; devtree `dtb`.
+One-argument `store <out>` uses the build plan captured by `load`: if the image
+has not been modified, the original bytes are written back exactly. After edits
+the root container is rebuilt using its original format (CIMG/FIT); other root
+formats require an explicit output format.
+
+## Plan-based repack
+
+`load` also records the native image hierarchy: container formats, compression,
+header options and original payload bytes. This is the source for:
+
+```
+load F:\TEMP\Images\vendor-raw\boot.emmc
+store F:\TEMP\out.emmc
+```
+
+For an untouched image this is a byte-for-byte copy, including the original CIMG
+header and FIT layout. Use explicit `store <out> all cimg`, `store <out> ramfs ...`
+or `store <out> kernel ...` when you want to rebuild a part in a different form.
 
 ```
 load F:\TEMP\Images\ramfs\cpio\overlay.gz
@@ -152,5 +198,8 @@ store F:\TEMP\out\rootfs.tar.gz ramfs tar.gz
   re-detected (e.g. BMU -> kernel / filesystem / devicetree). External plugins must
   be present in `plugins/` next to the executable (the app loads them automatically).
 - Exact sub-paths are whatever `inspect` prints (they are stable identifiers).
+- Logical path aliases are also accepted: `all` and container-format segments may be
+  included, and leaf kinds may be used instead of generated names, for example
+  `all/cimg/fit/kernel`, `all/cimg/fit/devtree`, `cimg/fit/dtb`, `fit/fs`.
 - Filesystem formats provided by plugins (e.g. littlefs/spiffs) are routed through the
   plugin's writer, so `store` emits them directly.
