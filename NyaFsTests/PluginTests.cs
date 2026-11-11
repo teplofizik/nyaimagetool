@@ -108,6 +108,41 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void LinuxPlugin_Group_Options_Work()
+        {
+            var Fs = new LinuxFilesystem();
+            var Etc = new NyaFs.Filesystem.Universal.Items.Dir("etc", 0, 0, 493);
+            Fs.Fs.Root.Items.Add(Etc);
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/passwd", 0, 0, 420,
+                Encoding.ASCII.GetBytes("root:x:0:0:root:/root:/bin/sh\n")));
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/group", 0, 0, 420,
+                Encoding.ASCII.GetBytes("root:x:0:\n")));
+            Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/shadow", 0, 0, 400,
+                Encoding.ASCII.GetBytes("root:!:::::::\n")));
+
+            var Base = new ScriptBaseAll();
+            foreach (var Generator in new NyaFsLinux.LinuxPlugin().GetGenerators())
+                Base.Add(Generator);
+            var Parser = new ScriptParser(Base);
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.SetFs(Fs);
+
+            Proc.Process(Parser.ParseScript("t", new[]
+            {
+                "groupadd team 3000",
+                "useradd -G team app 3001 3001",
+                "usermod -aG root app",
+                "groupmod -n renamed team"
+            }));
+
+            Assert.Null(Fs.Identities.FindGroup("team"));
+            var Group = Fs.Identities.FindGroup("renamed");
+            Assert.NotNull(Group);
+            Assert.Contains("app", Group.Members);
+            Assert.Contains("app", Fs.Identities.FindGroup("root").Members);
+        }
+
+        [Fact]
         public void BmuImage_Detects_Own_Magic()
         {
             var data = new byte[0x800];

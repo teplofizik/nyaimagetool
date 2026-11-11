@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.111" />
+    <PackageReference Include="NyaFs" Version="1.0.112" />
     <PackageReference Include="NyaLZO" Version="1.0.3" />
     <ProjectReference Include="..\Plugins\NyaFsLinux\NyaFsLinux.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
