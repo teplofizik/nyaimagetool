@@ -44,8 +44,12 @@ namespace NyaFsTests
             var Fs = new LinuxFilesystem();
             var Etc = new NyaFs.Filesystem.Universal.Items.Dir("etc", 0, 0, 493);
             var Home = new NyaFs.Filesystem.Universal.Items.Dir("home", 0, 0, 493);
+            var Skel = new NyaFs.Filesystem.Universal.Items.Dir("etc/skel", 0, 0, 493);
             Fs.Fs.Root.Items.Add(Etc);
             Fs.Fs.Root.Items.Add(Home);
+            Etc.Items.Add(Skel);
+            Skel.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/skel/profile", 0, 0, 420,
+                Encoding.ASCII.GetBytes("skel")));
             Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/passwd", 0, 0, 420,
                 Encoding.ASCII.GetBytes("root:x:0:0:root:/root:/bin/sh\n")));
             Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/group", 0, 0, 420,
@@ -60,13 +64,18 @@ namespace NyaFsTests
             var Proc = new ImageProcessor(Parser, new string[0]);
             Proc.SetFs(Fs);
 
-            Proc.Process(Parser.ParseScript("t", new[] { "useradd app 2000 2000 /home/app /bin/sh" }));
+            Proc.Process(Parser.ParseScript("t", new[] { "useradd app 2000 2000 /home/app /bin/sh", "adduser auto" }));
 
             Assert.NotNull(Fs.Identities.FindUser("app"));
             Assert.Equal(2000u, Fs.Identities.FindUser("app").Uid);
             Assert.NotNull(Fs.GetElement("/home/app"));
             Assert.Contains("app:!", Encoding.UTF8.GetString(
                 ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("etc/shadow")).Content));
+            Assert.Equal(Encoding.ASCII.GetBytes("skel"),
+                ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("home/app/profile")).Content);
+            var Auto = Fs.Identities.FindUser("auto");
+            Assert.NotNull(Auto);
+            Assert.True(Auto.Uid >= 1000);
         }
 
         [Fact]
@@ -75,8 +84,12 @@ namespace NyaFsTests
             var Fs = new LinuxFilesystem();
             var Etc = new NyaFs.Filesystem.Universal.Items.Dir("etc", 0, 0, 493);
             var Home = new NyaFs.Filesystem.Universal.Items.Dir("home", 0, 0, 493);
+            var Skel = new NyaFs.Filesystem.Universal.Items.Dir("etc/skel", 0, 0, 493);
             Fs.Fs.Root.Items.Add(Etc);
             Fs.Fs.Root.Items.Add(Home);
+            Etc.Items.Add(Skel);
+            Skel.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/skel/profile", 0, 0, 420,
+                Encoding.ASCII.GetBytes("skel")));
             Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/passwd", 0, 0, 420,
                 Encoding.ASCII.GetBytes("root:x:0:0:root:/root:/bin/sh\n")));
             Etc.Items.Add(new NyaFs.Filesystem.Universal.Items.File("etc/group", 0, 0, 420,
@@ -94,7 +107,10 @@ namespace NyaFsTests
             Proc.Process(Parser.ParseScript("t", new[]
             {
                 "adduser app 2000",
-                "groupmod app 2500"
+                "groupmod app 2500",
+                "usermod -U app",
+                "usermod -L app",
+                "adduser auto"
             }));
 
             var User = Fs.Identities.FindUser("app");
@@ -105,6 +121,11 @@ namespace NyaFsTests
             Assert.Equal(2500u, User.Gid);
             Assert.Contains("app:!", Encoding.UTF8.GetString(
                 ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("etc/shadow")).Content));
+            Assert.Equal(Encoding.ASCII.GetBytes("skel"),
+                ((NyaFs.Filesystem.Universal.Items.File)Fs.GetElement("home/app/profile")).Content);
+            var Auto = Fs.Identities.FindUser("auto");
+            Assert.NotNull(Auto);
+            Assert.True(Auto.Uid >= 1000);
         }
 
         [Fact]

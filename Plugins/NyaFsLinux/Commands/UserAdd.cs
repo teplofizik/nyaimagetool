@@ -1,4 +1,4 @@
-﻿using NyaFs.Filesystem.Universal.Identity;
+using NyaFs.Filesystem.Universal.Identity;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using System;
@@ -159,6 +159,8 @@ namespace NyaFsLinux.Commands
                     {
                     }
                 }
+
+                Linux.Users.Skeleton.Copy(Fs, "/etc/skel", Home, Uid, Gid);
 
                 return new ScriptStepResult(ScriptStepStatus.Ok, $"User {Name} ({Uid}:{Gid}) added!");
             }

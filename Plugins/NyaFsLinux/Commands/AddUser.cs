@@ -1,4 +1,4 @@
-﻿using NyaFs.Filesystem.Universal.Identity;
+using NyaFs.Filesystem.Universal.Identity;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using System;
@@ -28,6 +28,10 @@ namespace NyaFsLinux.Commands
                 new NyaFs.Processor.Scripting.Params.NumberScriptArgsParam("gid"),
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("home")
             }));
+            AddConfig(new ScriptArgsConfig(4, new ScriptArgsParam[]
+            {
+                new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name")
+            }));
             AddConfig(new ScriptArgsConfig(3, new ScriptArgsParam[]
             {
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name"),
@@ -41,11 +45,14 @@ namespace NyaFsLinux.Commands
         public override ScriptStep Get(ScriptArgs Args)
         {
             var A = Args.RawArgs;
+            if (Args.ArgConfig == 4)
+                return new AddUserScriptStep(A[0], 0, 0, "/home/" + A[0], "/bin/sh", true, true);
+
             var Uid = ParseId(A[1]);
             var Gid = (Args.ArgConfig >= 1) ? ParseId(A[2]) : Uid;
             var Home = (Args.ArgConfig >= 2) ? A[3] : "/home/" + A[0];
             var Shell = (Args.ArgConfig >= 3) ? A[4] : "/bin/sh";
-            return new AddUserScriptStep(A[0], Uid, Gid, Home, Shell, Args.ArgConfig == 0);
+            return new AddUserScriptStep(A[0], Uid, Gid, Home, Shell, Args.ArgConfig == 0, false);
         }
 
         private static uint ParseId(string Value) =>
@@ -59,8 +66,9 @@ namespace NyaFsLinux.Commands
             private readonly string Home;
             private readonly string Shell;
             private readonly bool CreateGroup;
+            private readonly bool AutoId;
 
-            public AddUserScriptStep(string Name, uint Uid, uint Gid, string Home, string Shell, bool CreateGroup) : base("adduser")
+            public AddUserScriptStep(string Name, uint Uid, uint Gid, string Home, string Shell, bool CreateGroup, bool AutoId) : base("adduser")
             {
                 this.Name = Name;
                 this.Uid = Uid;
@@ -68,6 +76,7 @@ namespace NyaFsLinux.Commands
                 this.Home = Home;
                 this.Shell = Shell;
                 this.CreateGroup = CreateGroup;
+                this.AutoId = AutoId;
             }
 
             public override ScriptStepResult Exec(ImageProcessor Processor)
@@ -78,13 +87,25 @@ namespace NyaFsLinux.Commands
 
                 var Db = Fs.Identities;
                 string Error;
-                if (CreateGroup && (Db.FindGroup(Gid) == null))
+                var ActualUid = Uid;
+                var ActualGid = Gid;
+                var ActualCreateGroup = CreateGroup;
+                if (AutoId)
                 {
-                    if (!Db.AddGroup(Name, Gid, out Error))
+                    ActualUid = 1000;
+                    while ((Db.FindUser(ActualUid) != null) || (Db.FindGroup(ActualUid) != null))
+                        ActualUid++;
+                    ActualGid = ActualUid;
+                    ActualCreateGroup = true;
+                }
+
+                if (ActualCreateGroup && (Db.FindGroup(ActualGid) == null))
+                {
+                    if (!Db.AddGroup(Name, ActualGid, out Error))
                         return new ScriptStepResult(ScriptStepStatus.Error, Error);
                 }
 
-                if (!Db.AddUser(Name, Uid, Gid, "", Home, Shell, out Error))
+                if (!Db.AddUser(Name, ActualUid, ActualGid, "", Home, Shell, out Error))
                     return new ScriptStepResult(ScriptStepStatus.Error, Error);
                 if (!Db.Save(out Error))
                     return new ScriptStepResult(ScriptStepStatus.Error, Error);
@@ -110,14 +131,16 @@ namespace NyaFsLinux.Commands
                     {
                         var Parent = Fs.GetParentDirectory(Home);
                         if (Parent != null)
-                            Parent.Items.Add(new NyaFs.Filesystem.Universal.Items.Dir(Home, Uid, Gid, 493));
+                            Parent.Items.Add(new NyaFs.Filesystem.Universal.Items.Dir(Home, ActualUid, ActualGid, 493));
                     }
                     catch (ArgumentException)
                     {
                     }
                 }
 
-                return new ScriptStepResult(ScriptStepStatus.Ok, $"User {Name} ({Uid}:{Gid}) added!");
+                Linux.Users.Skeleton.Copy(Fs, "/etc/skel", Home, ActualUid, ActualGid);
+
+                return new ScriptStepResult(ScriptStepStatus.Ok, $"User {Name} ({ActualUid}:{ActualGid}) added!");
             }
         }
     }

@@ -58,12 +58,15 @@ The optional `NyaFsLinux` plugin reuses `Fs.Identities` for `/etc/passwd` and
 ```text
 lsusr
 lshashes
+adduser <name>
 adduser <name> <uid> [gid] [home] [shell]
 useradd [-G <groups>] <name> <uid> <gid> [home] [shell]
 usermod <name> <home> <shell>
 usermod <name> <uid> <gid> <home> <shell>
 usermod -G <groups> <name>
 usermod -aG <groups> <name>
+usermod -L <name>
+usermod -U <name>
 userdel <name>
 groupadd <name> <gid>
 groupmod <name> <gid>
@@ -74,7 +77,10 @@ passwd <user> [password]
 findpasswd <user> <listfile>
 ```
 
-`adduser` creates a matching primary group when GID is omitted. `useradd` adds a
+`adduser <name>` allocates the next free UID starting at 1000 and creates a
+matching primary group. `adduser` with an explicit UID creates the group when
+GID is omitted, copies `/etc/skel` into a newly created home, and initializes a
+locked shadow entry. `usermod -L/-U` locks/unlocks the shadow entry. `useradd` adds a
 locked shadow entry (`!`) when `/etc/shadow` exists (and creates the empty file
 when the parent directory exists), and creates the home directory if its parent
 directory exists. `groupmod` updates the GID and the primary GID of users that

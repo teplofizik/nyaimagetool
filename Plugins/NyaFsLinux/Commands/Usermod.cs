@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor;
+using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using System;
 using System.Globalization;
@@ -21,6 +21,16 @@ namespace NyaFsLinux.Commands
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("groups"),
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name")
             }));
+            AddConfig(new ScriptArgsConfig(4, new ScriptArgsParam[]
+            {
+                new NyaFs.Processor.Scripting.Params.EnumScriptArgsParam("option", new string[] { "-L" }),
+                new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name")
+            }));
+            AddConfig(new ScriptArgsConfig(5, new ScriptArgsParam[]
+            {
+                new NyaFs.Processor.Scripting.Params.EnumScriptArgsParam("option", new string[] { "-U" }),
+                new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name")
+            }));
             AddConfig(new ScriptArgsConfig(0, new ScriptArgsParam[]
             {
                 new NyaFs.Processor.Scripting.Params.StringScriptArgsParam("name"),
@@ -40,6 +50,9 @@ namespace NyaFsLinux.Commands
         public override ScriptStep Get(ScriptArgs Args)
         {
             var A = Args.RawArgs;
+            if ((Args.ArgConfig == 4) || (Args.ArgConfig == 5))
+                return new LockScriptStep(A[1], Args.ArgConfig == 4);
+
             if ((Args.ArgConfig == 2) || (Args.ArgConfig == 3))
                 return new UsermodScriptStep(A[2], null, null, null, null, SplitGroups(A[1]), Args.ArgConfig == 3);
 
@@ -55,6 +68,30 @@ namespace NyaFsLinux.Commands
         private static string[] SplitGroups(string Value) =>
             String.IsNullOrEmpty(Value) ? new string[0] : Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
+        public class LockScriptStep : ScriptStep
+        {
+            private readonly string Name;
+            private readonly bool Lock;
+
+            public LockScriptStep(string Name, bool Lock) : base("usermod")
+            {
+                this.Name = Name;
+                this.Lock = Lock;
+            }
+
+            public override ScriptStepResult Exec(ImageProcessor Processor)
+            {
+                var Fs = Processor.GetFs();
+                if (Fs == null)
+                    return new ScriptStepResult(ScriptStepStatus.Error, "Filesystem is not loaded");
+
+                string Error;
+                if (!Linux.Users.UserLookup.SetLock(Fs, Name, Lock, out Error))
+                    return new ScriptStepResult(ScriptStepStatus.Error, Error);
+
+                return new ScriptStepResult(ScriptStepStatus.Ok, "User " + Name + (Lock ? " locked!" : " unlocked!"));
+            }
+        }
         public class UsermodScriptStep : ScriptStep
         {
             private readonly string Name;

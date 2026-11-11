@@ -66,6 +66,41 @@ namespace NyaFsLinux.Linux.Users
             WriteLines(Fs, ShadowPath, List.ToArray());
         }
 
+        public static bool SetLock(LinuxFilesystem Fs, string Name, bool Lock, out string Error)
+        {
+            Error = null;
+            var Lines = ReadLines(Fs, ShadowPath);
+            if (Lines == null)
+            {
+                Error = "Filesystem does not contain /etc/shadow";
+                return false;
+            }
+
+            for (var I = 0; I < Lines.Length; I++)
+            {
+                if (!Lines[I].StartsWith(Name + ":"))
+                    continue;
+
+                var Parts = Lines[I].Split(new[] { ':' }, StringSplitOptions.None);
+                if (Parts.Length < 2)
+                    break;
+
+                if (Lock)
+                {
+                    if (!Parts[1].StartsWith("!"))
+                        Parts[1] = "!" + Parts[1];
+                }
+                else if (Parts[1].StartsWith("!"))
+                    Parts[1] = Parts[1].Substring(1);
+
+                Lines[I] = String.Join(":", Parts);
+                WriteLines(Fs, ShadowPath, Lines);
+                return true;
+            }
+
+            Error = "User '" + Name + "' is not found in /etc/shadow";
+            return false;
+        }
         public static void RemoveShadowEntry(LinuxFilesystem Fs, string Name)
         {
             var Lines = ReadLines(Fs, ShadowPath);
