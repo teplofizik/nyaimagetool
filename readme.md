@@ -427,7 +427,7 @@ xattr <path> <name> <value>
 
 ## Packages
 
-A package is one file (`.nyapkg`): gzip(tar) with a `PACKAGE` control file
+A package is one file (`.nyapkg`): gzip(tar) or zstd(tar) with a `PACKAGE` control file
 (`key: value` lines; unknown keys are preserved, so the format is extensible)
 and a `data/` tree. Metadata can carry name, version, arch, os, description and
 arbitrary extra fields; configuration/settings files can be shipped inside a

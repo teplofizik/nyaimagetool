@@ -1,3 +1,4 @@
+using NyaFs.Filesystem.ExFat;
 using NyaFs.ImageFormat.Elements.Fs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
@@ -11,8 +12,15 @@ namespace NyaFsTests
 {
     public class RepackTests
     {
-        private static string Corpus(string Relative)
+        private static string SourceFor(string Relative)
         {
+            if (Relative.StartsWith("fixtures/", StringComparison.OrdinalIgnoreCase))
+            {
+                var Fixture = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures",
+                    Relative.Substring("fixtures/".Length));
+                return File.Exists(Fixture) ? Fixture : null;
+            }
+
             var Root = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
             if (string.IsNullOrEmpty(Root))
                 return null;
@@ -43,14 +51,45 @@ namespace NyaFsTests
         [Theory]
         [InlineData("ramfs/cpio/overlay.gz")]
         [InlineData("ramfs/tar/test.tar.gz")]
-        [InlineData("ramfs/ext4/test.ext4")]
         [InlineData("ramfs/ext2/ramfs.ext2")]
+        [InlineData("ramfs/ext3/test.ext3")]
+        [InlineData("ramfs/ext4/test.ext4")]
+        [InlineData("ramfs/cramfs/test.cramfs")]
+        [InlineData("ramfs/romfs/ramfs.romfs")]
+        [InlineData("ramfs/squashfs/ramfs.sqfs")]
+        [InlineData("ramfs/squashfs/ramfs.gzip.sqfs")]
+        [InlineData("ramfs/fat12/sample.fat12")]
+        [InlineData("ramfs/fat16/sample.fat16")]
+        [InlineData("ramfs/fat32/sample.fat32")]
+        [InlineData("fixtures/iso_sample.iso")]
+        [InlineData("nand/f2fs/sample.f2fs")]
+        [InlineData("fixtures/erofs_flat.img")]
+        [InlineData("fixtures/udf_small.img")]
+        [InlineData("fixtures/jffs2_sample.img")]
+        [InlineData("fixtures/yaffs2_sample.bin.gz")]
+        [InlineData("fixtures/ubifs_sample.ubi")]
+        [InlineData("fixtures/ubifs_sample.raw")]
         public void Repack_Root_Filesystem(string Relative)
         {
-            var Source = Corpus(Relative);
-            if (Source == null)
-                return;
+            var Source = SourceFor(Relative);
+            if (Source != null)
+                RepackSource(Source);
+        }
 
+        [Fact]
+        public void Repack_ExFat_Generated()
+        {
+            var Builder = new ExFatBuilder(16L * 1024 * 1024);
+            Builder.Directory("/", 0, 0, 0x1ED);
+            Builder.File("/hello.txt", Encoding.ASCII.GetBytes("hello"), 0, 0, 0x1A4);
+
+            var Source = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-exfat-" + Guid.NewGuid().ToString("N") + ".exfat");
+            File.WriteAllBytes(Source, Builder.GetFilesystemImage());
+            RepackSource(Source);
+        }
+
+        private static void RepackSource(string Source)
+        {
             var Parser = new ScriptParser(new ScriptBaseAll());
             var Proc = new ImageProcessor(Parser, new string[0]);
             Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Source + "\"" }));
@@ -68,7 +107,10 @@ namespace NyaFsTests
             });
             Proc.Process(Script);
 
-            var Target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-repack-" + Guid.NewGuid().ToString("N") + System.IO.Path.GetExtension(Source));
+            var Extension = System.IO.Path.GetExtension(Source);
+            if (String.IsNullOrEmpty(Extension))
+                Extension = ".img";
+            var Target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-repack-" + Guid.NewGuid().ToString("N") + Extension);
             var Res = new Store().Get(new ScriptArgs(3, new[] { Target })).Exec(Proc);
             Assert.Equal(ScriptStepStatus.Ok, Res.Status);
 

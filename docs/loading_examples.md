@@ -77,6 +77,15 @@ load.sub F:\TEMP\Images\fit\amlogic-a113d.fit kernel@a113d
 extract F:\TEMP\Images\fit\amlogic-a113d.fit ramdisk@a113d F:\TEMP\out\ramdisk.gz
 ```
 
+FIT hash nodes are preserved on repack; the algorithm can be overridden:
+
+```text
+set container fit.hash sha256
+```
+
+`loadables`, `setup`, `fpga` and `firmware` images are loaded as read-only
+children and written back without editing.
+
 `exportfit` writes a U-Boot `.its` file and a `blobs/` directory. Image
 `data` properties become `/incbin/("./blobs/...")` references; the blobs contain
 the exact payload bytes stored in the FIT, not hex text. The command currently

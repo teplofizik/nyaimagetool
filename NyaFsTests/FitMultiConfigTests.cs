@@ -6,6 +6,7 @@ using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using System;
 using System.IO;
+using System.Text;
 using Xunit;
 
 namespace NyaFsTests
@@ -52,6 +53,36 @@ namespace NyaFsTests
 
             Root.Children.Add(Node);
             return Node;
+        }
+
+        [Fact]
+        public void Fit_Hash_Algorithm_Option()
+        {
+            var RootDir = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
+            if (string.IsNullOrEmpty(RootDir))
+                return;
+
+            var Source = System.IO.Path.Combine(RootDir, "fit", "ramboot.itb");
+            if (!File.Exists(Source))
+                return;
+
+            var Parser = new ScriptParser(new ScriptBaseAll());
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.Process(Parser.ParseScript("t", new[]
+            {
+                "load \"" + Source + "\"",
+                "set container fit.hash sha512",
+                "use fdt@cv1835_miner_emmc",
+                "import \"" + Source + "\" all/fit/fdt@cv1835_miner_emmc"
+            }));
+
+            var Target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-fit-hash-" + Guid.NewGuid().ToString("N") + ".itb");
+            var Res = new NyaFs.Processor.Scripting.Commands.Store().Get(new NyaFs.Processor.Scripting.ScriptArgs(3, new[] { Target })).Exec(Proc);
+            Assert.Equal(ScriptStepStatus.Ok, Res.Status);
+
+            var Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(File.ReadAllBytes(Target)).Read();
+            var Kernel = Fit.Get("images/kernel@1");
+            Assert.Contains(Kernel.Nodes, H => H.GetStringValue("algo") == "sha512");
         }
 
         [Fact]
@@ -132,13 +163,28 @@ namespace NyaFsTests
             Node(Root, "fdt@a", ImageKind.Devtree, DtbA, DtbA.DevtreeFormat ?? "dtb");
             Node(Root, "fdt@b", ImageKind.Devtree, DtbA, DtbA.DevtreeFormat ?? "dtb");
 
+            var Firmware = new ImageBuildNode
+            {
+                Path = "firmware@1",
+                Name = "firmware@1",
+                Kind = ImageKind.Unknown,
+                Format = "raw",
+                Compression = NyaFs.ImageFormat.Types.CompressionType.IH_COMP_NONE,
+                Raw = Encoding.ASCII.GetBytes("firmware"),
+                Info = new NyaFs.ImageFormat.Types.ImageInfo
+                {
+                    Type = NyaFs.ImageFormat.Types.ImageType.IH_TYPE_FIRMWARE
+                }
+            };
+            Root.Children.Add(Firmware);
+
             Root.Configurations.Add(new ImageContainerConfiguration
             {
                 Name = "config@a", Description = "A", Kernel = "kernel@a", Ramdisk = "ramdisk@a", Fdt = "fdt@a"
             });
             Root.Configurations.Add(new ImageContainerConfiguration
             {
-                Name = "config@b", Description = "B", Kernel = "kernel@b", Ramdisk = "ramdisk@b", Fdt = "fdt@b"
+                Name = "config@b", Description = "B", Kernel = "kernel@b", Ramdisk = "ramdisk@b", Fdt = "fdt@b", Setup = "firmware@1"
             });
 
             var Writer = new ImageBuildPlanWriter(new ImageBuildPlan(Root));
@@ -152,6 +198,8 @@ namespace NyaFsTests
             var Read = Load(Target);
             Assert.NotNull(Read.GetBlob().BuildPlan);
             Assert.Equal(2, Read.GetBlob().BuildPlan.Root.Configurations.Count);
+            Assert.Contains(Read.GetBlob().BuildPlan.Root.Children, C => C.Name == "firmware@1");
+            Assert.Equal("firmware@1", Read.GetBlob().BuildPlan.Root.Configurations.Find(C => C.Name == "config@b").Setup);
         }
     }
 }
