@@ -12,6 +12,7 @@ containers/formats we support. Run from a `.nyas` script or the interactive shel
 | `load.sub <file> <subpath>` | load exactly one sub-image without resetting the workspace |
 | `use <path>` | select an element of the loaded build plan for editing |
 | `import <file> <subpath> [target]` | replace an element from a part of another image |
+| `exportfit <file> <dir>` | export FIT as `.its` plus sidecar binary blobs |
 | `extract <file> <subpath> <out>` | write a sub-image to a file, byte for byte |
 | `store <out> <type> <format>` | write the loaded image back (see below) |
 | `export <dir>` | dump the loaded filesystem to a directory |
@@ -74,6 +75,20 @@ amlogic-a113d.fit (root)  [Unknown/fit]
 load.sub F:\TEMP\Images\fit\amlogic-a113d.fit kernel@a113d
 extract F:\TEMP\Images\fit\amlogic-a113d.fit ramdisk@a113d F:\TEMP\out\ramdisk.gz
 ```
+
+`exportfit` writes a U-Boot `.its` file and a `blobs/` directory. Image
+`data` properties become `/incbin/("./blobs/...")` references; the blobs contain
+the exact payload bytes stored in the FIT, not hex text. The command currently
+exports only; importing `.its` back into FIT is the next step.
+
+FIT configuration and image descriptions are preserved on rebuild, as are
+`load`/`entry` values for kernel, FDT and ramdisk images. Hash verification
+accepts `sha1`, `sha256`, `sha512` and `crc32`.
+
+FIT configurations are preserved. A multi-config image (for example
+`fit/ramboot.itb` with four board configurations) exposes all referenced
+kernel/ramdisk/fdt images; select one with `use fdt@...` and `store` rebuilds
+all configurations together.
 
 ## Android boot image
 
@@ -184,8 +199,11 @@ store F:\TEMP\out.emmc
 ```
 
 For an untouched image this is a byte-for-byte copy, including the original CIMG
-header and FIT layout. Use explicit `store <out> all cimg`, `store <out> ramfs ...`
-or `store <out> kernel ...` when you want to rebuild a part in a different form.
+header and FIT layout. After edits the plan writer rebuilds the original root
+format: CIMG/FIT containers, or a plain filesystem/kernel/devicetree using its
+writer and compression (`cpio.gz`, `tar.gz`, `ext2/3/4`, UBIFS, F2FS and other
+writable formats). Use explicit `store <out> all cimg`, `store <out> ramfs ...`
+or `store <out> kernel ...` when you want a different output format.
 
 ```
 load F:\TEMP\Images\ramfs\cpio\overlay.gz

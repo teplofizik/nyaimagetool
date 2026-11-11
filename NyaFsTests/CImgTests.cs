@@ -131,6 +131,38 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void Fit_MultiConfiguration_Repack()
+        {
+            var Root = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
+            if (string.IsNullOrEmpty(Root))
+                return;
+
+            var Source = Path.Combine(Root, "fit", "ramboot.itb");
+            if (!File.Exists(Source))
+                return;
+
+            var Parser = new ScriptParser(new ScriptBaseAll());
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.Process(Parser.ParseScript("t", new[]
+            {
+                "load \"" + Source + "\"",
+                "use fdt@cv1835_miner_emmc",
+                "import \"" + Source + "\" all/fit/fdt@cv1835_miner_emmc"
+            }));
+
+            Assert.Equal(4, Proc.GetBlob().BuildPlan.Root.Configurations.Count);
+
+            var Target = Path.Combine(Path.GetTempPath(), "nyafs-fit-multi-" + Guid.NewGuid().ToString("N") + ".itb");
+            var Res = new Store().Get(new ScriptArgs(3, new[] { Target })).Exec(Proc);
+            Assert.Equal(ScriptStepStatus.Ok, Res.Status);
+
+            var ReadParser = new ScriptParser(new ScriptBaseAll());
+            var ReadProc = new ImageProcessor(ReadParser, new string[0]);
+            ReadProc.Process(ReadParser.ParseScript("t", new[] { "load \"" + Target + "\"" }));
+            Assert.Equal(4, ReadProc.GetBlob().BuildPlan.Root.Configurations.Count);
+        }
+
+        [Fact]
         public void CImg_BuildPlan_Marks_Filesystem_Kind()
         {
             var Root = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
