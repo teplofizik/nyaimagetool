@@ -13,7 +13,9 @@ namespace NyaFsFit
             return new ScriptStepGenerator[]
             {
                 new Commands.ExportFit(),
-                new Commands.ImportFit()
+                new Commands.ImportFit(),
+                new Commands.SignFit(),
+                new Commands.VerifyFit()
             };
         }
     }

@@ -8,50 +8,21 @@ containers/formats we support. Run from a `.nyas` script or the interactive shel
 | command | purpose |
 |---------|---------|
 | `inspect <file>` | print the discovered sub-image tree with **stable paths** |
-| `load <file>` | open a new workspace and load the whole image |
-| `load.sub <file> <subpath>` | load exactly one sub-image without resetting the workspace |
-| `use <path>` | select an element of the loaded build plan for editing |
-| `import <file> <subpath> [target]` | replace an element from a part of another image |
-| `exportfit <file> <dir>` | export FIT as `.its` plus sidecar binary blobs |
-| `importfit <file.its> <out.fit>` | build FIT from an exported `.its` and its blobs |
+| `load <file>` | load the whole image (auto-detect through the plugin pipeline) |
+| `load.sub <file> <subpath>` | load exactly one sub-image by its stable path |
 | `extract <file> <subpath> <out>` | write a sub-image to a file, byte for byte |
 | `store <out> <type> <format>` | write the loaded image back (see below) |
 | `export <dir>` | dump the loaded filesystem to a directory |
+| `signfit <in> <out> <key> [control]` | re-sign existing FIT signature nodes in place; optionally write control DTB |
+| `verifyfit <fit> <key/cert>` | verify FIT config signatures |
 
 Typical flow: `inspect <file>` → pick a path → `load.sub` (to work with it) or
 `extract` (to get the raw bytes). Empty subpath (`""` or `"."`) means the whole file.
 
-## Workspace and active element
-
-`load <file>` resets the current workspace (plan, active element and options).
-`load.sub` and `import` do not reset it: they add or replace a single part.
-
-Once a container is loaded, `use` selects an element for FS/kernel/DTB commands:
-
-```
-load boot.emmc
-use all/cimg/fit/kernel
-set kernel entry 0x100090000
-use all/cimg/fit/devtree
-use all/cimg/fit/ramdisk@1
-file etc/hostname hostname.txt
-store out.emmc
-```
-
-`import` replaces the active element from another image part:
-
-```
-load boot.emmc
-use all/cimg/fit/kernel
-import F:\other.fit all/fit/kernel
-```
-
-`cd` remains filesystem navigation; `use` is container-plan navigation.
-
 ## Whole images
 
 `load <file>` works for every supported format: it detects compression, composite
-containers (FIT / Android / Legacy / BMU / Allwinner / ...) and leaves
+containers (FIT / Android / Legacy / BMU / AMLSECU / Allwinner / ...) and leaves
 (kernel / filesystem / devicetree) via the plugin pipeline.
 
 ```
@@ -77,34 +48,35 @@ load.sub F:\TEMP\Images\fit\amlogic-a113d.fit kernel@a113d
 extract F:\TEMP\Images\fit\amlogic-a113d.fit ramdisk@a113d F:\TEMP\out\ramdisk.gz
 ```
 
-FIT hash nodes are preserved on repack; the algorithm can be overridden:
+### FIT signing
 
-```text
-set container fit.hash sha256
+`signfit` expects mkimage-prepared signature nodes (`value`, `hashed-nodes`,
+`hashed-strings`); it signs the same FDT regions as U-Boot and updates `value`
+in place. Node names with `@` are supported.
+
+```
+signfit F:\TEMP\fit\image.itb F:\TEMP\fit\signed.itb F:\TEMP\keys\test.key F:\TEMP\fit\control.dtb
+verifyfit F:\TEMP\fit\signed.itb F:\TEMP\keys\test.crt
 ```
 
-`loadables`, `setup`, `fpga` and `firmware` images are loaded as read-only
-children and written back without editing. External FIT data (`data-offset`)
-is read into the plan; a rebuilt FIT embeds it again. `data-position` is a
-memory/device address, not a file offset: such payload is not inside the FIT
-and the loader warns that it is unavailable. Signed FIT nodes are
-detected; rebuilding a changed signed FIT emits a warning because signatures
-are not regenerated.
+For a mkimage-produced FIT the resulting `value` is byte-identical to `mkimage`.
 
-`exportfit` writes a U-Boot `.its` file and a `blobs/` directory. Image
-`data` properties become `/incbin/("./blobs/...")` references; the blobs contain
-the exact payload bytes stored in the FIT, not hex text. `importfit` builds a FIT
-from that source again. The importer supports strings, cells, byte arrays and
-`/incbin/`; advanced DTS syntax/labels are not supported yet.
+To generate and sign a FIT during `store`, import a private key into KeyStore and
+select it for the FIT container:
 
-FIT configuration and image descriptions are preserved on rebuild, as are
-`load`/`entry` values for kernel, FDT and ramdisk images. Hash verification
-accepts `sha1`, `sha256`, `sha512` and `crc32`.
+```
+keys import fit-test F:\TEMP\keys\test.key F:\TEMP\keys\test.crt
+use kernel1
+import F:\TEMP\fit\image.itb all/fit/kernel1
+set container fit.sign fit-test
+set container fit.sign-control F:\TEMP\fit\control.dtb
+store F:\TEMP\fit\generated.itb
+```
 
-FIT configurations are preserved. A multi-config image (for example
-`fit/ramboot.itb` with four board configurations) exposes all referenced
-kernel/ramdisk/fdt images; select one with `use fdt@...` and `store` rebuilds
-all configurations together.
+`sign-algo`, `sign-key-name` and `sign-control` are optional FIT container
+options. `sign-control` writes the U-Boot `/signature/key-*` control DTB with the
+public modulus, exponent, r-squared and n0-inverse; the device build must use that
+control DTB for verification.
 
 ## Android boot image
 
@@ -128,12 +100,40 @@ extract F:\TEMP\Images\bmu\Antminer-L7-release-202301300939.bmu minerfs.image.gz
 
 ## BMU (merge, several boards in one file)
 
-Sub-paths are `<Model>/<Hardware>/<Chip>/<file>`; a `merge` BMU carries a separate
-image for every board/variant in one file.
+Sub-paths are `<Model>/<Hardware>/<Chip>/<file>`; the `merge` ones carry images for
+many boards at once (including an Amlogic `AMLCtrl` item):
 
 ```
-inspect ...\Antminer-T21-merge-release-20240716102718.bmu
+inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-release-20240716102718.bmu
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
+```
+
+## AMLSECU (Amlogic secure update) — hidden plugin
+
+An encrypted Android image (marker `AMLSECU!`@0x400). The plugin decrypts the
+sections and hands back a plain Android image for re-detection:
+
+```
+inspect F:\TEMP\Images\android\am_kernel_enc.bin
+```
+```
+am_kernel_enc.bin (root)  [Unknown/amlogic.encrypted]
+  decrypted            [Unknown/android]
+    decrypted/kernel   [Kernel/raw comp=IH_COMP_GZIP]
+    decrypted/ramdisk  [Filesystem/cpio comp=IH_COMP_GZIP]
+    decrypted/second   [Unknown/? comp=IH_COMP_GZIP]
+```
+```
+load.sub F:\TEMP\Images\android\am_kernel_enc.bin decrypted/ramdisk
+extract F:\TEMP\Images\android\am_kernel_enc.bin decrypted/kernel F:\TEMP\out\kernel.gz
+```
+
+The same inside a BMU (single or merge), where the AMLSECU image is the `datafile`:
+
+```
+inspect F:\TEMP\Images\bmu\Antminer-S21Imm-AML-release-202408061155.bmu
+#   datafile -> datafile/decrypted -> datafile/decrypted/kernel ...
+load.sub F:\TEMP\Images\bmu\Antminer-S21Imm-AML-release-202408061155.bmu datafile/decrypted/ramdisk
 ```
 
 ## Ramfs / filesystems
@@ -197,43 +197,21 @@ store F:\TEMP\out\rpi.dtb devtree dtb
 
 `store <out> <type> <format>`: `type` is `kernel` | `ramfs` | `devtree` | `all`.
 Formats: kernel `raw|gz|lzma|lz4|bz2|xz|zstd|legacy`; ramfs
-`cpio|tar|gz|xz|zstd|legacy|ext2|squashfs|cramfs|romfs|littlefs|spiffs` and
-`tar.gz|tar.xz|tar.bz2|tar.zstd|tar.lz4|tar.lzma`; devtree `dtb`.
-One-argument `store <out>` uses the build plan captured by `load`: if the image
-has not been modified, the original bytes are written back exactly. After edits
-the root container is rebuilt using its original format (CIMG/FIT); other root
-formats require an explicit output format.
-
-## Plan-based repack
-
-`load` also records the native image hierarchy: container formats, compression,
-header options and original payload bytes. This is the source for:
-
-```
-load F:\TEMP\Images\vendor-raw\boot.emmc
-store F:\TEMP\out.emmc
-```
-
-For an untouched image this is a byte-for-byte copy, including the original CIMG
-header and FIT layout. After edits the plan writer rebuilds the original root
-format: CIMG/FIT containers, or a plain filesystem/kernel/devicetree using its
-writer and compression (`cpio.gz`, `tar.gz`, `ext2/3/4`, UBIFS, F2FS and other
-writable formats). Use explicit `store <out> all cimg`, `store <out> ramfs ...`
-or `store <out> kernel ...` when you want a different output format.
+`cpio|tar|gz|xz|zstd|legacy|ext2|squashfs|cramfs|romfs` and `tar.gz|tar.xz|tar.bz2|tar.zstd|tar.lz4|tar.lzma`;
+devtree `dtb`; one-arg `store <out>` writes a FIT.
 
 ```
 load F:\TEMP\Images\ramfs\cpio\overlay.gz
 store F:\TEMP\out\rootfs.tar.gz ramfs tar.gz
 ```
 
-## Notes
+## Notes / gaps
 
 - `load` follows the plugin pipeline recursively, so a container's children are
-  re-detected (e.g. BMU -> kernel / filesystem / devicetree). External plugins must
-  be present in `plugins/` next to the executable (the app loads them automatically).
+  re-detected (e.g. BMU -> AMLSECU -> Android -> kernel). External plugins must be
+  present in `plugins/` next to the executable (the app loads them automatically).
 - Exact sub-paths are whatever `inspect` prints (they are stable identifiers).
-- Logical path aliases are also accepted: `all` and container-format segments may be
-  included, and leaf kinds may be used instead of generated names, for example
-  `all/cimg/fit/kernel`, `all/cimg/fit/devtree`, `cimg/fit/dtb`, `fit/fs`.
-- Filesystem formats provided by plugins (e.g. littlefs/spiffs) are routed through the
-  plugin's writer, so `store` emits them directly.
+- `store` uses the built-in writers, not the plugin writers, so it does not yet
+  emit MCU filesystems (littlefs/spiffs). Converting between them is done through the
+  plugin writers (see the MCU conversion tests) — a `store` extension is a TODO.
+- AMLSECU examples require the hidden `NyaFsAmlogicEncrypted` plugin (private repo).
