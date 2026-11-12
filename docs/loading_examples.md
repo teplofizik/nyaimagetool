@@ -79,6 +79,20 @@ public modulus, exponent, r-squared and n0-inverse. If the target already exists
 it is merged: other signature keys and nodes are preserved, and a key with the
 same name is replaced.
 
+`sign-images` additionally signs every image node (`/images/*/signature1`).
+
+External payloads can be written with:
+
+```
+set container fit.external true
+set container fit.external-align 4
+store F:\TEMP\fit\external.itb
+```
+
+`external-position` uses `data-position` instead of `data-offset` (absolute
+address; no payload is appended). External data is read back by `load`/`inspect`
+when `data-offset` points after the FIT.
+
 ## Android boot image
 
 Sub-images: `kernel`, `ramdisk`, `second`, `recovery_dtbo`.
