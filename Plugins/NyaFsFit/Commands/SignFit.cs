@@ -63,8 +63,9 @@ namespace NyaFsFit.Commands
                     if (!String.IsNullOrEmpty(Control))
                     {
                         using var Rsa = FitSigner.LoadKey(Key);
+                        var ExistingControl = File.Exists(Control) ? File.ReadAllBytes(Control) : null;
                         var ControlData = NyaFs.ImageFormat.Composite.FitPublicKey.BuildControlDtb(
-                            Rsa, System.IO.Path.GetFileNameWithoutExtension(Key));
+                            Rsa, System.IO.Path.GetFileNameWithoutExtension(Key), null, "conf", ExistingControl);
                         File.WriteAllBytes(Control, ControlData);
                     }
                     return new ScriptStepResult(ScriptStepStatus.Ok, $"FIT signed ({Count} signature node(s)): {Output}");

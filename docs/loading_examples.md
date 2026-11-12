@@ -75,8 +75,9 @@ store F:\TEMP\fit\generated.itb
 
 `sign-algo`, `sign-key-name` and `sign-control` are optional FIT container
 options. `sign-control` writes the U-Boot `/signature/key-*` control DTB with the
-public modulus, exponent, r-squared and n0-inverse; the device build must use that
-control DTB for verification.
+public modulus, exponent, r-squared and n0-inverse. If the target already exists,
+it is merged: other signature keys and nodes are preserved, and a key with the
+same name is replaced.
 
 ## Android boot image
 
