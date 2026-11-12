@@ -84,14 +84,18 @@ set container fit.hash sha256
 ```
 
 `loadables`, `setup`, `fpga` and `firmware` images are loaded as read-only
-children and written back without editing.
+children and written back without editing. External FIT data (`data-offset`)
+is read into the plan; a rebuilt FIT embeds it again. `data-position` is a
+memory/device address, not a file offset: such payload is not inside the FIT
+and the loader warns that it is unavailable. Signed FIT nodes are
+detected; rebuilding a changed signed FIT emits a warning because signatures
+are not regenerated.
 
 `exportfit` writes a U-Boot `.its` file and a `blobs/` directory. Image
 `data` properties become `/incbin/("./blobs/...")` references; the blobs contain
-the exact payload bytes stored in the FIT, not hex text. The command currently
-and `importfit` builds a FIT from that source again. The importer supports
-strings, cells, byte arrays and `/incbin/`; advanced DTS syntax/labels are not
-supported yet.
+the exact payload bytes stored in the FIT, not hex text. `importfit` builds a FIT
+from that source again. The importer supports strings, cells, byte arrays and
+`/incbin/`; advanced DTS syntax/labels are not supported yet.
 
 FIT configuration and image descriptions are preserved on rebuild, as are
 `load`/`entry` values for kernel, FDT and ramdisk images. Hash verification

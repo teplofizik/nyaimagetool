@@ -56,6 +56,72 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void Fit_Signature_Nodes_Are_Detected()
+        {
+            var RootDir = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
+            if (string.IsNullOrEmpty(RootDir))
+                return;
+
+            var Source = System.IO.Path.Combine(RootDir, "fit", "ramboot.itb");
+            if (!File.Exists(Source))
+                return;
+
+            var Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(File.ReadAllBytes(Source)).Read();
+            var Kernel = Fit.Get("images/kernel@1");
+            var Signature = new NyaFs.FlattenedDeviceTree.Types.Node("signature-1");
+            Signature.AddStringValue("algo", "sha256,rsa2048");
+            Kernel.Nodes.Add(Signature);
+
+            var Target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-fit-signed-" + Guid.NewGuid().ToString("N") + ".itb");
+            File.WriteAllBytes(Target, new NyaFs.FlattenedDeviceTree.Writer.FDTWriter(Fit).GetBinary());
+
+            var Parser = new ScriptParser(new ScriptBaseAll());
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Target + "\"" }));
+
+            Assert.Contains("signatures", Proc.GetBlob().BuildPlan.Root.Options.Keys);
+        }
+
+        [Fact]
+        public void Fit_External_Data_Is_Read()
+        {
+            var RootDir = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");
+            if (string.IsNullOrEmpty(RootDir))
+                return;
+
+            var Source = System.IO.Path.Combine(RootDir, "fit", "ramboot.itb");
+            if (!File.Exists(Source))
+                return;
+
+            var Original = File.ReadAllBytes(Source);
+            var Fit = new NyaFs.FlattenedDeviceTree.Reader.FDTReader(Original).Read();
+            var Kernel = Fit.Get("images/kernel@1");
+            var Data = Kernel.GetValue("data");
+            if (Data == null)
+                return;
+
+            Kernel.Properties.RemoveAll(P => P.Name == "data");
+            Kernel.AddUInt32Value("data-offset", 0);
+            Kernel.AddUInt32Value("data-size", (uint)Data.Length);
+
+            var Fdt = new NyaFs.FlattenedDeviceTree.Writer.FDTWriter(Fit).GetBinary();
+            var Base = (Fdt.Length + 3) & ~3;
+            var External = new byte[Base + Data.Length];
+            Array.Copy(Fdt, External, Fdt.Length);
+            Array.Copy(Data, 0, External, Base, Data.Length);
+
+            var Target = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs-fit-external-" + Guid.NewGuid().ToString("N") + ".itb");
+            File.WriteAllBytes(Target, External);
+
+            var Parser = new ScriptParser(new ScriptBaseAll());
+            var Proc = new ImageProcessor(Parser, new string[0]);
+            Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Target + "\"" }));
+
+            Assert.NotNull(Proc.GetKernel());
+            Assert.True(Proc.GetKernel().Loaded);
+        }
+
+        [Fact]
         public void Fit_Hash_Algorithm_Option()
         {
             var RootDir = Environment.GetEnvironmentVariable("NYAIMAGETOOL_IMAGES");

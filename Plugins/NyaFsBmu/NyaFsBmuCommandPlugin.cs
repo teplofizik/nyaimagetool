@@ -14,7 +14,7 @@ namespace NyaFsBmu
         {
             return new ScriptStepGenerator[] {
                 new Commands.LoadBmu(),
-                new Commands.ReadBmu()
+                new Commands.VerifyBmu()
             };
         }
     }

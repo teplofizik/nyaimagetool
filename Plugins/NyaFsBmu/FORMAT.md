@@ -21,6 +21,22 @@ Magic byte `0x26` at offset 0. Total header = 2048 bytes.
 File codes: 0=BOOT.bin, 1=devicetree.dtb, 2=uImage, 3=minerfs.image.gz, 4=update.image.gz, 5=crl.tar.gz, 6=miner.btm.tar.gz, 7=reserve, 9=datafile.
 (On CV183X: BOOT.bin→minerfs.gz, devicetree.dtb→dtb, uImage→kernel.)
 
+## Verification
+
+Every payload file has a 256-byte RSA PKCS#1 v1.5 / SHA-256 signature made by the
+embedded `miner.pem` key. The final 256 bytes (`bmu.sig`) sign
+`SHA256(header) || SHA256(file_0) ... || SHA256(signature_0) ...`.
+
+`miner.pem.sig` at `0x418` is the same signature scheme over `miner.pem`, made by the
+device root key (for example `etc/bitmain.pub`).
+
+```text
+verifybmu <single.bmu> [bitmain.pub]
+```
+
+Without the root key, the miner key chain is reported as `not checked`; a supplied
+root key enables full chain verification.
+
 ## Merge BMU
 Magic `0xABABABAB` at offset 0. Header = 36 bytes (u32 fields, little-endian).
 
