@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using System;
 
 namespace NyaFsAllwinner

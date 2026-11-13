@@ -13,3 +13,13 @@ Reference: https://github.com/Ithamar/awutils/blob/master/imagewty.h (see also N
   `stored_length`, `original_length`, `offset`, and `filename` (up to 256).
 
 Data of partition `i` = `[offset, offset + original_length)`.
+
+## Writing
+
+`store <out.img> all wty` rebuilds an `IMAGEWTY` container from the loaded build plan. For a
+loaded WTY image it preserves the original file headers, main/sub types and top-level
+metadata; partition data is taken from the plan children. It can also create a new
+container from the loaded kernel (`kernel`), filesystem (`rootfs`) and DTB (`sunxi.fex`).
+
+The writer uses 256-byte data alignment and 1024-byte total alignment, with the
+selected header version (`0x0100` or `0x0300`).

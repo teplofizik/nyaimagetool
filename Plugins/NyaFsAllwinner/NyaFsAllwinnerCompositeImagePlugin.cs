@@ -17,6 +17,11 @@ namespace NyaFsAllwinner
         {
         }
 
+        public override bool SupportWrite => true;
+
+        public override byte[] Build(BaseImageBlob Blob, out string Error) =>
+            new WtyWriter(null).Build(Blob, out Error);
+
         public override bool DetectImage(ImageData Image)
         {
             if (Image.Length < 0x20)

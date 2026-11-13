@@ -134,7 +134,7 @@ inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-releas
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
 ```
 
-## AMLSECU (Amlogic secure update) — hidden plugin
+## Allwinner IMAGEWTY\n\n```\nload image.img\nstorewty out.img\n```\n\n`storewty` preserves existing WTY file headers and can also wrap a loaded kernel,\nrootfs and DTB into a new IMAGEWTY container.\n\n## AMLSECU (Amlogic secure update) — hidden plugin
 
 An encrypted Android image (marker `AMLSECU!`@0x400). The plugin decrypts the
 sections and hands back a plain Android image for re-detection:
