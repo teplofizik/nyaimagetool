@@ -1,4 +1,4 @@
-﻿using NyaIO.Data;
+using NyaIO.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -46,6 +46,8 @@ namespace NyaFsRockchip.Types
         public uint FileCount => ReadUInt32(0x88);
 
         public RkfwUpdateFileHeader GetHeader(int Index) => ((Index >= 0) && (Index < Headers.Length)) ? Headers[Index] : null;
+
+        public byte[] HeaderBytes => ReadArray(0, 0x800);
 
         private RkfwUpdateFileHeader LoadHeader(int Index) => new RkfwUpdateFileHeader(Raw, Convert.ToUInt32(Offset + 0x8C + Index * RkfwUpdateFileHeader.Size));
 

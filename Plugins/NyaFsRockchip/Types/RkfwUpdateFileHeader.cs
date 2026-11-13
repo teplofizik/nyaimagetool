@@ -1,4 +1,4 @@
-﻿using NyaIO.Data;
+using NyaIO.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +15,8 @@ namespace NyaFsRockchip.Types
         }
 
         public uint RawOffset = 0;
+
+        public byte[] RawBytes => ReadArray(0, Size);
 
         public string Name => ReadString(0, 32);
         public string FileName => ReadString(32, 60);
