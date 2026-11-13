@@ -151,7 +151,9 @@ namespace NyaFsAllwinner
                 {
                     if ((Child.Raw == null) || (Child.Raw.Length == 0))
                         continue;
-                    Result.Add(new Part(Child.Name, null, null, Child.Raw));
+                    var ChildData = GetChildData(Child);
+                    if ((ChildData != null) && (ChildData.Length > 0))
+                        Result.Add(new Part(Child.Name, null, null, ChildData));
                 }
                 if (Result.Count > 0)
                     return Result;
@@ -170,6 +172,56 @@ namespace NyaFsAllwinner
                 Result.Add(new Part("sunxi.fex", "COMMON", "DTB_CONFIG000000", GetDtbData(Dtb)));
 
             return Result;
+        }
+
+        private static byte[] GetChildData(ImageBuildNode Child)
+        {
+            if (!Child.Dirty && (Child.Raw != null))
+                return Child.Raw;
+
+            if (Child.Format == "android")
+            {
+                var Temp = new BaseImageBlob();
+                var Plan = new ImageBuildPlan(Child);
+                Temp.BuildPlan = Plan;
+                foreach (var Option in Child.Options)
+                    Temp.SetContainerOption("android", Option.Key, Option.Value);
+
+                var Kernel = FindKind(Child, ImageKind.Kernel);
+                var Fs = FindKind(Child, ImageKind.Filesystem);
+                var Dtb = FindKind(Child, ImageKind.Devtree);
+                if ((Kernel != null) && (Kernel.Kernel != null)) Temp.SetKernel(0, Kernel.Kernel);
+                if ((Fs != null) && (Fs.Fs != null))
+                {
+                    if (Fs.Compression != NyaFs.ImageFormat.Types.CompressionType.IH_COMP_NONE)
+                        Fs.Fs.Info.Compression = Fs.Compression;
+                    Temp.SetFilesystem(0, Fs.Fs);
+                }
+                if ((Dtb != null) && (Dtb.Dtb != null)) Temp.SetDevTree(0, Dtb.Dtb);
+
+                var Data = new NyaFs.ImageFormat.Composite.AndroidImageWriter(null).Build(Temp, out var Error);
+                if (Data != null)
+                    return Data;
+            }
+
+            var Writer = new NyaFs.ImageFormat.Composite.ImageBuildPlanWriter(new ImageBuildPlan(Child));
+            var Result = Writer.Build(out var BuildError);
+            return (Result != null) ? Result : Child.Raw;
+        }
+
+        private static ImageBuildNode FindKind(ImageBuildNode Node, ImageKind Kind)
+        {
+            if (Node == null)
+                return null;
+            if (Node.Kind == Kind)
+                return Node;
+            foreach (var Child in Node.Children)
+            {
+                var Res = FindKind(Child, Kind);
+                if (Res != null)
+                    return Res;
+            }
+            return null;
         }
 
         private static byte[] GetKernelData(LinuxKernel Kernel)
