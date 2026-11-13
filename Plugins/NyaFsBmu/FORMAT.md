@@ -55,3 +55,16 @@ Item (172 bytes): `u8 filename_len, u8 chip_len, u8 hardware_len, u8 model_len, 
 Each item points to a single-BMU blob at `[offset, offset+size)`.
 
 So a merge BMU enumerates several single BMUs; the pipeline recurses into each and lists their files.
+
+## Writing
+
+Use store <out> all bmu with a KeyStore profile:
+
+`	ext
+set container bmu.sign-key bmu-miner
+set container bmu.root-key bmu-root
+store out.bmu all bmu
+`
+
+The writer preserves the BMU header metadata, replaces miner.pem/miner.pem.sig,
+re-signs every file and mu.sig, and supports rebuild of dirty plan elements.

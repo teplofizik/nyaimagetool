@@ -1,4 +1,4 @@
-﻿using NyaFs.ImageFormat;
+using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Plugins.Base;
 using System;
 using System.Collections.Generic;
@@ -25,6 +25,17 @@ namespace NyaFsBmu
         public NyaFsBmuCompositeImagePlugin() : base("image.bmu", "bmu")
         {
         }
+
+        public override FilesystemOption[] Options => new[]
+        {
+            new FilesystemOption("sign-key", FilesystemOptionType.String, null, "KeyStore profile used to sign BMU files"),
+            new FilesystemOption("root-key", FilesystemOptionType.String, null, "KeyStore profile used to sign miner.pem (Bitmain root key)")
+        };
+
+        public override bool SupportWrite => true;
+
+        public override byte[] Build(BaseImageBlob Blob, out string Error) =>
+            BmuWriter.Build(Blob, out Error);
 
         public override bool DetectImage(ImageData Image)
         {
