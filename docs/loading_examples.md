@@ -134,7 +134,7 @@ inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-releas
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
 ```
 
-## Allwinner IMAGEWTY\n\n```\nload image.img\nstorewty out.img\n```\n\n`storewty` preserves existing WTY file headers and can also wrap a loaded kernel,\nrootfs and DTB into a new IMAGEWTY container.\n\n## AMLSECU (Amlogic secure update) — hidden plugin
+## Legacy uImage / script / multi\n\nScript and multi-file uImage are separate commands:\n\n```\nstorescript script.img script.txt\nload boot.fex\nstore multi.img all multi\n```\n\n`storescript` wraps text in `IH_TYPE_SCRIPT`; `store all multi` wraps loaded kernel/ramfs/DTB\nas `IH_TYPE_MULTI` (size table + payloads).\n\n## Allwinner IMAGEWTY\n\n```\nload image.img\nstorewty out.img\n```\n\n`storewty` preserves existing WTY file headers and can also wrap a loaded kernel,\nrootfs and DTB into a new IMAGEWTY container.\n\n## AMLSECU (Amlogic secure update) — hidden plugin
 
 An encrypted Android image (marker `AMLSECU!`@0x400). The plugin decrypts the
 sections and hands back a plain Android image for re-detection:
