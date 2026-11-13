@@ -102,6 +102,17 @@ inspect F:\TEMP\Images\android\boot.fex
 load.sub F:\TEMP\Images\android\boot.fex ramdisk
 ```
 
+Android boot v0-v2 can also be written:
+
+```
+load F:\TEMP\Images\android\boot.fex
+store F:\TEMP\android-out.img all android
+```
+
+Header fields are preserved or can be overridden with `set container android.*`
+(`header-version`, `page-size`, `name`, `cmdline`, `kernel-addr`, `ramdisk-addr`,
+`tags-addr`, ...).
+
 ## BMU (single)
 
 Sub-images are the BMU files: `BOOT.bin`, `devicetree.dtb`, `uImage`,
