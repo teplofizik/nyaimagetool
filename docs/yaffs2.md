@@ -1,4 +1,4 @@
-﻿# YAFFS2
+# YAFFS2
 
 `NyaFs` reads and writes basic YAFFS2 raw NAND images.
 

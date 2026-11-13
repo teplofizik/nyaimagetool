@@ -102,7 +102,7 @@ inspect F:\TEMP\Images\android\boot.fex
 load.sub F:\TEMP\Images\android\boot.fex ramdisk
 ```
 
-Android boot v0-v2 can also be written:
+Android boot v0-v3 can also be written:
 
 ```
 load F:\TEMP\Images\android\boot.fex
@@ -111,7 +111,7 @@ store F:\TEMP\android-out.img all android
 
 Header fields are preserved or can be overridden with `set container android.*`
 (`header-version`, `page-size`, `name`, `cmdline`, `kernel-addr`, `ramdisk-addr`,
-`tags-addr`, ...).
+`tags-addr`, ...). v3 uses a fixed 4096-byte page and has no second/DTB fields.
 
 ## BMU (single)
 
