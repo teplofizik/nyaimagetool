@@ -1,6 +1,13 @@
 # TODO
 
 ## Filesystems
+CPIO: (done)
+* `CpioFsBuilder` now supports `070702` and raw-record preservation
+  (`Raw(CpioNode)`); `NyaFsInnosilicon/SwuWriter` uses the shared builder.
+  Byte-identical unchanged SWU and dirty-payload rebuilds are covered by tests.
+* `SwuWriter` also refreshes `filename`/`sha256` pairs in `sw-description`
+  for changed payloads and can re-sign `sw-description.sig` via
+  `set container swu.sign-key <profile>`; without a profile it emits a stale-signature warning.
 CramFS Big Endian (done)
 VFAT, EXT3/EXT4 base (done)
 ISO9660 (done)

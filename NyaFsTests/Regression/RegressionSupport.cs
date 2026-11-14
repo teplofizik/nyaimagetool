@@ -84,6 +84,8 @@ namespace NyaFsTests.Regression
                 var proc = new ImageProcessor(parser, new string[0]);
                 proc.Plugins.Load(new NyaFsMcuFs.LittleFsFilesystemPlugin());
                 proc.Plugins.Load(new NyaFsMcuFs.SpiffsFilesystemPlugin());
+                proc.Plugins.Load(new NyaFsRockchip.NyaFsRockchipCompositeImagePlugin());
+                proc.Plugins.Load(new NyaFsInnosilicon.NyaFsInnosiliconCompositeImagePlugin());
 
                 try
                 {
