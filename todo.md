@@ -76,6 +76,7 @@ Android boot image: v3-4 reader v0-4 writer
 TVIP firmware
 OpenWRT
 Legacy multiimage
+Raw MBR/GPT disk images (done: `DiskImagePlugin` + `DiskImageWriter`, primary + extended MBR + GPT)\nIceRiver `.bgz` (hidden `NyaFsIceRiver` plugin: AES-256-CBC + gzip/tar; read/write; direct `.bgz` extension or `load ... all bgz`; ICM168 3.2.15 / custom KS0 Pro/KS5L/KS5M keys unknown)\nDetectionCapabilities (`Magic`/`Extension`/`ExplicitFormat`) + `ImageData.SourceName` + forced `load ... all <format>`
 
 ## Encryption
 FIT encryption (AES)
@@ -115,3 +116,4 @@ TFTP: return different images based on requested filename
 
 ## Links
 1. [filesystems info](https://gitlab.arm.com/linux-arm/linux-ae/-/tree/WIP-pmu-nmi/fs)
+- Merged BMU writer: done (BmuMergeWriter, inner re-sign, offsets/sizes, whole-file CRC32 with zeroed CRC field).

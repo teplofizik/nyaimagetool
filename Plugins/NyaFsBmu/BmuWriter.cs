@@ -29,7 +29,16 @@ namespace NyaFsBmu
             try
             {
                 var Source = Blob.BuildPlan?.Root.Raw;
-                if ((Source == null) || (Source.Length < HeaderSize))
+                if (Source == null)
+                {
+                    Error = "BMU writer needs an existing BMU source";
+                    return null;
+                }
+
+                if (BmuMergeWriter.IsMerge(Source))
+                    return BmuMergeWriter.Build(Blob, Source, out Error);
+
+                if (Source.Length < HeaderSize)
                 {
                     Error = "BMU writer needs an existing BMU source";
                     return null;
