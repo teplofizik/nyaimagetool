@@ -1,6 +1,6 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using NyaFs.Processor;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,13 +10,13 @@ using NyaFs.ImageFormat.Elements.Kernel;
 using NyaFs;
 using NyaIO.Data;
 
-namespace NyaFsInnosilicon.Loader
+namespace NyaFsSwupdate.Loader
 {
     class SwuKernelReader : NyaFs.ImageFormat.Elements.Kernel.Reader.Reader
     {
-        InnoFirmwareUpdate Image;
+        SwuArchive Image;
 
-        public SwuKernelReader(InnoFirmwareUpdate Data)
+        public SwuKernelReader(SwuArchive Data)
         {
             Image = Data;
         }
@@ -36,11 +36,11 @@ namespace NyaFsInnosilicon.Loader
                         Reader.ReadToKernel(Dst);
                     }
                     else
-                        Log.Error(0, "Invalid Innosilicon archive: unknown ramfs format");
+                        Log.Error(0, "Invalid SWUpdate archive: unknown ramfs format");
                 }
             }
             else
-                Log.Error(0, "Invalid Innosilicon archive");
+                Log.Error(0, "Invalid SWUpdate archive");
         }
     }
 }

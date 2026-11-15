@@ -1,19 +1,20 @@
 using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Plugins.Base;
 using NyaFs.Filesystem.Cpio.Types;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 
-namespace NyaFsInnosilicon
+namespace NyaFsSwupdate
 {
     /// <summary>
-    /// Innosilicon SWU firmware: a CPIO newc archive containing sw-description,
-    /// U-Boot/uImage, devicetree.dtb, rootfs.ubi and vendor blobs.
+    /// SWUpdate (.swu) package: a CPIO newc archive containing sw-description,
+    /// optional signature, images and files. Used by SWUpdate and Canaan
+    /// Avalon Nano3 firmware (among others).
     /// </summary>
-    public class NyaFsInnosiliconCompositeImagePlugin : CompositeImagePlugin
+    public class NyaFsSwupdateCompositeImagePlugin : CompositeImagePlugin
     {
-        public NyaFsInnosiliconCompositeImagePlugin() : base("image.swu", "swu")
+        public NyaFsSwupdateCompositeImagePlugin() : base("image.swu", "swu")
         {
         }
 
@@ -35,13 +36,13 @@ namespace NyaFsInnosilicon
             if (Image.ReadByte(0) != (byte)'0' || Image.ReadByte(5) != (byte)'2')
                 return false;
 
-            var Fw = new InnoFirmwareUpdate(Image.ReadArray(0, Image.Length));
-            return Fw.Correct && (Fw.Read("sw-description") != null) && (Fw.Read("rootfs.ubi") != null);
+            var Fw = new SwuArchive(Image.ReadArray(0, Image.Length));
+            return Fw.Correct && (Fw.Read("sw-description") != null) && (Fw.Items.Count > 0);
         }
 
         public override ContainedImage[] GetImages(ImageData Image)
         {
-            var Fw = new InnoFirmwareUpdate(Image.ReadArray(0, Image.Length));
+            var Fw = new SwuArchive(Image.ReadArray(0, Image.Length));
             if (!Fw.Correct)
                 return new ContainedImage[0];
 

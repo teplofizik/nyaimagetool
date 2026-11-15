@@ -5,7 +5,7 @@ using NyaFs.ImageFormat.Plugins;
 using NyaFs.Keys;
 using NyaFs.Filesystem.Cpio.Types;
 using NyaFs.Filesystem.Cpio.Types.Nodes;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,10 +14,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace NyaFsInnosilicon
+namespace NyaFsSwupdate
 {
     /// <summary>
-    /// Rebuilds an Innosilicon SWU CPIO archive. Untouched archives are returned
+    /// Rebuilds an SWUpdate SWU CPIO archive. Untouched archives are returned
     /// byte-for-byte; for a dirty plan, every source entry is preserved and only
     /// changed payloads are replaced. The CPIO 070702 checksum is refreshed and
     /// the matching filename/sha256 pairs in sw-description are updated.
@@ -43,7 +43,7 @@ namespace NyaFsInnosilicon
                     return null;
                 }
 
-                var Fw = new InnoFirmwareUpdate(Source);
+                var Fw = new SwuArchive(Source);
                 if (!Fw.Correct)
                 {
                     Error = "SWU source is not a valid CPIO archive";

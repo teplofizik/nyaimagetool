@@ -1,14 +1,14 @@
-﻿using NyaFs;
+using NyaFs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace NyaFsInnosilicon.Commands
+namespace NyaFsSwupdate.Commands
 {
     class LsSwu : ScriptStepGenerator
     {
@@ -40,7 +40,7 @@ namespace NyaFsInnosilicon.Commands
                     return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} not found!");
 
                 var Data = File.ReadAllBytes(Path);
-                var Fw = new InnoFirmwareUpdate(Data);
+                var Fw = new SwuArchive(Data);
                 var Root = Fw.ReadDir("/");
                 if (Root.Length > 0)
                 {
@@ -50,10 +50,10 @@ namespace NyaFsInnosilicon.Commands
 
                         Log.Write(0, $"[{i:00}] {Entry.ShortName} size {Entry.Size}");
                     }
-                    return new ScriptStepResult(ScriptStepStatus.Ok, $"Innosilicon image is readed!");
+                    return new ScriptStepResult(ScriptStepStatus.Ok, $"SWUpdate image is readed!");
                 }
                 else
-                    return new ScriptStepResult(ScriptStepStatus.Error, $"Innosilicon image is invalid image!");
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"SWUpdate image is invalid image!");
             }
         }
     }

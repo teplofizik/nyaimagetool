@@ -1,4 +1,4 @@
-﻿using NyaFs.Filesystem.Cpio.Types;
+using NyaFs.Filesystem.Cpio.Types;
 using NyaFs.Filesystem.Cpio;
 using NyaIO.Data;
 using System;
@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO.Enumeration;
 
-namespace NyaFsInnosilicon.Types
+namespace NyaFsSwupdate.Types
 {
-    public class InnoFirmwareUpdate : CpioFsReader
+    public class SwuArchive : CpioFsReader
     {
         private NyaFs.Filesystem.Universal.FilesystemEntry[] Entries;
 
-        public InnoFirmwareUpdate(byte[] bytes) : base(bytes, "070702")
+        public SwuArchive(byte[] bytes) : base(bytes, "070702")
         {
             Entries = ReadDir("/");
         }

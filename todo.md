@@ -3,7 +3,7 @@
 ## Filesystems
 CPIO: (done)
 * `CpioFsBuilder` now supports `070702` and raw-record preservation
-  (`Raw(CpioNode)`); `NyaFsInnosilicon/SwuWriter` uses the shared builder.
+  (`Raw(CpioNode)`); `NyaFsSwupdate/SwuWriter` uses the shared builder.
   Byte-identical unchanged SWU and dirty-payload rebuilds are covered by tests.
 * `SwuWriter` also refreshes `filename`/`sha256` pairs in `sw-description`
   for changed payloads and can re-sign `sw-description.sig` via

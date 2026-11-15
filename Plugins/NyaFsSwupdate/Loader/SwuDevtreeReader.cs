@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using NyaFs.Processor;
 using System;
 using System.Collections.Generic;
@@ -9,15 +9,15 @@ using NyaFs.ImageFormat.Elements.Kernel;
 using NyaFs;
 using NyaFs.FlattenedDeviceTree;
 using NyaFs.ImageFormat.Elements.Dtb;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 
-namespace NyaFsInnosilicon.Loader
+namespace NyaFsSwupdate.Loader
 {
     class SwuDevtreeReader : NyaFs.ImageFormat.Elements.Dtb.Reader.Reader
     {
-        InnoFirmwareUpdate Image;
+        SwuArchive Image;
 
-        public SwuDevtreeReader(InnoFirmwareUpdate Data)
+        public SwuDevtreeReader(SwuArchive Data)
         {
             Image = Data;
         }
@@ -39,10 +39,10 @@ namespace NyaFsInnosilicon.Loader
                     Dst.Info.Compression = NyaFs.ImageFormat.Types.CompressionType.IH_COMP_NONE;
                 }
                 else
-                    Log.Error(0, $"Invalid dtb header in Innosilicon image");
+                    Log.Error(0, $"Invalid dtb header in SWUpdate image");
             }
             else
-                Log.Error(0, $"No dtb in Innosilicon image");
+                Log.Error(0, $"No dtb in SWUpdate image");
         }
     }
 }

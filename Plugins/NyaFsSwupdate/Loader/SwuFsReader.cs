@@ -1,4 +1,4 @@
-﻿using NyaFs.Processor.Scripting;
+using NyaFs.Processor.Scripting;
 using NyaFs.Processor;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using NyaFs;
 using NyaIO.Data;
 using ZstdSharp;
 
-namespace NyaFsInnosilicon.Loader
+namespace NyaFsSwupdate.Loader
 {
     class SwuFsReader : NyaFs.ImageFormat.Elements.Fs.Reader.Reader
     {

@@ -1,15 +1,15 @@
-﻿using NyaFs;
+using NyaFs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFs.Processor.Scripting.Steps;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace NyaFsInnosilicon.Commands
+namespace NyaFsSwupdate.Commands
 {
     class LoadSwu : ScriptStepGenerator
     {
@@ -41,7 +41,7 @@ namespace NyaFsInnosilicon.Commands
                     return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} not found!");
 
                 var Data = File.ReadAllBytes(Path);
-                var Fw = new InnoFirmwareUpdate(Data);
+                var Fw = new SwuArchive(Data);
                 if (Fw.Correct)
                 {
                     int Count = 0;
@@ -65,21 +65,21 @@ namespace NyaFsInnosilicon.Commands
                         Count++;
 
                     if (Count == 3)
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Innosilicon image is loaded!");
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"SWUpdate image is loaded!");
                     else if(Count > 0)
-                        return new ScriptStepResult(ScriptStepStatus.Warning, $"Innosilicon image is partially loaded!");
+                        return new ScriptStepResult(ScriptStepStatus.Warning, $"SWUpdate image is partially loaded!");
                     else
-                       return new ScriptStepResult(ScriptStepStatus.Error, $"Innosilicon image is invalid image!");
+                       return new ScriptStepResult(ScriptStepStatus.Error, $"SWUpdate image is invalid image!");
                 }
                 else
-                    return new ScriptStepResult(ScriptStepStatus.Error, $"Innosilicon image is invalid image!");
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"SWUpdate image is invalid image!");
             }
 
-            private ScriptStepResult ReadFs(ImageProcessor Processor, InnoFirmwareUpdate Data)
+            private ScriptStepResult ReadFs(ImageProcessor Processor, SwuArchive Data)
             {
                 var OldLoaded = Processor.GetFs()?.Loaded ?? false;
                 var Fs = new NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem();
-                var FsReader = new NyaFsInnosilicon.Loader.SwuFsReader(Data.Rootfs);
+                var FsReader = new NyaFsSwupdate.Loader.SwuFsReader(Data.Rootfs);
 
                 FsReader.ReadToFs(Fs);
                 if (Fs.Loaded)
@@ -107,11 +107,11 @@ namespace NyaFsInnosilicon.Commands
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown fs format!");
             }
 
-            private ScriptStepResult ReadDtb(ImageProcessor Processor, InnoFirmwareUpdate Data)
+            private ScriptStepResult ReadDtb(ImageProcessor Processor, SwuArchive Data)
             {
                 var OldLoaded = Processor.GetDevTree()?.Loaded ?? false;
                 var Dtb = new NyaFs.ImageFormat.Elements.Dtb.DeviceTree();
-                var Reader = new NyaFsInnosilicon.Loader.SwuDevtreeReader(Data);
+                var Reader = new NyaFsSwupdate.Loader.SwuDevtreeReader(Data);
                 if (Reader != null)
                 {
                     Reader.ReadToDevTree(Dtb);
@@ -120,7 +120,7 @@ namespace NyaFsInnosilicon.Commands
                         Processor.SetDeviceTree(Dtb);
                         AssumeAutoImageParams(Processor);
                         NyaFs.ImageFormat.Helper.LogHelper.DevtreeInfo(Dtb);
-                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Device tree is loaded from Innosilicon file!");
+                        return new ScriptStepResult(ScriptStepStatus.Ok, $"Device tree is loaded from SWUpdate file!");
                     }
                     else
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Device tree is not loaded!");
@@ -129,11 +129,11 @@ namespace NyaFsInnosilicon.Commands
                     return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown devtree format!");
             }
 
-            private ScriptStepResult ReadKernel(ImageProcessor Processor, InnoFirmwareUpdate Data)
+            private ScriptStepResult ReadKernel(ImageProcessor Processor, SwuArchive Data)
             {
                 var OldLoaded = Processor.GetKernel()?.Loaded ?? false;
                 var Kernel = new NyaFs.ImageFormat.Elements.Kernel.LinuxKernel();
-                var Reader = new NyaFsInnosilicon.Loader.SwuKernelReader(Data);
+                var Reader = new NyaFsSwupdate.Loader.SwuKernelReader(Data);
                 if (Reader != null)
                 {
                     Reader.ReadToKernel(Kernel);
@@ -145,9 +145,9 @@ namespace NyaFsInnosilicon.Commands
                         NyaFs.ImageFormat.Helper.LogHelper.KernelInfo(Kernel);
 
                         if (OldLoaded)
-                            return new ScriptStepResult(ScriptStepStatus.Warning, $"Innosilicon kernel image is loaded as kernel! Old kernel is replaced by this.");
+                            return new ScriptStepResult(ScriptStepStatus.Warning, $"SWUpdate kernel image is loaded as kernel! Old kernel is replaced by this.");
                         else
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Innosilicon kernel image is loaded as kernel!");
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"SWUpdate kernel image is loaded as kernel!");
                     }
                     else
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Kernel image file is not loaded!");

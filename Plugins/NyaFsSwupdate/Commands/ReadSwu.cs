@@ -1,14 +1,14 @@
-﻿using NyaFs;
+using NyaFs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
-using NyaFsInnosilicon.Types;
+using NyaFsSwupdate.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace NyaFsInnosilicon.Commands
+namespace NyaFsSwupdate.Commands
 {
     class ReadSwu : ScriptStepGenerator
     {
@@ -46,7 +46,7 @@ namespace NyaFsInnosilicon.Commands
                     return new ScriptStepResult(ScriptStepStatus.Error, $"{Path} not found!");
 
                 var Data = File.ReadAllBytes(Path);
-                var Fw = new InnoFirmwareUpdate(Data);
+                var Fw = new SwuArchive(Data);
                 if (Fw.Correct)
                 {
                     var Raw = Fw.Read(Partname);
@@ -55,7 +55,7 @@ namespace NyaFsInnosilicon.Commands
                         try
                         {
                             System.IO.File.WriteAllBytes(Dest, Raw);
-                            return new ScriptStepResult(ScriptStepStatus.Ok, $"Innosilicon image's partition {Partname} is exported to {Dest}!");
+                            return new ScriptStepResult(ScriptStepStatus.Ok, $"SWUpdate image's partition {Partname} is exported to {Dest}!");
                         }
                         catch (Exception)
                         {
@@ -63,10 +63,10 @@ namespace NyaFsInnosilicon.Commands
                         }
                     }
                     else
-                        return new ScriptStepResult(ScriptStepStatus.Error, $"Innosilicon image has no partition with name {Partname}!");
+                        return new ScriptStepResult(ScriptStepStatus.Error, $"SWUpdate image has no partition with name {Partname}!");
                 }
                 else
-                    return new ScriptStepResult(ScriptStepStatus.Error, $"Innosilicon image is invalid image!");
+                    return new ScriptStepResult(ScriptStepStatus.Error, $"SWUpdate image is invalid image!");
             }
         }
     }
