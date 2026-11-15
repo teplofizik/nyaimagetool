@@ -42,7 +42,13 @@ namespace NyaFsRockchip
 
             var Fw = Img.FirmwareData;
             if (Fw == null || !Fw.Correct)
+            {
+                var Update = Img.FirmwareUpdate;
+                if ((Update != null) && (Update.Length >= 512))
+                    Res.Add(new ContainedImage("embedded-update.img", ImageKind.Unknown, null,
+                        -1, Update.Length, Update));
                 return Res.ToArray();
+            }
 
             for (var I = 0; I < Fw.FileCount; I++)
             {

@@ -75,7 +75,7 @@ namespace NyaFsAllwinner
                 SetU32(Result, 0x14, Version);
                 SetU32(Result, 0x18, (uint)Total);
                 SetU32(Result, 0x1C, ImageHeaderSize);
-                SetU32(Result, (HeaderVersion == 0x300) ? 0x3C : 0x38, (uint)Parts.Count);
+                SetU32(Result, (HeaderVersion >= 0x300) ? 0x3C : 0x38, (uint)Parts.Count);
 
                 for (var I = 0; I < Parts.Count; I++)
                 {
@@ -101,7 +101,7 @@ namespace NyaFsAllwinner
                     SetString(Result, Header + 0x10, 16, SubType ?? "FILE");
                     SetU32(Result, Header + 0x20, 0);
 
-                    if (HeaderVersion == 0x300)
+                    if (HeaderVersion >= 0x300)
                     {
                         SetString(Result, Header + 0x24, 256, Name ?? "file");
                         SetU32(Result, Header + 0x124, (uint)Part.Data.Length);

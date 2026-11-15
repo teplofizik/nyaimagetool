@@ -1,4 +1,4 @@
-﻿using NyaIO.Data;
+using NyaIO.Data;
 using System;
 using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
@@ -27,5 +27,7 @@ namespace NyaFsRockchip.Types
         public byte[] FirmwareLoader => ReadArray(LoaderOffset, LoaderLength);
 
         public RkfwData FirmwareData => new RkfwData(Raw, DataOffset, DataLength);
+
+        public byte[] FirmwareUpdate => ReadArray(DataOffset, DataLength);
     }
 }

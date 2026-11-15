@@ -117,3 +117,7 @@ TFTP: return different images based on requested filename
 ## Links
 1. [filesystems info](https://gitlab.arm.com/linux-arm/linux-ae/-/tree/WIP-pmu-nmi/fs)
 - Merged BMU writer: done (BmuMergeWriter, inner re-sign, offsets/sizes, whole-file CRC32 with zeroed CRC field).
+
+## Legacy vendor containers
+- ABV4 относится к Actions Semiconductor, не к Allwinner LiveSuit; отдельный формат, нужен образец.
+- Allwinner LiveSuit / PhoenixSuit / zdisk: старые форматы без доступных образцов; не путать с PhoenixCard (PHOENIX_CARD_IMG) и WTY.

@@ -1,4 +1,4 @@
-﻿using NyaIO.Data;
+using NyaIO.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -85,17 +85,17 @@ namespace NyaFsAllwinner.Types
         /// <summary>
         /// Поддерживается ли версия заголовка
         /// </summary>
-        private bool VersionIsSupported => (HeaderVersion == 0x0100) || (HeaderVersion == 0x0300);
+        private bool VersionIsSupported => (HeaderVersion == 0x0100) || (HeaderVersion == 0x0300) || (HeaderVersion == 0x0403);
 
         /// <summary>
         /// Смещение до данных заголовка образа
         /// </summary>
-        private int ImageHeaderOffset => (HeaderVersion == 0x0300) ? 0x4 : 0x0;
+        private int ImageHeaderOffset => (HeaderVersion >= 0x0300) ? 0x4 : 0x0;
 
         /// <summary>
         /// Размер заголовка образа, включая заполнение, ожидаемый
         /// </summary>
-        private int ImageHeaderSizeEstimated => (HeaderVersion == 0x0300) ? 0x60 : 0x50;
+        private int ImageHeaderSizeEstimated => (HeaderVersion >= 0x0300) ? 0x60 : 0x50;
 
         private ImageHeader Header => new ImageHeader(Raw, 0x20, ImageHeaderSizeEstimated, ImageHeaderOffset);
 
@@ -199,13 +199,13 @@ namespace NyaFsAllwinner.Types
 
             public uint Unknown => ReadUInt32(0x20);
 
-            private int FieldOffset => (HeaderVersion == 0x300u) ? 0x100 : 0x00;
+            private int FieldOffset => (HeaderVersion >= 0x300u) ? 0x100 : 0x00;
 
             public uint StoredLength => ReadUInt32(0x24 + FieldOffset);
-            public uint OriginalLength => ReadUInt32(((HeaderVersion == 0x300u) ? 0x2C : 0x28) + FieldOffset);
-            public uint Offset => ReadUInt32(((HeaderVersion == 0x300u) ? 0x34 : 0x2C) + FieldOffset);
+            public uint OriginalLength => ReadUInt32(((HeaderVersion >= 0x300u) ? 0x2C : 0x28) + FieldOffset);
+            public uint Offset => ReadUInt32(((HeaderVersion >= 0x300u) ? 0x34 : 0x2C) + FieldOffset);
 
-            public string Filename => ReadString((HeaderVersion == 0x300u) ? 0x24 : 0x34, 0x100);
+            public string Filename => ReadString((HeaderVersion >= 0x300u) ? 0x24 : 0x34, 0x100);
         }
     }
 }

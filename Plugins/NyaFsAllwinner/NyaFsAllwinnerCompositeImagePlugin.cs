@@ -33,7 +33,7 @@ namespace NyaFsAllwinner
                     return false;
 
             var Version = Image.ReadUInt32(8);
-            return (Version == 0x0100) || (Version == 0x0300);
+            return (Version == 0x0100) || (Version == 0x0300) || (Version == 0x0403);
         }
 
         public override ContainedImage[] GetImages(ImageData Image)
