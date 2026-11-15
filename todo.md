@@ -16,9 +16,7 @@ EROFS (reader: uncompressed, LZ4/LZMA/DEFLATE/Zstd, big pcluster, ztailpacking, 
 
 F2FS writer (reader+writer ready; NyaFs 1.0.4x):
 * compression: ZSTD/LZ4/LZO/LZORLE done (`set ramfs f2fs.compression zstd|lz4|lzo|lzorle`).
-  LZORLE currently emits a plain LZO1X stream (kernel decompresses it with
-  `lzo1x_decompress_safe`), i.e. valid but without the RLE ratio gain; add a real
-  `lzorle1x_1` compressor later if desired.
+  LZORLE now uses a real LZO1X-RLE stream (`LZO1xRleCompressor`), including zero runs; the decoder handles the `17,1` RLE bitstream header.
 * compression supports inode + 2 direct nodes + 2 indirect + double-indirect;
   cluster size configurable: `set ramfs f2fs.compression.cluster 16K|32K|...|1M`
   (log 2..8, fixed previously at log=2/16 KiB).
@@ -54,6 +52,10 @@ UBIFS: reader + writer.
 - Brotli, lzip (.lz), compress (.Z), 7z/LZMA2-container, zpaq, rzip — not implemented.
 - XZ write via NyaXZ is LZMA2-only: no BCJ/delta filters, full-reset chunks
   (lower ratio than native xz). Read side (SharpCompress) handles BCJ.
+- XZ decompression now uses SharpCompress.XZStream as the primary path; the small
+  managed LZMA2 decoder is retained as fallback (it does not maintain history
+  across interleaved uncompressed chunks 0x01/0x02 or all reset states). A proper
+  stateful LZMA2 decoder remains a separate task.
 
 ### Composite / vendor images
 Android boot v3-v4 reader, TVIP firmware, OpenWRT, legacy multiimage, and most

@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.137" />
-    <PackageReference Include="NyaLZO" Version="1.0.3" />
+    <PackageReference Include="NyaFs" Version="1.0.140" />
+    <PackageReference Include="NyaLZO" Version="1.0.4" />
     <ProjectReference Include="..\Plugins\NyaFsLinux\NyaFsLinux.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsMcuFs\NyaFsMcuFs.csproj" />
@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Plugins\NyaFsRockchip\NyaFsRockchip.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsSwupdate\NyaFsSwupdate.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsAvalon\NyaFsAvalon.csproj" />
+    <ProjectReference Include="..\Plugins\NyaFsWdNas\NyaFsWdNas.csproj" />
 
   </ItemGroup>
 
