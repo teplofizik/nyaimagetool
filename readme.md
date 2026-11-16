@@ -13,9 +13,10 @@ Manual/live testing checklist: [docs/manual-testing.md](docs/manual-testing.md).
 ![Run on linux](/docs/images/linux.png)
 
 ## Supported image formats
-1. Kernel: compressed raw, fit, android, raw, legacy
-2. Ramfs: cpio, ext2, squashfs, cramfs, romfs, compressed cpio or ext2, legacy, fit, android image
-3. Device tree: dtb, fit
+1. Kernel: compressed raw, bare arm64/riscv Image, zImage, fit, android, raw, legacy (kernel/kernel_noload)
+2. Ramfs: cpio, ext2, squashfs, cramfs, romfs, compressed cpio or ext2, legacy (ramdisk/filesystem), fit, android image
+3. Device tree: dtb, fit, legacy (flat_dt)
+4. Other legacy uImage types (standalone, firmware, script, vendor boot images) are exposed as opaque payloads (inspect/extract/import).
 
 ## Supported filesystems
 Supported at now:
@@ -199,6 +200,29 @@ Load device tree from compressed file (dtb image):
 load <filename.ct> devtree <compression>
 ```
 (compression) is "gzip", "lz4", "lzma", "bzip2", "zstd", "lzo"
+
+## U-Boot environment
+
+`NyaFsUboot` plugin edits environment images; CRC32 is verified on load and
+recalculated on save.
+
+```
+env load <env.bin>
+env list
+env get <key>
+env set <key> <value>
+env unset <key>
+env import <env.txt>
+env export <env.txt>
+env save <env-new.bin>
+env new 128K
+env size 64K
+env layout 5 0
+env redundant on|off
+```
+
+`env.txt` contains one `key=value` per line; empty lines and `#` comments are ignored.
+
 ## Commands for image saving
 To store images to legacy or FIT format, there is need to specify os/arch of these images, if they was loaded from images without such info (cpio, gz). 
 
@@ -206,6 +230,11 @@ To store images to legacy or FIT format, there is need to specify os/arch of the
 Store data as FIT image:
 ```
 store <filename.fit>
+```
+
+Store an edited legacy image (any legacy type) back:
+```
+store <out.uImage> all legacy
 ```
 
 ### Ramfs images

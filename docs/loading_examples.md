@@ -81,6 +81,8 @@ same name is replaced.
 
 `sign-images` additionally signs every image node (`/images/*/signature1`).
 
+A FIT boot script is an image node referenced by the configuration `script` property; it is loaded/listed as an opaque `script` element and preserved on rebuild.
+
 External payloads can be written with:
 
 ```
@@ -102,7 +104,7 @@ inspect F:\TEMP\Images\android\boot.fex
 load.sub F:\TEMP\Images\android\boot.fex ramdisk
 ```
 
-Android boot v0-v3 can also be written:
+Android boot v0-v4 can also be written (v4 preserves the appended boot signature):
 
 ```
 load F:\TEMP\Images\android\boot.fex
@@ -134,7 +136,67 @@ inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-releas
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
 ```
 
-## Legacy uImage / script / multi\n\nScript and multi-file uImage are separate commands:\n\n```\nstorescript script.img script.txt\nload boot.fex\nstore multi.img all multi\n```\n\n`storescript` wraps text in `IH_TYPE_SCRIPT`; `store all multi` wraps loaded kernel/ramfs/DTB\nas `IH_TYPE_MULTI` (size table + payloads).\n\n## Allwinner IMAGEWTY\n\n```\nload image.img\nstorewty out.img\n```\n\n`storewty` preserves existing WTY file headers and can also wrap a loaded kernel,\nrootfs and DTB into a new IMAGEWTY container.\n\n## AMLSECU (Amlogic secure update) — hidden plugin
+## Legacy uImage
+
+Single-payload uImage types are detected and loaded by the `legacy` plugin:
+
+- `kernel`, `kernel_noload` -> kernel
+- `ramdisk`, `filesystem` -> filesystem
+- `flat_dt` -> device tree
+- `multi` -> size table + payloads (first payload as kernel, the rest auto-detected)
+- `standalone`, `firmware`, `script` and vendor mkimage types -> opaque `payload`
+  (use `inspect` / `extract` / `use` + `import` to read or replace it)
+
+Script and multi-file uImage have dedicated writers:
+
+```
+storescript script.img script.txt
+load boot.fex
+store multi.img all multi
+```
+
+`storescript` wraps text in `IH_TYPE_SCRIPT`; `store all multi` wraps loaded kernel/ramfs/DTB
+as `IH_TYPE_MULTI` (size table + payloads). An edited legacy image is saved back with
+`store out.img all legacy` (type/name/os/arch/compression are preserved, CRC32 is recalculated).
+
+## Bare Linux Image (arm64 / riscv)
+
+`booti`-style uncompressed kernel `Image` (`ARM\x64` / `RISCV` magic at 0x38)
+and its compressed variants are detected as `kernel/image`:
+
+```
+load F:\TEMP\Images\openwrt\openwrt-25.12.6-imx-cortexa53-imx8m-kernel.bin
+store out.Image kernel image
+```
+
+## U-Boot environment
+
+`NyaFsUboot` plugin: load verifies the CRC32, save recalculates it.
+
+```
+env load env.bin
+env list
+env set bootdelay 5
+env save env-new.bin
+
+env new 128K
+env import env.txt
+env save created.bin
+```
+
+See `Plugins/NyaFsUboot/README.md` for all actions and layouts.
+
+## Allwinner IMAGEWTY
+
+```
+load image.img
+storewty out.img
+```
+
+`storewty` preserves existing WTY file headers and can also wrap a loaded kernel,
+rootfs and DTB into a new IMAGEWTY container.
+
+## AMLSECU (Amlogic secure update) — hidden plugin
 
 An encrypted Android image (marker `AMLSECU!`@0x400). The plugin decrypts the
 sections and hands back a plain Android image for re-detection:

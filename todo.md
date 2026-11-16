@@ -58,8 +58,10 @@ UBIFS: reader + writer.
   stateful LZMA2 decoder remains a separate task.
 
 ### Composite / vendor images
-Android boot v3-v4 reader, TVIP firmware, OpenWRT, legacy multiimage, and most
-vendor image types present in `ImageType` (imx, stm32, sunxi, rk*, zynq*, ...).
+Android vendor_boot reader, TVIP firmware, OpenWRT, bootloader mkimage
+types (imx, stm32, sunxi eGON/TOC0, rk*, zynq*, ...).
+Done: bare arm64/riscv `Image`, all legacy uImage header types, U-Boot environment
+(`env` commands in `NyaFsUboot`), Android boot v4 (signature preserved), FIT script.
 
 ### TAR specifics
 Hard links (stored as regular files), sparse files, pax extended headers, GNU sparse.
@@ -74,10 +76,13 @@ Root node mode!..
 - Зависит от общего хранения произвольных (свободных) типов элементов образа.
 
 ## Composite Images
-Android boot image: v3-4 reader v0-4 writer
+Android boot image: v0-4 reader/writer (v4 boot signature preserved); vendor_boot pending
 TVIP firmware
 OpenWRT
-Legacy multiimage
+Legacy uImage: kernel/kernel_noload/ramdisk/filesystem/flat_dt/multi (RW);
+standalone/firmware/script/vendor are opaque payloads (extract/import/passthrough)
+FIT: kernel/ramdisk/fdt/script (script is an opaque element; config script link preserved)
+U-Boot environment: NyaFsUboot plugin (env load/save/list/get/set/unset/import/export/new/size/layout/redundant)
 Raw MBR/GPT disk images (done: `DiskImagePlugin` + `DiskImageWriter`, primary + extended MBR + GPT)\nIceRiver `.bgz` (hidden `NyaFsIceRiver` plugin: AES-256-CBC + gzip/tar; read/write; direct `.bgz` extension or `load ... all bgz`; ICM168 3.2.15 / custom KS0 Pro/KS5L/KS5M keys unknown)\nDetectionCapabilities (`Magic`/`Extension`/`ExplicitFormat`) + `ImageData.SourceName` + forced `load ... all <format>`
 
 ## Encryption
