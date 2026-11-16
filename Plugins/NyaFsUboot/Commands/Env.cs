@@ -115,9 +115,39 @@ namespace NyaFsUboot.Commands
         {
             var Blob = Processor.GetBlob();
             var S = Sessions.GetOrCreateValue(Blob);
+            if ((S.Env == null) && TryLoadPlanEnv(Blob, out var Env))
+            {
+                S.Env = Env;
+                S.Source = "<loaded>";
+            }
             if (S.Env == null)
                 S.Env = new UbootEnvironment();
             return S;
+        }
+
+        private static bool TryLoadPlanEnv(BaseImageBlob Blob, out UbootEnvironment Env)
+        {
+            Env = null;
+            var Root = Blob.BuildPlan?.Root;
+            if ((Root?.Raw == null) || (Root.Format != "env"))
+                return false;
+
+            return UbootEnvironment.TryParse(Root.Raw, out Env, out _);
+        }
+
+        private static void SyncToPlan(ImageProcessor Processor, Session S)
+        {
+            var Root = Processor.GetBlob().BuildPlan?.Root;
+            if ((Root == null) || (Root.Format != "env"))
+                return;
+
+            var Data = S.Env.Build(out _);
+            if (Data == null)
+                return;
+
+            Root.Raw = Data;
+            Root.Dirty = true;
+            Processor.MarkDirty();
         }
 
         public class EnvStep : ScriptStep
@@ -148,22 +178,46 @@ namespace NyaFsUboot.Commands
             {
                 var S = GetSession(Processor);
 
+                ScriptStepResult Result;
                 switch (Action)
                 {
-                    case "load": return Load(Processor, S);
-                    case "save": return Save(S);
-                    case "new": return New(S);
-                    case "list": return List(S);
-                    case "get": return Get(S);
-                    case "set": return Set(S);
-                    case "unset": return Unset(S);
-                    case "import": return Import(Processor, S);
-                    case "export": return Export(Processor, S);
-                    case "size": return ChangeSize(S);
-                    case "layout": return Layout(S);
-                    case "redundant": return Redundant(S);
+                    case "load": Result = Load(Processor, S); break;
+                    case "save": Result = Save(S); break;
+                    case "new": Result = New(S); break;
+                    case "list": Result = List(S); break;
+                    case "get": Result = Get(S); break;
+                    case "set": Result = Set(S); break;
+                    case "unset": Result = Unset(S); break;
+                    case "import": Result = Import(Processor, S); break;
+                    case "export": Result = Export(Processor, S); break;
+                    case "size": Result = ChangeSize(S); break;
+                    case "layout": Result = Layout(S); break;
+                    case "redundant": Result = Redundant(S); break;
                     default:
                         return new ScriptStepResult(ScriptStepStatus.Error, $"Unknown env action: {Action}");
+                }
+
+                if ((Result.Status == ScriptStepStatus.Ok) && IsMutating(Action))
+                    SyncToPlan(Processor, S);
+
+                return Result;
+            }
+
+            private static bool IsMutating(string Action)
+            {
+                switch (Action)
+                {
+                    case "load":
+                    case "new":
+                    case "set":
+                    case "unset":
+                    case "import":
+                    case "size":
+                    case "layout":
+                    case "redundant":
+                        return true;
+                    default:
+                        return false;
                 }
             }
 

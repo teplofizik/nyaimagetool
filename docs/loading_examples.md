@@ -136,6 +136,24 @@ inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-releas
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
 ```
 
+## Android vendor_boot
+
+`VNDRBOOT` v3/v4 images are a composite of vendor ramdisk fragment(s), DTB and
+(v4) bootconfig:
+
+```
+inspect vendor_boot.img
+load vendor_boot.img
+store vendor_boot-new.img all vendorboot
+```
+
+`v3` exposes `vendor_ramdisk` + `dtb`; `v4` exposes `vendor_ramdisk_0..N`
+(from the vendor ramdisk table), `dtb` and `bootconfig`. Fragment table
+metadata (type/name/board_id) and the header are preserved on save; changed
+fragments get updated sizes/offsets and the region/table are rebuilt.
+
+## TVIP firmware
+
 ## TVIP firmware
 
 `NyaFsTvip` plugin. Sections are `kernel` (uImage), `rootfs` (CramFS),
@@ -196,12 +214,17 @@ store out.Image kernel image
 
 ## U-Boot environment
 
-`NyaFsUboot` plugin: load verifies the CRC32, save recalculates it.
+`NyaFsUboot` plugin. A binary environment is also a first-class image: `load`
+verifies the CRC32 and `store` recalculates it.
 
 ```
+load F:\TEMP\Images\vendor-raw\whats-env.bin
+env get bootcmd
+env set bootdelay 5
+store F:\TEMP\env-new.bin all env
+
 env load env.bin
 env list
-env set bootdelay 5
 env save env-new.bin
 
 env new 128K

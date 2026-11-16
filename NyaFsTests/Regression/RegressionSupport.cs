@@ -88,6 +88,7 @@ namespace NyaFsTests.Regression
                 proc.Plugins.Load(new NyaFsSwupdate.NyaFsSwupdateCompositeImagePlugin());
                 proc.Plugins.Load(new NyaFsAvalon.NyaFsAvalonCompositeImagePlugin());
                 proc.Plugins.Load(new NyaFsTvip.NyaFsTvipCompositeImagePlugin());
+                proc.Plugins.Load(new NyaFsUboot.UbootEnvImagePlugin());
 
                 try
                 {

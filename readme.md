@@ -18,6 +18,7 @@ Manual/live testing checklist: [docs/manual-testing.md](docs/manual-testing.md).
 3. Device tree: dtb, fit, legacy (flat_dt)
 4. Other legacy uImage types (standalone, firmware, script, vendor boot images) are exposed as opaque payloads (inspect/extract/import).
 5. Vendor: TVIP firmware (`TVIP`; kernel/rootfs/splash/uboot sections, `load ... all tvip` / `store ... all tvip`).
+6. Android vendor_boot (`VNDRBOOT` v3/v4: vendor ramdisk fragments, DTB, bootconfig; `all vendorboot`).
 
 ## Supported filesystems
 Supported at now:
@@ -205,7 +206,16 @@ load <filename.ct> devtree <compression>
 ## U-Boot environment
 
 `NyaFsUboot` plugin edits environment images; CRC32 is verified on load and
-recalculated on save.
+recalculated on save. A binary environment is also a normal `load` image `env`:
+
+```
+load <env.bin>
+env get bootcmd
+env set bootdelay 5
+store <env-new.bin> all env
+```
+
+The standalone command form is:
 
 ```
 env load <env.bin>

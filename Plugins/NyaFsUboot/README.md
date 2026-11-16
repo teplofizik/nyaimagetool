@@ -7,6 +7,23 @@ with CRC32 verification and written back with a recalculated CRC32, preserving t
 source sector size, number of copies and header layout (4-byte CRC, optional
 flags byte/u32).
 
+## First-class `load` / `store`
+
+The plugin also registers a composite image format `env`, so a binary environment
+is recognised by the normal pipeline:
+
+```
+load F:\TEMP\Images\vendor-raw\whats-env.bin
+inspect F:\TEMP\Images\vendor-raw\whats-env.bin
+env get bootcmd
+env set bootdelay 5
+store F:\TEMP\env-new.bin all env
+```
+
+After `load`, the `env` commands edit the loaded build plan; `store` (with or
+without `all env`) writes the CRC-correct environment. An untouched `load` +
+`store` round-trips byte-for-byte.
+
 ## Commands
 
 ```

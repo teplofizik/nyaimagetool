@@ -58,10 +58,27 @@ UBIFS: reader + writer.
   stateful LZMA2 decoder remains a separate task.
 
 ### Composite / vendor images
-Android vendor_boot reader, OpenWRT, bootloader mkimage
-types (imx, stm32, sunxi eGON/TOC0, rk*, zynq*, ...).
+OpenWRT.
+
+### Bootloader mkimage images (deferred, samples needed)
+Not implemented yet (only enum names exist in `ImageType`/`FitHelper`):
+`kwbimage`, `imximage`, `imx8image`, `imx8mimage`, `ublimage`, `omapimage`,
+`aisimage`, `pblimage`, `mxsimage`, `gpimage`, `atmelimage`, `socfpgaimage(_v1)`,
+`x86_setup`, `lpc32xximage`, `rkimage`, `rksd`, `rkspi`, `zynqimage`,
+`zynqmpimage`, `zynqmpbif`, `vybridimage`, `tee`, `pmmc`, `stm32image`,
+`mtk_image`, `copro`, `sunxi_egon`, `sunxi_toc0`.
+
+Where to get samples/specs:
+- `mkimage -T <type>` reference images (header/layout only; payloads are vendor-specific).
+- Vendor GitHub releases, OpenWrt firmware selector, Armbian, board vendor update files.
+- These are mostly SPL/U-Boot/bootloader images, not kernel/rootfs; a reasonable first
+  step is detect + opaque preserve + extract, then editing if a format is understood.
+- Already covered but different formats: Rockchip RKFW/RKnano, Allwinner WTY
+  (PhoenixSuit), Android boot/vendor_boot, U-Boot FIT/legacy/env.
+
 Done: bare arm64/riscv `Image`, all legacy uImage header types, U-Boot environment
-(`env` commands in `NyaFsUboot`), Android boot v4 (signature preserved), FIT script.
+(`env` first-class + commands in `NyaFsUboot`), Android boot v4 (signature preserved),
+Android vendor_boot v3/v4, FIT script, TVIP.
 
 ### TAR specifics
 Hard links (stored as regular files), sparse files, pax extended headers, GNU sparse.
@@ -76,13 +93,14 @@ Root node mode!..
 - Зависит от общего хранения произвольных (свободных) типов элементов образа.
 
 ## Composite Images
-Android boot image: v0-4 reader/writer (v4 boot signature preserved); vendor_boot pending
+Android boot image: v0-4 reader/writer (v4 boot signature preserved)
+Android vendor_boot: v3/v4 (fragments/table/dtb/bootconfig; RW)
 TVIP firmware
 OpenWRT
 Legacy uImage: kernel/kernel_noload/ramdisk/filesystem/flat_dt/multi (RW);
 standalone/firmware/script/vendor are opaque payloads (extract/import/passthrough)
 FIT: kernel/ramdisk/fdt/script (script is an opaque element; config script link preserved)
-U-Boot environment: NyaFsUboot plugin (env load/save/list/get/set/unset/import/export/new/size/layout/redundant)
+U-Boot environment: NyaFsUboot plugin (first-class `load`/`store` + env load/save/list/get/set/unset/import/export/new/size/layout/redundant)
 Raw MBR/GPT disk images (done: `DiskImagePlugin` + `DiskImageWriter`, primary + extended MBR + GPT)\nIceRiver `.bgz` (hidden `NyaFsIceRiver` plugin: AES-256-CBC + gzip/tar; read/write; direct `.bgz` extension or `load ... all bgz`; ICM168 3.2.15 / custom KS0 Pro/KS5L/KS5M keys unknown)\nDetectionCapabilities (`Magic`/`Extension`/`ExplicitFormat`) + `ImageData.SourceName` + forced `load ... all <format>`
 
 ## Encryption
