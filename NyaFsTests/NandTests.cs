@@ -196,5 +196,62 @@ namespace NyaFsTests
             Assert.All(Blocks.Take(2), B => Assert.True(B.Used && !B.Ubi && B.Container == null));
             Assert.All(Blocks.Skip(2), B => Assert.True(B.Ubi));
         }
+
+        [Fact]
+        public void Nand_Writer_Emits_Linear_Image()
+        {
+            var Ubi = Fixture("ubifs_sample.ubi");
+            var Raw = Wrap(Ubi, Page, Oob);
+
+            var Dump = Path.Combine(Path.GetTempPath(), "nand-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-" + Guid.NewGuid().ToString("N") + ".img");
+
+            try
+            {
+                File.WriteAllBytes(Dump, Raw);
+
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Plugins.Load(new NyaFsNandCompositeImagePlugin());
+                Proc.Process(Parser.ParseScript("t", new[] {
+                    "load \"" + Dump + "\"",
+                    "store \"" + Out + "\" all nand"
+                }));
+
+                Assert.True(File.Exists(Out));
+                var Linear = File.ReadAllBytes(Out);
+
+                Assert.Equal(Ubi.Length, Linear.Length);
+                Assert.Equal(Ubi, Linear);
+            }
+            finally
+            {
+                if (File.Exists(Dump)) File.Delete(Dump);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
+
+        [Fact]
+        public void Nand_Writer_Rejects_Oversized_Region()
+        {
+            var Ubi = Fixture("ubifs_sample.ubi");
+            var Raw = Wrap(Ubi, Page, Oob);
+
+            var Nand = NandImage.TryParse(Raw, 0, Raw.Length, "dump.bin");
+            Assert.NotNull(Nand);
+
+            var Root = new ImageBuildNode { Name = "dump.bin", Raw = Raw };
+            Root.Children.Add(new ImageBuildNode
+            {
+                Name = Nand.Regions[0].Name,
+                Raw = new byte[Nand.Regions[0].Size + 1]
+            });
+
+            var Blob = new BaseImageBlob { BuildPlan = new ImageBuildPlan(Root) };
+            var Written = NandImageWriter.Build(Blob, out var Error);
+
+            Assert.Null(Written);
+            Assert.Contains("too large", Error);
+        }
     }
 }

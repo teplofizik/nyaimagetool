@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Plugins.Base;
@@ -34,7 +34,7 @@ namespace NyaFsNand
         public override DetectionCapabilities DetectCapabilities =>
             DetectionCapabilities.Magic | DetectionCapabilities.Extension;
 
-        public override bool SupportWrite => false;
+        public override bool SupportWrite => true;
 
         /// <summary>Keep even fully encrypted regions so they can still be listed/extracted.</summary>
         public override bool PreserveUnknownChildren => true;
@@ -96,6 +96,8 @@ namespace NyaFsNand
             };
         }
 
+        public override byte[] Build(BaseImageBlob Blob, out string Error) =>
+            NandImageWriter.Build(Blob, out Error);
         public override ContainedImage[] GetImages(ImageData Image)
         {
             var Nand = Parse(Image, true);

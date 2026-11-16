@@ -82,8 +82,27 @@ Explicit loading (also for OOB-stripped dumps):
 load dump.bin all nand
 ```
 
-Writing back into a NAND dump is not supported: changed pages would need the
-vendor ECC (e.g. BCH) to be regenerated.
+## Writing (linear images only)
+
+The writer preserves the source flash layout and emits a **logical image without
+OOB/ECC**, replacing only the changed regions; everything else is copied from the
+source and untouched regions stay byte-identical:
+
+```
+load dump.bin
+file /etc/new.conf new.conf 644 0 0
+store updated.bin all nand
+```
+
+- a raw dump turns into a linear image (this is also the easiest way to strip
+  OOB/ECC from a dump);
+- a linear image round-trips byte for byte when nothing changed;
+- replaced regions keep their source size, the unused tail is filled with `0xFF`
+  (erased flash); a replacement larger than its region is rejected.
+
+Writing raw (OOB/ECC) dumps back is intentionally not supported: the vendor ECC
+(e.g. BCH) would have to be regenerated. Feed the linear image to your flasher
+(`nandwrite`, vendor tool), which applies ECC itself.
 
 ## Notes
 
