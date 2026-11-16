@@ -17,6 +17,7 @@ Manual/live testing checklist: [docs/manual-testing.md](docs/manual-testing.md).
 2. Ramfs: cpio, ext2, squashfs, cramfs, romfs, compressed cpio or ext2, legacy (ramdisk/filesystem), fit, android image
 3. Device tree: dtb, fit, legacy (flat_dt)
 4. Other legacy uImage types (standalone, firmware, script, vendor boot images) are exposed as opaque payloads (inspect/extract/import).
+5. Vendor: TVIP firmware (`TVIP`; kernel/rootfs/splash/uboot sections, `load ... all tvip` / `store ... all tvip`).
 
 ## Supported filesystems
 Supported at now:
@@ -24,7 +25,7 @@ Supported at now:
 2. TAR (RW, GNU long names, PAX xattrs)
 3. EXT2 / EXT3 / EXT4 (RW; xattr: external block + inline/EA-inode read)
 4. SquashFs (RW; extended inodes + xattr table)
-5. CramFs (RW; little- and big-endian detection, selectable output endian)
+5. CramFs (RW; little-/big-endian detection, selectable output endian, 16-byte-inode TVIP variant)
 6. RomFs (RW)
 7. FAT12 / FAT16 / FAT32 (RW, VFAT long names)
 8. F2FS (RW): files/dirs/symlinks, indirect/double-indirect, xattr (inline + external

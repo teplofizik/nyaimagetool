@@ -58,7 +58,7 @@ UBIFS: reader + writer.
   stateful LZMA2 decoder remains a separate task.
 
 ### Composite / vendor images
-Android vendor_boot reader, TVIP firmware, OpenWRT, bootloader mkimage
+Android vendor_boot reader, OpenWRT, bootloader mkimage
 types (imx, stm32, sunxi eGON/TOC0, rk*, zynq*, ...).
 Done: bare arm64/riscv `Image`, all legacy uImage header types, U-Boot environment
 (`env` commands in `NyaFsUboot`), Android boot v4 (signature preserved), FIT script.

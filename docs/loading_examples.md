@@ -136,6 +136,31 @@ inspect G:\Projects\Асик конфиг\BMU\DATABASE\Antminer-T21-merge-releas
 load.sub  ...\Antminer-T21-merge-release-20240716102718.bmu Antminer T21/AMLCtrl_BHB6870X/update.bmu
 ```
 
+## TVIP firmware
+
+`NyaFsTvip` plugin. Sections are `kernel` (uImage), `rootfs` (CramFS),
+`splash` and `uboot`:
+
+```
+inspect F:\TEMP\Images\vendor-raw\tvip_firmware.bin
+load F:\TEMP\Images\vendor-raw\tvip_firmware.bin
+extract F:\TEMP\Images\vendor-raw\tvip_firmware.bin rootfs F:\TEMP\rootfs.cramfs
+```
+
+The rootfs uses a CramFS variant with 16-byte inodes; it is read and written
+transparently (`Fs.CramFsWideInodes`). Editing and storing back:
+
+```
+load F:\TEMP\Images\vendor-raw\tvip_firmware.bin
+file etc/version.txt F:\TEMP\version.txt rw-r--r-- 0 0
+store F:\TEMP\tvip-new.bin all tvip
+```
+
+Dirty sections get a recalculated size/MD5; untouched sections are copied
+byte-for-byte. The 0x24-byte global header is preserved.
+
+## Legacy uImage
+
 ## Legacy uImage
 
 Single-payload uImage types are detected and loaded by the `legacy` plugin:
