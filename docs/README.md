@@ -8,6 +8,7 @@ Start here:
 
 Declarative builds:
 
+- [cli.md](cli.md) - `build`, `mkimage`, `layout export|validate`, `store`
 - [build_plan.md](build_plan.md) - layout schema, `build`/`mkimage`/`layout`,
   NAND, disk, filesystem, UBI and ISO examples
 - [fs_plugin.md](fs_plugin.md) - filesystem plugin contract, options and size rules

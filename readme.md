@@ -139,6 +139,38 @@ Echo any text:
 echo <text>
 ```
 
+## Declarative layouts (build plans)
+
+Instead of loading/editing/storing step by step, an image can be described in
+YAML/JSON and built in one command:
+
+```text
+build <schema.yaml> <output>
+```
+
+Schemas cover NAND slots, disk MBR/GPT, standalone filesystems, multi-volume UBI,
+ISO9660 (El Torito), FIT/Android and RKFW/SWUpdate templates. `size` is the
+region/output length, `fs-size` is the filesystem volume size, and
+`content.compression` compresses file/blob/dir payloads.
+
+```yaml
+schema: 1
+format: nand
+options: { page: 2048, oob: 0, block: 131072, blocks: 2048 }
+children:
+  - { name: boot, offset: 0x0, size: auto, kind: raw,
+      content: { file: inputs/bootloader.bin } }
+  - { name: rootfs, offset: 0x200000, size: auto, kind: filesystem,
+      format: cpio, content: { dir: inputs/rootfs, compression: gzip } }
+```
+
+`mkimage <format> <schema>` creates an editable session plan (including a
+standalone filesystem; save it with `store out ramfs <format>`), and
+`layout export`/`layout validate` convert between images and schemas.
+
+See [docs/cli.md](docs/cli.md), [docs/build_plan.md](docs/build_plan.md) and
+[docs/fs_plugin.md](docs/fs_plugin.md).
+
 ## Commands for image loading
 Default load command (type and image format autodetect):
 ```
