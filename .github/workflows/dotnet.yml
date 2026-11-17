@@ -1,37 +1,68 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: .NET
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
+  workflow_dispatch:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: [ '3.1.x', '6.0.x' ]
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Setup dotnet  ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ matrix.dotnet-version }}
-      # You can test your matrix by printing the current dotnet version
-    - name: Display dotnet version
-      run: dotnet --version
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - name: Checkout nyaimagetool
+        uses: actions/checkout@v4
+
+      - name: Checkout NyaFs
+        uses: actions/checkout@v4
+        with:
+          repository: teplofizik/nyafs
+          # main for main, develop for develop/PRs into develop
+          ref: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
+          path: nyafs-src
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Show SDK
+        run: dotnet --version
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Pack local NyaFs
+        shell: pwsh
+        run: |
+          $feed = Join-Path $env:RUNNER_TEMP 'local.nuget'
+          New-Item -ItemType Directory -Path $feed -Force | Out-Null
+          dotnet pack nyafs-src/src/NyaFs/NyaFs.csproj -c Release -o $feed
+          dotnet nuget add source $feed --name local-nyafs
+          Get-ChildItem $feed
+
+      - name: Restore
+        run: dotnet restore NyaImageTool.sln
+
+      - name: Build
+        run: dotnet build NyaImageTool.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test NyaImageTool.sln -c Release --no-build --verbosity normal
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            **/*.binlog
+            **/*.log
+          if-no-files-found: ignore
