@@ -118,9 +118,12 @@ namespace NyaFsNand
 
             var Slots = new List<PlanSlot>();
 
+            Root.Options.TryGetValue("plan.base", out var BaseDir);
+            Root.Options.TryGetValue("plan.blobs", out var BlobDir);
+
             foreach (var Child in Root.Children)
             {
-                if (!TrySerializeNode(Child, Plugins, out var Data, out var Skip, out var Err))
+                if (!TrySerializeNode(Child, Plugins, BaseDir, BlobDir, out var Data, out var Skip, out var Err))
                 {
                     Error = Err;
                     return null;
@@ -152,45 +155,28 @@ namespace NyaFsNand
         }
 
         private static bool TrySerializeNode(ImageBuildNode Node, PluginRegistry Plugins,
-            out byte[] Data, out bool Skip, out string Error)
+            string BaseDir, string BlobDir, out byte[] Data, out bool Skip, out string Error)
         {
             Data = null;
             Skip = false;
             Error = null;
 
-            if (Node.Content != null)
+            if (PlanContentResolver.TryResolve(Node, Plugins, BaseDir, BlobDir, out var ContentData, out var ContentSkip, out var ContentError))
             {
-                if (Node.Content.Empty)
+                if (!String.IsNullOrEmpty(ContentError))
+                {
+                    Error = ContentError;
+                    return false;
+                }
+
+                if (ContentSkip)
                 {
                     Skip = true;
                     return true;
                 }
 
-                if (!String.IsNullOrEmpty(Node.Content.File))
-                {
-                    if (!Node.Dirty)
-                    {
-                        var Path = Node.Content.File;
-                        if (!System.IO.File.Exists(Path))
-                        {
-                            Error = $"Content file '{Path}' for '{Node.Path}' is not found";
-                            return false;
-                        }
-
-                        Data = System.IO.File.ReadAllBytes(Path);
-                        return true;
-                    }
-                }
-                else if (!String.IsNullOrEmpty(Node.Content.Blob))
-                {
-                    Error = $"Blob content for '{Node.Path}' needs a cache/bundle (not implemented yet)";
-                    return false;
-                }
-                else if (!String.IsNullOrEmpty(Node.Content.Dir))
-                {
-                    Error = $"Directory content for '{Node.Path}' needs an inline filesystem builder (not implemented yet)";
-                    return false;
-                }
+                Data = ContentData;
+                return true;
             }
 
             if (Node.Fs != null)

@@ -201,5 +201,89 @@ namespace NyaFsTests
                 if (Directory.Exists(Blobs)) Directory.Delete(Blobs, true);
             }
         }
+
+        [Fact]
+        public void Plan_Build_Command_With_File_And_Dir_Content()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nand-src-" + Guid.NewGuid().ToString("N"));
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Blob = Path.Combine(Root, "boot.bin");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Payload = Encoding.ASCII.GetBytes("declarative bootloader");
+
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(Root, "config", "etc"));
+                File.WriteAllBytes(Blob, Payload);
+                File.WriteAllText(Path.Combine(Root, "config", "etc", "serial"), "SN12345");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 0, block: 131072, blocks: 32 }\n" +
+                    "children:\n" +
+                    "  - { name: boot, offset: 0x0, size: 0x20000, kind: raw, content: { file: '" + Blob + "' } }\n" +
+                    "  - { name: config, offset: 0x20000, size: auto, kind: filesystem, format: ubifs," +
+                    " content: { dir: '" + Path.Combine(Root, "config") + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                Assert.True(File.Exists(Out));
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(32 * Block, Data.Length);
+                Assert.Equal(Payload, Data.Take(Payload.Length).ToArray());
+                Assert.Equal(Encoding.ASCII.GetBytes("UBI#"), Data.Skip(Block).Take(4).ToArray());
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
+
+        [Fact]
+        public void Plan_Build_Command_Resolves_Blob_Content()
+        {
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Payload = Encoding.ASCII.GetBytes("cached immutable payload");
+            var Sha = Sha256Hex(Payload);
+
+            try
+            {
+                var Blobs = Layout + ".blobs";
+                Directory.CreateDirectory(Blobs);
+                File.WriteAllBytes(Path.Combine(Blobs, Sha), Payload);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 128, block: 131072, blocks: 4 }\n" +
+                    "children:\n" +
+                    "  - { name: boot, offset: 0x0, size: 0x20000, kind: raw," +
+                    " content: { blob: 'sha256:" + Sha + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                Assert.True(File.Exists(Out));
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(4 * Block, Data.Length);
+                Assert.Equal(Payload, Data.Take(Payload.Length).ToArray());
+            }
+            finally
+            {
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+                var Blobs = Layout + ".blobs";
+                if (Directory.Exists(Blobs)) Directory.Delete(Blobs, true);
+            }
+        }
+
+        private static string Sha256Hex(byte[] Data)
+        {
+            using (var Sha = System.Security.Cryptography.SHA256.Create())
+                return String.Concat(Sha.ComputeHash(Data).Select(B => B.ToString("x2")));
+        }
     }
 }

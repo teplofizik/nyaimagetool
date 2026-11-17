@@ -113,8 +113,8 @@ children:
 | ------- | ----- | ------ |
 | `{ file: path }` | байты файла как есть (работает и для контейнеров) | реализовано |
 | `{ empty: true }` | оставить стёртым (`fill`) | реализовано |
-| `{ dir: path, fs: name }` | собрать ФС из каталога | планируется |
-| `{ blob: "sha256:<hex>" }` | взять из кэша или бандла по хэшу | планируется |
+| `{ dir: path, fs: name }` | собрать ФС из каталога (файлы/каталоги/симлинки) | реализовано |
+| `{ blob: "sha256:<hex>" }` | взять из `<schema>.blobs`, каталога схемы или локального кэша | реализовано |
 | нет `content` | нода наполняется командами | реализовано |
 
 Дополнительно `content` может содержать `compression`, `exclude` и другие
@@ -130,7 +130,7 @@ children:
 | `layout export <image> <schema.yaml>` | экспорт раскладки; immutable-содержимое кладётся в `<schema>.blobs/` | реализовано |
 | `layout validate <schema.yaml>` | проверка схемы без сборки | реализовано |
 | `mkimage <format> <schema.yaml>` | создать план (слоты) для дальнейшего редактирования командами | реализовано |
-| `build <schema.yaml> <out>` | собрать образ по схеме (декларативный путь) | планируется |
+| `build <schema.yaml> <out>` | собрать образ по схеме (декларативный путь) | реализовано |
 | `pack <schema.yaml> <bundle>` | упаковать схему и кэшированные блобы в бандл | планируется |
 | `use`, `import`, `mkfs`, `dir`, `file`, `loaddir`, `set`, `store` | существующие команды редактирования плана |
 
@@ -244,7 +244,8 @@ public class CompositeImagePlugin
 - API плагинов: `SupportLayout`, `CreatePlan`, `Build(Blob, Plugins, ...)`;
 - `PlanPacker` (слоты, выравнивание, повторы, `0xFF`, проверка перекрытий);
 - активная нода: `use` + `GetFs/GetKernel/GetDevTree`, `MarkDirty` по ветке;
-- `mkimage`, `layout export`, `layout validate`;
+- `mkimage`, `build`, `layout export`, `layout validate`;
+- `content.file`, `content.dir` (каталог → ФС в памяти), `content.blob` (локальный кэш), `content.empty`;
 - NAND: `CreatePlan` + layout-режим писателя (raw и filesystem-слоты);
 - `layout export` пишет immutable-содержимое в `<schema>.blobs/<sha256>` и
   ссылается на него через `content.file`, поэтому экспорт → `mkimage` → `store`
