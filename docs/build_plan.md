@@ -115,10 +115,11 @@ children:
 | `{ empty: true }` | оставить стёртым (`fill`) | реализовано |
 | `{ dir: path, fs: name }` | собрать ФС из каталога (файлы/каталоги/симлинки) | реализовано |
 | `{ blob: "sha256:<hex>" }` | взять из `<schema>.blobs`, каталога схемы или локального кэша | реализовано |
+| `{ ..., compression: gzip }` | сжать итоговые байты (`gzip/xz/lzma/lz4/bzip2/zstd`); не применять к уже сжатым файлам | реализовано |
 | нет `content` | нода наполняется командами | реализовано |
 
-Дополнительно `content` может содержать `compression`, `exclude` и другие
-ключи — их читает соответствующий плагин/писатель.
+Дополнительно `content` может содержать `exclude` и другие ключи — их читает
+соответствующий плагин/писатель.
 
 Если нода с `content` затем редактируется командой, команда перекрывает
 источник; в `layout export` попадёт уже результат правок.
@@ -127,7 +128,7 @@ children:
 
 | команда | назначение |
 | ------- | ---------- |
-| `layout export <image> <schema.yaml>` | экспорт раскладки; immutable-содержимое кладётся в `<schema>.blobs/` | реализовано |
+| `layout export <image> <schema.yaml>` | экспорт раскладки; ФС → `<schema>.files/` (`content.dir`), ядра/контейнеры → `<schema>.blobs/` | реализовано |
 | `layout validate <schema.yaml>` | проверка схемы без сборки | реализовано |
 | `mkimage <format> <schema.yaml>` | создать план (слоты) для дальнейшего редактирования командами | реализовано |
 | `build <schema.yaml> <out>` | собрать образ по схеме (декларативный путь) | реализовано |
@@ -356,6 +357,9 @@ children:
 - активная нода: `use` + `GetFs/GetKernel/GetDevTree`, `MarkDirty` по ветке;
 - `mkimage`, `build`, `layout export`, `layout validate`;
 - `content.file`, `content.dir` (каталог → ФС в памяти), `content.blob` (локальный кэш), `content.empty`;
+- `content.compression` (`gzip`, `xz`, `lzma`, `lz4`, `bzip2`, `zstd`): сжимает
+  итоговые байты file/blob/dir (например, cpio-ramdisk), входные архивы
+  подавайте без этой опции;
 - NAND: `CreatePlan` + layout-режим писателя (raw и filesystem-слоты);
 - Диск: `CreatePlan` + layout-режим (`DiskImageBuilder`, MBR и GPT с
   protective MBR, primary/backup заголовками, CRC32 и GPT-именами);
@@ -363,13 +367,15 @@ children:
   записей, пересчёт хешей и размеров;
 - Standalone ФС (`build` + `layout validate`): `format: squashfs|ext4|fat|...`,
   корневой `content.dir`; FS-опции (`compression`, `fat.type`, `jffs2.*`,
-  `erofs.*`, `udf.*`, `size`, ...) применяются и в узлах NAND/диска;
-- `layout export` пишет immutable-содержимое в `<schema>.blobs/<sha256>` и
-  ссылается на него через `content.file`, поэтому экспорт → `mkimage` → `store`
-  воспроизводит образ побайтово (проверено на 256 МиБ дампе Amlogic).
+  `erofs.*`, `udf.*`, `fs-size`, ...) применяются и в узлах NAND/диска;
+- `layout export` для **файловых систем** (cpio, ext4, squashfs, ...) выгружает
+  дерево в `<schema>.files/<path>/` и пишет `content.dir` + `compression`,
+  поэтому ramdisk остаётся редактируемым (не immutable); ядра, DTB и
+  контейнеры по-прежнему сохраняются как immutable-файлы в `<schema>.blobs/`;
+  если ФС содержит спецфайлы (device/fifo/socket), экспорт откатывается на
+  immutable-блоб, чтобы не потерять содержимое.
 - Контейнеры **FIT** и **Android** собираются из дочерних нод (`PlanMaterializer`):
-  ядро/ramdisk/DTB можно задавать файлами и каталогами, без промежуточных файлов;
-  при экспорте они по-прежнему сохраняются как immutable-файл и пересобираются как есть.
+  ядро/ramdisk/DTB можно задавать файлами и каталогами, без промежуточных файлов.
 - Мультитомный UBI в одной ноде (`format: ubi` + несколько томов) — следующий этап;
   отдельные UBI-разделы (`format: ubifs`) собираются уже сейчас.
 

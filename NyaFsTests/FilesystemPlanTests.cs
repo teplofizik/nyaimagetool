@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using NyaFs.Filesystem.Fat;
 using NyaFs.Filesystem.SquashFs;
@@ -175,6 +176,95 @@ namespace NyaFsTests
             finally
             {
                 if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Cpio_Content_Compression_Produces_Archive()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "fs-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "cpio.yaml");
+            var Out = Path.Combine(Dir, "root.cpio.gz");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "hello cpio");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: cpio\n" +
+                    "content: { dir: root, compression: gzip }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(0x1F, Data[0]);
+                Assert.Equal(0x8B, Data[1]);
+
+                var Cpio = Gunzip(Data);
+                Assert.Equal((byte)'0', Cpio[0]);
+                Assert.Equal((byte)'7', Cpio[1]);
+                Assert.Equal((byte)'0', Cpio[2]);
+                Assert.Equal((byte)'7', Cpio[3]);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Layout_Export_Cpio_Is_Editable_Directory()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "fs-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "cpio.yaml");
+            var Image = Path.Combine(Dir, "root.cpio.gz");
+            var Exported = Path.Combine(Dir, "exported.yaml");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "hello export");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: cpio\n" +
+                    "content: { dir: root, compression: gzip }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc,
+                    "build \"" + Layout + "\" \"" + Image + "\"",
+                    "layout export \"" + Image + "\" \"" + Exported + "\"");
+
+                var Yaml = File.ReadAllText(Exported);
+                Assert.Contains("compression: 'gzip'", Yaml);
+                Assert.Contains("dir:", Yaml);
+                Assert.DoesNotContain("immutable: true", Yaml);
+
+                var Extracted = Path.Combine(Exported + ".files", "root", "etc", "hello");
+                Assert.True(File.Exists(Extracted));
+                Assert.Equal("hello export", File.ReadAllText(Extracted));
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        private static byte[] Gunzip(byte[] Data)
+        {
+            using (var Input = new MemoryStream(Data))
+            using (var Gzip = new GZipStream(Input, CompressionMode.Decompress))
+            using (var Output = new MemoryStream())
+            {
+                Gzip.CopyTo(Output);
+                return Output.ToArray();
             }
         }
 

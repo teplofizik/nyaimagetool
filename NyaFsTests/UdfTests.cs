@@ -6,6 +6,7 @@ using Xunit;
 
 namespace NyaFsTests
 {
+    [Collection("PluginHost")]
     public class UdfTests
     {
         [Fact]

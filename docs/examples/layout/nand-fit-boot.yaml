@@ -11,4 +11,5 @@ children:
     format: fit
     children:
       - { name: kernel, kind: kernel, content: { file: inputs/Image } }
-      - { name: ramdisk, kind: filesystem, format: cpio, content: { dir: inputs/rootfs } }
+      - { name: ramdisk, kind: filesystem, format: cpio,
+          content: { dir: inputs/rootfs, compression: gzip } }
