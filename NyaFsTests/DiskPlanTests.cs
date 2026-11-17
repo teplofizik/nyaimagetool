@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -163,6 +163,45 @@ namespace NyaFsTests
             Data[Offset + 3] = (byte)(Value >> 24);
         }
 
+        [Fact]
+        public void BuildTo_Streams_Large_Gpt_Without_Buffering()
+        {
+            var Root = new ImageBuildNode
+            {
+                Name = "disk",
+                Path = "",
+                Kind = ImageKind.Unknown,
+                Format = "disk"
+            };
+            Root.Options["table"] = "gpt";
+            Root.Options["total"] = "2560M";
+
+            var Sink = new CountingStream();
+            Assert.True(DiskImageBuilder.BuildTo(Sink, Root, Processor().Plugins, out var Error), Error);
+            Assert.Equal(2560L * 1024 * 1024, Sink.Length);
+        }
+
+        private sealed class CountingStream : Stream
+        {
+            private long Count;
+
+            public override bool CanRead => false;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length => Count;
+
+            public override long Position
+            {
+                get => Count;
+                set => throw new NotSupportedException();
+            }
+
+            public override void Write(byte[] Buffer, int Offset, int Count) => this.Count += Count;
+            public override void Flush() { }
+            public override int Read(byte[] Buffer, int Offset, int Count) => throw new NotSupportedException();
+            public override long Seek(long Offset, SeekOrigin Origin) => throw new NotSupportedException();
+            public override void SetLength(long Value) => throw new NotSupportedException();
+        }
         private static uint Crc32(byte[] Data, int Offset, int Length)
         {
             var Crc = 0xFFFFFFFFu;
