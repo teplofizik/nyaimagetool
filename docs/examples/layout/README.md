@@ -99,3 +99,15 @@ NyaImageTool.exe build-all.nyas
 CPIO+`sw-description` (SWUpdate) из `inputs/update.img` / `inputs/package.swu`,
 а из раскладки — только заменяемые/добавляемые записи. Без `options.template`
 эти форматы не собираются.
+
+## Standalone filesystems
+
+`fs-squashfs.yaml` and `fs-fat.yaml` are images with a filesystem at the root:
+`format` is the filesystem, `content.dir` is the payload and `options` carry the
+format parameters (compression, fat type, size, jffs2/erofs/udf settings).
+
+```
+> build fs-squashfs.yaml root.squashfs
+> build fs-fat.yaml efi.img
+> layout validate fs-squashfs.yaml
+```

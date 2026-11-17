@@ -228,6 +228,48 @@ public class CompositeImagePlugin
 - После сборки рекомендуется round-trip: `load` результата через пайплайн и
   сверка обнаруженного дерева с ожидаемым.
 
+## Файловая система как корень
+
+Если `format` — файловая система, `build` собирает standalone-образ (без
+NAND/диска). Содержимое задаётся корневым `content.dir`, параметры — `options`:
+
+```yaml
+schema: 1
+format: squashfs
+options: { compression: lz4 }
+content: { dir: inputs/rootfs }
+```
+
+```yaml
+schema: 1
+format: fat
+options: { type: fat16, size: 4M }
+content: { dir: inputs/efi }
+```
+
+Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs2`, `yaffs2`,
+`f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`, `cpio`, `tar` и другие
+плагины с записью. `layout validate` проверяет такие схемы, `mkimage` пока
+только composite-форматы.
+
+Параметры (те же имена работают на `kind: filesystem` узлах внутри
+NAND/диска; без префикса — только если `format` совпадает):
+
+| опция | значения |
+| --- | --- |
+| `size` / `fs-size` | целевой размер ФС (для FAT/MCU; ext/f2fs считают сами) |
+| `compression` / `squashfs.compression` | `gzip`, `lzma`, `lz4`, `zstd` |
+| `ubifs.compression` | `none`, `lzo`, `zlib`, `zstd`; `container: ubi|raw` |
+| `fat.type` | `auto`, `fat12`, `fat16`, `fat32` |
+| `jffs2.compression` | `none`, `zlib`, `rtime`, `lzo`, `priority` |
+| `jffs2.pagesize`, `jffs2.eraseblock` | размеры (4K, 64K, ...) |
+| `udf.vat`, `udf.sparable` | bool (взаимоисключающие) |
+| `erofs.fragments`, `erofs.tail-fragments`, `erofs.shared-xattrs`, `erofs.compression-level`, `erofs.xattr-prefix` | EROFS-опции |
+| `f2fs.compression`, `f2fs.compression.cluster` | `none/lzo/lz4/zstd/lzorle`, 16K..1M |
+| `cramfs.endian` | `little`/`big` |
+
+`content` также понимает `user`, `group`, `dir-mode`, `file-mode`.
+
 ## Диск (MBR/GPT)
 
 `format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
@@ -301,6 +343,9 @@ children:
   protective MBR, primary/backup заголовками, CRC32 и GPT-именами);
 - RKFW/SWUpdate: шаблонный режим (`options.template`), замена/добавление
   записей, пересчёт хешей и размеров;
+- Standalone ФС (`build` + `layout validate`): `format: squashfs|ext4|fat|...`,
+  корневой `content.dir`; FS-опции (`compression`, `fat.type`, `jffs2.*`,
+  `erofs.*`, `udf.*`, `size`, ...) применяются и в узлах NAND/диска;
 - `layout export` пишет immutable-содержимое в `<schema>.blobs/<sha256>` и
   ссылается на него через `content.file`, поэтому экспорт → `mkimage` → `store`
   воспроизводит образ побайтово (проверено на 256 МиБ дампе Amlogic).

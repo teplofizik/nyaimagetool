@@ -1,0 +1,4 @@
+﻿schema: 1
+format: fat
+options: { type: fat16, size: 16M }
+content: { dir: inputs/efi }
