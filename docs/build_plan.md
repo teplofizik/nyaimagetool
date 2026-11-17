@@ -243,7 +243,8 @@ content: { dir: inputs/rootfs }
 ```yaml
 schema: 1
 format: fat
-options: { type: fat16, size: 4M }
+size: 16M                 # размер итогового файла (регион)
+options: { type: fat16, fs-size: 4M }   # размер тома FAT
 content: { dir: inputs/efi }
 ```
 
@@ -252,12 +253,26 @@ content: { dir: inputs/efi }
 плагины с записью. `layout validate` проверяет такие схемы, `mkimage` пока
 только composite-форматы.
 
+### Одно правило размера
+
+`size` всегда означает **размер итоговых байтов** узла/файла:
+
+- `size: auto` (у слотов) — натуральный размер содержимого;
+- явный `size` — регион: данные длиннее — ошибка, короче — добиваются `fill`;
+- `fill` по умолчанию `0xFF` для NAND/MTD (`ubifs`, `jffs2`, `yaffs2`) и
+  `0x00` для остальных; можно задать явно;
+- `fs-size` — **размер тома** внутри региона, только для форматов с
+  фиксированным размером (`ext2/3/4`, `fat`, `f2fs`, MCU); `fs-size > size` —
+  ошибка;
+- для content-sized форматов (`squashfs`, `ubifs`, `cramfs`, `erofs`, ...)
+  `fs-size` игнорируется, а регион добивается контейнером/`build`.
+
 Параметры (те же имена работают на `kind: filesystem` узлах внутри
 NAND/диска; без префикса — только если `format` совпадает):
 
 | опция | значения |
 | --- | --- |
-| `size` / `fs-size` | целевой размер ФС (для FAT/MCU; ext/f2fs считают сами) |
+| `fs-size` | размер тома (ext/fat/f2fs/MCU), не больше `size` |
 | `compression` / `squashfs.compression` | `gzip`, `lzma`, `lz4`, `zstd` |
 | `ubifs.compression` | `none`, `lzo`, `zlib`, `zstd`; `container: ubi|raw` |
 | `fat.type` | `auto`, `fat12`, `fat16`, `fat32` |
@@ -269,6 +284,9 @@ NAND/диска; без префикса — только если `format` со
 | `cramfs.endian` | `little`/`big` |
 
 `content` также понимает `user`, `group`, `dir-mode`, `file-mode`.
+
+Руководство для авторов плагинов ФС (опции, размер, валидация, тесты):
+[fs_plugin.md](fs_plugin.md).
 
 ## Диск (MBR/GPT)
 

@@ -104,7 +104,7 @@ CPIO+`sw-description` (SWUpdate) из `inputs/update.img` / `inputs/package.swu`
 
 `fs-squashfs.yaml` and `fs-fat.yaml` are images with a filesystem at the root:
 `format` is the filesystem, `content.dir` is the payload and `options` carry the
-format parameters (compression, fat type, size, jffs2/erofs/udf settings).
+format parameters (compression, fat type, fs-size, jffs2/erofs/udf settings).
 
 ```
 > build fs-squashfs.yaml root.squashfs

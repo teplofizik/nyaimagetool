@@ -1,4 +1,7 @@
 ﻿schema: 1
 format: fat
-options: { type: fat16, size: 16M }
+# Standalone filesystem image. `size` is the output region, `fs-size` is the
+# FAT volume size (must not exceed the region).
+size: 16M
+options: { type: fat16, fs-size: 16M }
 content: { dir: inputs/efi }

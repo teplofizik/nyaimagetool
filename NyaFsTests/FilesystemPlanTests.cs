@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 using NyaFs.Filesystem.Fat;
@@ -77,7 +77,7 @@ namespace NyaFsTests
 
                 File.WriteAllText(Layout,
                     "schema: 1\nformat: fat\n" +
-                    "options: { type: fat16, size: 4M }\n" +
+                    "options: { type: fat16, fs-size: 4M, size: 8M }\n" +
                     "content: { dir: root }\n",
                     new UTF8Encoding(false));
 
@@ -85,7 +85,7 @@ namespace NyaFsTests
                 Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
 
                 var Data = File.ReadAllBytes(Out);
-                Assert.Equal(4 * 1024 * 1024, Data.Length);
+                Assert.Equal(8 * 1024 * 1024, Data.Length);
 
                 var Reader = new FatFsReader(Data);
                 Assert.Equal(16, Reader.FatType);
@@ -134,6 +134,74 @@ namespace NyaFsTests
 
                 var Reader = new SquashFsReader(Range);
                 Assert.Equal(SqCompressionType.Zstd, Reader.Compression);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Standalone_Ext4_Honours_FsSize()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "fs-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Root);
+
+            var Layout = Path.Combine(Dir, "ext4.yaml");
+            var Out = Path.Combine(Dir, "root.ext4");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "hello.txt"), "hello ext4");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: ext4\n" +
+                    "options: { fs-size: 16M }\n" +
+                    "content: { dir: root }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(16 * 1024 * 1024, Data.Length);
+
+                var BlockCount = BitConverter.ToUInt32(Data, 1024 + 4);
+                var BlockLog = Data[1024 + 24];
+                var Total = (long)BlockCount << (10 + BlockLog);
+                Assert.InRange(Total, 15L * 1024 * 1024, 16L * 1024 * 1024);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Region_Too_Small_Is_An_Error()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "fs-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Root);
+
+            var Layout = Path.Combine(Dir, "squashfs.yaml");
+            var Out = Path.Combine(Dir, "root.squashfs");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "hello.txt"), "hello");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: squashfs\n" +
+                    "size: 1K\n" +
+                    "content: { dir: root }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                Assert.False(File.Exists(Out));
             }
             finally
             {
