@@ -1,0 +1,19 @@
+# Наполнение плана командами (альтернатива декларативному build).
+# Запускать из каталога examples/layout.
+
+mkimage nand nand-raw-partitions.yaml
+
+use all/bootloader
+import inputs/bootloader.bin .
+use all/tpl
+import inputs/tpl.bin .
+
+store out-raw.bin all nand
+
+
+# Файловая система из каталога командой loaddir (плагин NyaFsFiles):
+mkimage nand nand-ubifs-config.yaml
+use all/config
+mkfs
+loaddir / inputs/config_root 755 644 0 0
+store out-config.bin all nand

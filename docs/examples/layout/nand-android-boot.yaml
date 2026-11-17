@@ -1,0 +1,17 @@
+schema: 1
+format: nand
+# Android boot image: ядро и ramdisk собираются из файлов/каталога.
+options: { page: 2048, oob: 0, block: 131072, blocks: 2048 }
+children:
+  - name: boot
+    offset: 0x2200000
+    size: auto
+    kind: container
+    format: android
+    children:
+      - { name: kernel, kind: kernel, content: { file: inputs/Image } }
+      # ramdisk из каталога (cpio, без сжатия); для готового gzip-cpio:
+      #   content: { file: inputs/rootfs.cpio.gz }
+      - { name: ramdisk, kind: filesystem, format: cpio, content: { dir: inputs/rootfs } }
+      # - { name: second, kind: raw, content: { file: inputs/second.bin } }
+      # - { name: devtree, kind: devtree, content: { file: inputs/board.dtb } }

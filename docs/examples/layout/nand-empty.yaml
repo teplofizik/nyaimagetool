@@ -1,0 +1,9 @@
+schema: 1
+format: nand
+# Пустая линейная раскладка NAND (без OOB/ECC).
+# Micron MT29F2G08: страница 2 КиБ, OOB 128 Б, блок 128 КиБ, 2048 блоков = 256 МиБ.
+options:
+  page: 2048
+  oob: 128
+  block: 131072
+  blocks: 2048
