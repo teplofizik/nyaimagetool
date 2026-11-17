@@ -43,7 +43,7 @@ TODO:
 ## Not supported (later)
 
 ### Filesystems
-EXT3, EXT4 (only EXT2 reader/writer), Btrfs, XFS,
+EXT3/EXT4 are implemented; Btrfs, XFS are not implemented.
 
 UBIFS: reader + writer.
 
