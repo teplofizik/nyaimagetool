@@ -1,0 +1,8 @@
+# Собрать все примеры (нужны файлы в inputs/, см. README.md).
+# Запускать из каталога examples/layout.
+
+build nand-empty.yaml out-empty.bin
+build nand-raw-partitions.yaml out-raw.bin
+build nand-fit-boot.yaml out-fit.bin
+build nand-android-boot.yaml out-android.bin
+build nand-ubifs-config.yaml out-config.bin

@@ -1,0 +1,13 @@
+# Снять раскладку с готового дампа и собрать образ обратно.
+# Замените пути на свои. Образ всегда получается линейным (без OOB/ECC).
+
+layout export D:\dump\NAND_Micron.bin D:\dump\nand.yaml
+layout validate D:\dump\nand.yaml
+
+# Immutable-содержимое (bootloader, ядра, готовые контейнеры и т.п.) сохранено
+# рядом как D:\dump\nand.yaml.blobs\<sha256>; исходный дамп больше не нужен.
+build D:\dump\nand.yaml D:\dump\nand_linear.bin
+
+# Альтернатива через план и store:
+# mkimage nand D:\dump\nand.yaml
+# store D:\dump\nand_linear.bin all nand

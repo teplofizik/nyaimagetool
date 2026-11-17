@@ -1,0 +1,53 @@
+schema: 1
+format: nand
+# Пример раскладки, повторяющей реальный Amlogic S21 Pro:
+# bootloader/tpl с копиями, recovery/boot, два UBI-раздела (config, nvdata).
+#
+# ВАЖНО: образ всегда линейный (без OOB/ECC); padding разделов — 0xFF.
+# Для secure boot bootloader/tpl можно только копировать как есть.
+options: { page: 2048, oob: 0, block: 131072, blocks: 2048 }
+children:
+  - name: bootloader
+    offset: 0x0
+    size: auto
+    kind: raw
+    repeat: { count: 8, stride: 0x40000 }
+    content: { file: inputs/bootloader.bin }
+
+  - name: tpl
+    offset: 0x800000
+    size: auto
+    kind: raw
+    repeat: { count: 4, stride: 0x200000 }
+    content: { file: inputs/tpl.bin }
+
+  - name: misc
+    offset: 0x1000000
+    size: 0x200000
+    content: { empty: true }
+
+  - name: recovery
+    offset: 0x1200000
+    size: 0x1000000
+    kind: raw
+    content: { file: inputs/recovery.img }
+
+  - name: boot
+    offset: 0x2200000
+    size: 0x2000000
+    kind: raw
+    content: { file: inputs/boot.img }
+
+  - name: config
+    offset: 0x4200000
+    size: 0x500000
+    kind: filesystem
+    format: ubifs
+    content: { dir: inputs/config_root }
+
+  - name: nvdata
+    offset: 0x4700000
+    size: 0xB900000
+    kind: filesystem
+    format: ubifs
+    content: { dir: inputs/nvdata_root }

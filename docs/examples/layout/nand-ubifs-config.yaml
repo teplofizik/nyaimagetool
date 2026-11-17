@@ -1,0 +1,12 @@
+schema: 1
+format: nand
+# Раздел config: UBIFS собирается из каталога; writer по умолчанию
+# заворачивает том в UBI (отдельное UBI-устройство, как config/nvdata).
+options: { page: 2048, oob: 0, block: 131072, blocks: 2048 }
+children:
+  - name: config
+    offset: 0x4200000
+    size: 0x500000
+    kind: filesystem
+    format: ubifs
+    content: { dir: inputs/config_root }

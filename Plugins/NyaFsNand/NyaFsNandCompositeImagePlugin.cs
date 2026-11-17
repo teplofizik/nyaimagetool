@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using NyaFs.ImageFormat;
+using NyaFs.ImageFormat.Composite;
+using NyaFs.ImageFormat.Plugins;
 using NyaFs.ImageFormat.Plugins.Base;
 using NyaFsNand.Types;
 
@@ -35,6 +37,8 @@ namespace NyaFsNand
             DetectionCapabilities.Magic | DetectionCapabilities.Extension;
 
         public override bool SupportWrite => true;
+
+        public override bool SupportLayout => true;
 
         /// <summary>Keep even fully encrypted regions so they can still be listed/extracted.</summary>
         public override bool PreserveUnknownChildren => true;
@@ -98,6 +102,75 @@ namespace NyaFsNand
 
         public override byte[] Build(BaseImageBlob Blob, out string Error) =>
             NandImageWriter.Build(Blob, out Error);
+
+        public override byte[] Build(BaseImageBlob Blob, PluginRegistry Plugins, out string Error) =>
+            NandImageWriter.Build(Blob, Plugins, out Error);
+
+        public override ImageBuildNode CreatePlan(PlanDocument Document, out string Error)
+        {
+            Error = null;
+
+            var Page = (int)Option(Document.Options, "page", 2048);
+            var Oob = (int)Option(Document.Options, "oob", 0);
+            var Block = Option(Document.Options, "block", 0x20000);
+
+            if ((Page <= 0) || (Page > 0x4000) || ((Page & (Page - 1)) != 0))
+            {
+                Error = $"Invalid NAND page size {Page}";
+                return null;
+            }
+
+            if ((Oob < 0) || (Oob > Page))
+            {
+                Error = $"Invalid NAND OOB size {Oob} for page {Page}";
+                return null;
+            }
+
+            if ((Block <= 0) || ((Block % Page) != 0))
+            {
+                Error = $"Invalid NAND eraseblock size {Block} for page {Page}";
+                return null;
+            }
+
+            long Total;
+            if (Document.Options.ContainsKey("total"))
+                Total = Option(Document.Options, "total", 0);
+            else
+                Total = Option(Document.Options, "blocks", 0) * Block;
+
+            if ((Total <= 0) || ((Total % Block) != 0))
+            {
+                Error = "NAND layout needs 'total' (multiple of the eraseblock size) or 'blocks'";
+                return null;
+            }
+
+            var Root = new ImageBuildNode
+            {
+                Name = "nand",
+                Path = "",
+                Kind = ImageKind.Unknown,
+                Format = Format
+            };
+
+            Root.Options["page"] = Page.ToString();
+            Root.Options["oob"] = Oob.ToString();
+            Root.Options["block"] = Block.ToString();
+            Root.Options["total"] = Total.ToString();
+
+            foreach (var Child in Document.Children)
+                Root.Children.Add(PlanNodes.FromElement(Child, ""));
+
+            return Root;
+        }
+
+        private static long Option(Dictionary<string, string> Options, string Key, long Default)
+        {
+            if (!Options.TryGetValue(Key, out var Text) || String.IsNullOrWhiteSpace(Text))
+                return Default;
+
+            var Value = PlanDocument.ParseSize(Text, out var Auto);
+            return (Auto || !Value.HasValue) ? Default : Value.Value;
+        }
         public override ContainedImage[] GetImages(ImageData Image)
         {
             var Nand = Parse(Image, true);
