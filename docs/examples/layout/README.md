@@ -111,3 +111,15 @@ format parameters (compression, fat type, fs-size, jffs2/erofs/udf settings).
 > build fs-fat.yaml efi.img
 > layout validate fs-squashfs.yaml
 ```
+
+## UBI и загрузочный ISO
+
+`ubi-multi.yaml` — контейнер с UBIFS (dynamic) и raw (static) томами;
+`iso-boot.yaml` — ISO9660 с El Torito (boot image внутри `content.dir`).
+
+```
+> build ubi-multi.yaml firmware.ubi
+> build iso-boot.yaml boot.iso
+> mkimage cpio fs.yaml
+> store rootfs.cpio ramfs cpio
+```

@@ -3,6 +3,14 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
+## What's new in 1.1.0
+
+Declarative layout/build plans (`build`, `mkimage`, `layout export|validate`) for
+NAND, disk MBR/GPT, standalone filesystems, multi-volume UBI and El Torito ISOs;
+RKFW/SWUpdate template layouts; `content.compression`; filesystem `size`/`fs-size`.
+See [docs/release-1.1.0.md](docs/release-1.1.0.md) and
+[docs/build_plan.md](docs/build_plan.md).
+
 ## Install / build
 
 See [docs/BUILDING.md](docs/BUILDING.md) for Windows and Ubuntu instructions:

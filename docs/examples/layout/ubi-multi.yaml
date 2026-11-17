@@ -1,0 +1,13 @@
+﻿schema: 1
+format: ubi
+options: { peb: 128K, page: 2K }
+children:
+  - name: rootfs
+    kind: filesystem
+    format: ubifs
+    content: { dir: inputs/config_root }
+
+  - name: kernel
+    kind: raw
+    volume-type: static
+    content: { file: inputs/Image }

@@ -1,0 +1,4 @@
+﻿schema: 1
+format: iso9660
+options: { boot-image: boot/loader.bin, boot-load-size: 8 }
+content: { dir: inputs/cd_root }

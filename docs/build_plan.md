@@ -289,6 +289,47 @@ NAND/диска; без префикса — только если `format` со
 Руководство для авторов плагинов ФС (опции, размер, валидация, тесты):
 [fs_plugin.md](fs_plugin.md).
 
+## UBI: несколько томов
+
+`format: ubi` собирает контейнер с несколькими томами. `format: ubifs` +
+`content.dir` упаковывается в raw-UBIFS (dynamic-том); остальные форматы
+становятся static-томами; `content.file` можно использовать для готовых данных.
+
+```yaml
+schema: 1
+format: ubi
+options: { peb: 128K, page: 2K }
+children:
+  - name: rootfs
+    kind: filesystem
+    format: ubifs
+    content: { dir: inputs/config_root }
+  - name: kernel
+    kind: raw
+    content: { file: inputs/Image }
+    volume-type: static
+```
+
+- `peb`/`block` (по умолчанию 128K), `page` (2K);
+- `total`/`size` — добить образ до размера `0xFF`;
+- дочерние: `volume-type: dynamic|static`, `autoresize`, `volume-id`;
+- для UBIFS тома сжатие задаётся `options: { compression: lzo|zlib|zstd }`.
+
+## Загрузочный ISO (El Torito)
+
+Для `format: iso9660` можно включить El Torito no-emulation:
+
+```yaml
+schema: 1
+format: iso9660
+options: { boot-image: boot/loader.bin, boot-load-size: 8 }
+content: { dir: inputs/cd_root }
+```
+
+- `boot-image` — путь файла **внутри** ISO-дерева (`content.dir`);
+- `boot-load-size` — размер в 512-байтных секторах (0/не задано — по размеру файла);
+- `boot-load-segment`, `boot-media-type`, `boot-system-type`, `boot-identifier`;
+- UDF остаётся data-only; ISO + El Torito — для CD/DVD.
 ## Диск (MBR/GPT)
 
 `format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
@@ -376,8 +417,13 @@ children:
   immutable-блоб, чтобы не потерять содержимое.
 - Контейнеры **FIT** и **Android** собираются из дочерних нод (`PlanMaterializer`):
   ядро/ramdisk/DTB можно задавать файлами и каталогами, без промежуточных файлов.
-- Мультитомный UBI в одной ноде (`format: ubi` + несколько томов) — следующий этап;
-  отдельные UBI-разделы (`format: ubifs`) собираются уже сейчас.
+- **UBI**: мультитомный контейнер в одной ноде (`format: ubi`), dynamic (UBIFS)
+  и static (raw/готовые образы) тома; чтение UBI отдаёт тома как дочерние ноды.
+- **mkimage для чистой ФС**: `mkimage cpio|ext4|... schema` создаёт активную
+  ноду ФС; сохранение — `store out ramfs <format>` (пустая ФС + `loaddir`/`file`).
+- **Загрузочный ISO9660**: El Torito no-emulation (`boot-image`, `boot-load-size`,
+  `boot-load-segment`, `boot-media-type`, `boot-system-type`, `boot-identifier`);
+  UDF остаётся data-only.
 
 ## Этапы
 
@@ -389,7 +435,8 @@ children:
 3. Диск (MBR/GPT) — сделано.
 4. FIT/Android/CIMG/UBI (в основном обвязка `CreatePlan`).
 5. Бандлы и кэш на `NyaPackage`, YAML как обязательный вход.
-6. Vendor-форматы (RKFW, SWUpdate, ...).
+6. Vendor-форматы (RKFW, SWUpdate, ...) — сделано (шаблонный режим).
+7. El Torito для ISO9660 — сделано; UDF boot не планируется.
 
 ## Открытые вопросы
 
