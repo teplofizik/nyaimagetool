@@ -5,6 +5,7 @@ using System.Text;
 using NyaFs.Filesystem.Fat;
 using NyaFs.Filesystem.SquashFs;
 using NyaFs.Filesystem.SquashFs.Types;
+using NyaFs.Filesystem.UbiFs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using Xunit;
@@ -250,6 +251,158 @@ namespace NyaFsTests
                 var Extracted = Path.Combine(Exported + ".files", "root", "etc", "hello");
                 Assert.True(File.Exists(Extracted));
                 Assert.Equal("hello export", File.ReadAllText(Extracted));
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Iso9660_El_Torito_Boot_Catalog()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "iso-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Path.Combine(Root, "boot"));
+
+            var Layout = Path.Combine(Dir, "iso.yaml");
+            var Out = Path.Combine(Dir, "boot.iso");
+
+            var Boot = new byte[4096];
+            for (var I = 0; I < Boot.Length; I++)
+                Boot[I] = (byte)(I * 13 + 7);
+
+            try
+            {
+                File.WriteAllBytes(Path.Combine(Root, "boot", "loader.bin"), Boot);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: iso9660\n" +
+                    "options: { boot-image: boot/loader.bin, boot-load-size: 8 }\n" +
+                    "content: { dir: root }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+
+                var BootRecord = 17 * 2048;
+                Assert.Equal(0, Data[BootRecord]);
+                Assert.Equal("CD001", Encoding.ASCII.GetString(Data, BootRecord + 1, 5));
+                Assert.Contains("EL TORITO SPECIFICATION",
+                    Encoding.ASCII.GetString(Data, BootRecord + 7, 32));
+
+                var CatalogLba = BitConverter.ToUInt32(Data, BootRecord + 71);
+                var Catalog = (int)CatalogLba * 2048;
+                Assert.Equal(1, Data[Catalog]);
+                Assert.Equal(0x55, Data[Catalog + 30]);
+                Assert.Equal(0xAA, Data[Catalog + 31]);
+
+                var Sum = 0;
+                for (var I = 0; I < 32; I += 2)
+                    Sum += Data[Catalog + I] | (Data[Catalog + I + 1] << 8);
+                Assert.Equal(0, Sum & 0xFFFF);
+
+                Assert.Equal(0x88, Data[Catalog + 32]);
+                Assert.Equal(8, Data[Catalog + 38] | (Data[Catalog + 39] << 8));
+
+                var BootLba = BitConverter.ToUInt32(Data, Catalog + 40);
+                var BootOffset = (int)BootLba * 2048;
+                for (var I = 0; I < Boot.Length; I++)
+                    Assert.Equal(Boot[I], Data[BootOffset + I]);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_MkImage_Filesystem_Stores_Cpio()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "fs-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "cpio.yaml");
+            var Out = Path.Combine(Dir, "out.cpio");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "mkimage cpio");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: cpio\ncontent: { dir: root }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc,
+                    "mkimage cpio \"" + Layout + "\"",
+                    "store \"" + Out + "\" ramfs cpio");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal((byte)'0', Data[0]);
+                Assert.Equal((byte)'7', Data[1]);
+                Assert.Equal((byte)'0', Data[2]);
+                Assert.Equal((byte)'7', Data[3]);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_MultiVolume_Ubi_Builds_Dynamic_And_Static()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "ubi-plan-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "root");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "ubi.yaml");
+            var Kernel = Path.Combine(Dir, "kernel.bin");
+            var Out = Path.Combine(Dir, "out.ubi");
+
+            var KernelData = Encoding.ASCII.GetBytes("kernel payload for a static volume");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "hello ubifs");
+                File.WriteAllBytes(Kernel, KernelData);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: ubi\n" +
+                    "options: { peb: 131072, page: 2048 }\n" +
+                    "children:\n" +
+                    "  - name: rootfs\n" +
+                    "    kind: filesystem\n" +
+                    "    format: ubifs\n" +
+                    "    content: { dir: root }\n" +
+                    "  - name: kernel\n" +
+                    "    kind: raw\n" +
+                    "    content: { file: kernel.bin }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Ubi = new UbiFsReader(File.ReadAllBytes(Out));
+                Assert.Equal(2, Ubi.Volumes.Count);
+
+                var Rootfs = Ubi.FindVolume(0);
+                Assert.NotNull(Rootfs);
+                Assert.Equal("rootfs", Rootfs.Name);
+                Assert.Equal(NyaFs.Filesystem.UbiFs.Types.VolumeType.UBI_VID_DYNAMIC, Rootfs.Type);
+
+                var KernelVol = Ubi.Volumes.Find(V => V.Name == "kernel");
+                Assert.NotNull(KernelVol);
+                Assert.Equal(NyaFs.Filesystem.UbiFs.Types.VolumeType.UBI_VID_STATIC, KernelVol.Type);
+
+                var KernelLeb = Ubi.ReadLeb(KernelVol.Id, 0);
+                Assert.NotNull(KernelLeb);
+                for (var I = 0; I < KernelData.Length; I++)
+                    Assert.Equal(KernelData[I], KernelLeb[I]);
             }
             finally
             {
