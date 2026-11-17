@@ -48,7 +48,7 @@ EXT3/EXT4 are implemented; Btrfs, XFS are not implemented.
 UBIFS: reader + writer.
 
 ### Compression
-- LZO write (lzop container) — read-only.
+- LZO write (lzop container) — implemented (LZO1X-1 + Adler32).
 - Brotli, lzip (.lz), compress (.Z), 7z/LZMA2-container, zpaq, rzip — not implemented.
 - XZ write via NyaXZ is LZMA2-only: no BCJ/delta filters, full-reset chunks
   (lower ratio than native xz). Read side (SharpCompress) handles BCJ.
