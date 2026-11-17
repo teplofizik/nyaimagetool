@@ -1,0 +1,15 @@
+﻿schema: 1
+format: disk
+options: { table: gpt, align: 1048576, total: 64M, seed: example }
+children:
+  - name: boot
+    offset: 1048576
+    size: 16777216
+    kind: raw
+    content: { file: inputs/boot.img }
+
+  - name: rootfs
+    offset: 18874368
+    size: 33554432
+    kind: raw
+    content: { file: inputs/rootfs.ext4 }

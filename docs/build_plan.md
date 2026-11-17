@@ -228,6 +228,56 @@ public class CompositeImagePlugin
 - После сборки рекомендуется round-trip: `load` результата через пайплайн и
   сверка обнаруженного дерева с ожидаемым.
 
+## Диск (MBR/GPT)
+
+`format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
+образ заполняется нулями (это диск, а не flash).
+
+```yaml
+schema: 1
+format: disk
+options: { table: gpt, align: 1048576, seed: myboard }   # table: mbr | gpt
+children:
+  - { name: boot, offset: 1048576, size: 16M, kind: raw, content: { file: inputs/boot.img } }
+  - { name: root, offset: 18M, size: 32M, kind: raw, content: { file: inputs/rootfs.ext4 } }
+```
+
+- `table` — `gpt` по умолчанию; MBR ограничен 4 разделами.
+- `total` — размер диска; по умолчанию последний раздел + `align`.
+- `align` — выравнивание авто-слотов (по умолчанию 1 МиБ).
+- `size: auto` — длина payload'а, округлённая до 512 байт.
+- `seed` — детерминированные GPT GUID'ы (иначе меняются между сборками).
+- Дочерние: `mbr-type` (по умолчанию `0x83`), `type-guid` (по умолчанию
+  Linux data `0FC63DAF-...`), `partition-guid` (по умолчанию из `seed`+имя).
+- GPT-имена разделов берутся из `name`; пишутся primary и backup копии
+  таблицы и заголовков, CRC32 считается по entries/header.
+
+## Вендорские контейнеры (шаблон)
+
+Для RKFW/SWUpdate заголовки и служебные структуры берутся из образца:
+`options.template` (путь относительно схемы или абсолютный). В раскладке
+перечисляются только записи, которые нужно заменить/добавить.
+
+```yaml
+schema: 1
+format: rkfw
+options: { template: sample/update.img }
+children:
+  - { name: rootfs, kind: raw, content: { file: rootfs.ext4 } }
+```
+
+- **RKFW**: сохраняются RKFW-заголовок, loader и метаданные RKAF; payload'ы
+  заменяются по имени, новые имена добавляются новыми разделами
+  (`MiniLoaderAll.bin` заменяется как отдельная запись). Размеры/offset/хвост
+  пересчитываются.
+- **SWUpdate**: CPIO-архив сохраняется; записи заменяются по имени, новые
+  добавляются; `sha256` в `sw-description` обновляются автоматически. Если
+  нужен новый файл в `sw-description`, задайте его текст отдельной нодой
+  `sw-description` — хеши будут пересчитаны. Подпись пересоздаётся только при
+  наличии `swu.sign-key` (существующая иначе помечается устаревшей).
+- Без `options.template` сборка невозможна: генерация вендорских заголовков с
+  нуля не поддерживается (см. «Открытые вопросы»).
+
 ## Ограничения
 
 - Raw NAND (OOB/ECC) не пишется: только линейные образы.
@@ -247,6 +297,10 @@ public class CompositeImagePlugin
 - `mkimage`, `build`, `layout export`, `layout validate`;
 - `content.file`, `content.dir` (каталог → ФС в памяти), `content.blob` (локальный кэш), `content.empty`;
 - NAND: `CreatePlan` + layout-режим писателя (raw и filesystem-слоты);
+- Диск: `CreatePlan` + layout-режим (`DiskImageBuilder`, MBR и GPT с
+  protective MBR, primary/backup заголовками, CRC32 и GPT-именами);
+- RKFW/SWUpdate: шаблонный режим (`options.template`), замена/добавление
+  записей, пересчёт хешей и размеров;
 - `layout export` пишет immutable-содержимое в `<schema>.blobs/<sha256>` и
   ссылается на него через `content.file`, поэтому экспорт → `mkimage` → `store`
   воспроизводит образ побайтово (проверено на 256 МиБ дампе Amlogic).
@@ -263,7 +317,7 @@ public class CompositeImagePlugin
    активная нода для `use`/`GetFs`/`MarkDirty`.
 2. NAND: `SupportLayout`, `CreatePlan`, layout-режим писателя; проверка на
    реальном дампе (`layout export` → rebuild → сравнение карты и содержимого).
-3. Диск (MBR/GPT).
+3. Диск (MBR/GPT) — сделано.
 4. FIT/Android/CIMG/UBI (в основном обвязка `CreatePlan`).
 5. Бандлы и кэш на `NyaPackage`, YAML как обязательный вход.
 6. Vendor-форматы (RKFW, SWUpdate, ...).

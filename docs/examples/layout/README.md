@@ -81,3 +81,21 @@ NyaImageTool.exe build-all.nyas
 - Secure boot (AES/подпись) не пересобирается: загрузчик/tpl кладутся как есть.
 - Готовые контейнеры (FIT/Android), полученные из `layout export`, пересобираются
   как immutable-файлы; для пофайловой сборки опишите их дочерними нодами.
+
+## Диск (MBR/GPT)
+
+`format: disk` собирает таблицу и раскладывает payload'ы по слотам; свободное
+место — нули. Примеры: `disk-gpt.yaml` (GPT, primary+backup, CRC32, имена
+разделов) и `disk-mbr.yaml` (4 раздела максимум, `mbr-type`).
+
+```
+> build disk-gpt.yaml disk.img
+> build disk-mbr.yaml disk-mbr.img
+```
+
+## Вендорские контейнеры (шаблон)
+
+`rkfw-template.yaml` и `swu-template.yaml` берут заголовок/loader (RKFW) или
+CPIO+`sw-description` (SWUpdate) из `inputs/update.img` / `inputs/package.swu`,
+а из раскладки — только заменяемые/добавляемые записи. Без `options.template`
+эти форматы не собираются.

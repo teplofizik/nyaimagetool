@@ -1,0 +1,6 @@
+﻿schema: 1
+format: rkfw
+# Vendor header/loader/RKAF table come from the sample image.
+options: { template: inputs/update.img }
+children:
+  - { name: rootfs, kind: raw, content: { file: inputs/rootfs.ext4 } }
