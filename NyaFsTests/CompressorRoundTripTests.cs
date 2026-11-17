@@ -25,6 +25,7 @@ namespace NyaFsTests
             CompressionType.IH_COMP_BZIP2,
             CompressionType.IH_COMP_LZ4,
             CompressionType.IH_COMP_LZMA,
+            CompressionType.IH_COMP_LZO,
             CompressionType.IH_COMP_ZSTD,
             CompressionType.IH_COMP_XZ
         };
@@ -104,15 +105,9 @@ namespace NyaFsTests
             Assert.Equal(data, plugin.Decompress(compressed));
         }
 
-        [Theory]
-        [InlineData(CompressionType.IH_COMP_LZO)]
-        public void ReadOnly_Compressor_Does_Not_Support_Write(CompressionType type)
-        {
-            var plugin = Plugin(type);
+        [Fact]
+        public void Lzo_Is_Writable() => Assert.True(Plugin(CompressionType.IH_COMP_LZO).SupportWrite);
 
-            Assert.True(plugin.SupportRead);
-            Assert.False(plugin.SupportWrite);
-        }
 
         [Fact]
         public void Xz_Decompress_Known_Vector()

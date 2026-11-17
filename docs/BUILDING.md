@@ -279,6 +279,6 @@ When `NyaFs` changes:
 - **Old checkout with `$(SolutionDir)` in plugin copies** — update to the current
   plugin targets; building a plugin project standalone used to fail with
   `*Undefined*`.
-- **GitHub Actions workflow** — `.github/workflows/dotnet.yml` is outdated
-  (.NET 3.1/6.0) and does not configure the local feed; do not use it as a local
-  build recipe.
+- **GitHub Actions workflow** — `.github/workflows/dotnet.yml` runs on
+  `windows-latest` with .NET 10, packs `NyaFs` from the matching `nyafs` branch
+  into a temporary feed, then builds and tests the solution.

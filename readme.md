@@ -62,7 +62,7 @@ Supported at now:
 3. LZ4 (RW)
 4. BZIP2 (RW)
 5. XZ (R)
-6. LZO (R)
+6. LZO (RW; lzop container)
 7. ZStd (RW)
 
 LZMA compression is provided by LZMA SDK package.
