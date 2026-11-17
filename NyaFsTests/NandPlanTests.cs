@@ -285,5 +285,92 @@ namespace NyaFsTests
             using (var Sha = System.Security.Cryptography.SHA256.Create())
                 return String.Concat(Sha.ComputeHash(Data).Select(B => B.ToString("x2")));
         }
+
+        [Fact]
+        public void Plan_Build_Fit_Container_From_Files()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nand-fit-" + Guid.NewGuid().ToString("N"));
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Kernel = Path.Combine(Root, "kernel.bin");
+
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(Root, "ramdisk", "etc"));
+                File.WriteAllBytes(Kernel, Enumerable.Range(0, 2048).Select(I => (byte)(I * 7)).ToArray());
+                File.WriteAllText(Path.Combine(Root, "ramdisk", "etc", "hello"), "hi");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 0, block: 131072, blocks: 16 }\n" +
+                    "children:\n" +
+                    "  - name: os\n" +
+                    "    offset: 0x0\n" +
+                    "    size: auto\n" +
+                    "    kind: container\n" +
+                    "    format: fit\n" +
+                    "    children:\n" +
+                    "      - { name: kernel, kind: kernel, content: { file: '" + Kernel + "' } }\n" +
+                    "      - { name: ramdisk, kind: filesystem, format: cpio," +
+                    " content: { dir: '" + Path.Combine(Root, "ramdisk") + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                Assert.True(File.Exists(Out));
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(new byte[] { 0xD0, 0x0D, 0xFE, 0xED }, Data.Take(4).ToArray());
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
+
+        [Fact]
+        public void Plan_Build_Android_Container_From_Files()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nand-android-" + Guid.NewGuid().ToString("N"));
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Kernel = Path.Combine(Root, "kernel.bin");
+
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(Root, "ramdisk", "etc"));
+                File.WriteAllBytes(Kernel, Enumerable.Range(0, 1024).Select(I => (byte)(I * 3)).ToArray());
+                File.WriteAllText(Path.Combine(Root, "ramdisk", "etc", "hello"), "hi");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 0, block: 131072, blocks: 16 }\n" +
+                    "children:\n" +
+                    "  - name: boot\n" +
+                    "    offset: 0x0\n" +
+                    "    size: auto\n" +
+                    "    kind: container\n" +
+                    "    format: android\n" +
+                    "    children:\n" +
+                    "      - { name: kernel, kind: kernel, content: { file: '" + Kernel + "' } }\n" +
+                    "      - { name: ramdisk, kind: filesystem, format: cpio," +
+                    " content: { dir: '" + Path.Combine(Root, "ramdisk") + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                Assert.True(File.Exists(Out));
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(Encoding.ASCII.GetBytes("ANDROID!"), Data.Take(8).ToArray());
+                Assert.Equal(1024u, BitConverter.ToUInt32(Data, 8));
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
     }
 }

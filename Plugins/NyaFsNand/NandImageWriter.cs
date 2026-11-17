@@ -208,9 +208,46 @@ namespace NyaFsNand
                 return true;
             }
 
-            if ((Node.Children.Count > 0) || IsContainerFormat(Node.Format))
+            if (Node.Children.Count > 0)
             {
+                if (!PlanMaterializer.Apply(Node, Plugins, BaseDir, BlobDir, out var MaterializeError))
+                {
+                    Error = MaterializeError;
+                    return false;
+                }
+
+                if ((Node.Format == "fit") || (Node.Format == "cimg"))
+                {
+                    var Writer = new ImageBuildPlanWriter(new ImageBuildPlan(Node)) { Registry = Plugins };
+                    Data = Writer.Build(out Error);
+                    return Data != null;
+                }
+
+                if (Node.Format == "android")
+                {
+                    var Temp = new BaseImageBlob { BuildPlan = new ImageBuildPlan(Node) };
+
+                    foreach (var Child in Node.Children)
+                    {
+                        if (Child.Kernel != null)
+                            Temp.SetKernel(0, Child.Kernel);
+                        if (Child.Fs != null)
+                            Temp.SetFilesystem(0, Child.Fs);
+                        if (Child.Dtb != null)
+                            Temp.SetDevTree(0, Child.Dtb);
+                    }
+
+                    Data = new AndroidImageWriter("") { Registry = Plugins }.Build(Temp, out Error);
+                    return Data != null;
+                }
+
                 Error = $"Container '{Node.Format}' at '{Node.Path}' is not supported by the layout writer yet";
+                return false;
+            }
+
+            if (IsContainerFormat(Node.Format))
+            {
+                Error = $"Container '{Node.Format}' at '{Node.Path}' has no children; add its content or a nested layout";
                 return false;
             }
 
