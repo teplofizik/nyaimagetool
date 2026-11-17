@@ -1,0 +1,6 @@
+﻿schema: 1
+format: swu
+# CPIO archive and sw-description come from the sample; hashes are refreshed.
+options: { template: inputs/package.swu }
+children:
+  - { name: rootfs.ubi, kind: raw, content: { file: inputs/rootfs.ubi } }

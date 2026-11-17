@@ -115,10 +115,11 @@ children:
 | `{ empty: true }` | оставить стёртым (`fill`) | реализовано |
 | `{ dir: path, fs: name }` | собрать ФС из каталога (файлы/каталоги/симлинки) | реализовано |
 | `{ blob: "sha256:<hex>" }` | взять из `<schema>.blobs`, каталога схемы или локального кэша | реализовано |
+| `{ ..., compression: gzip }` | сжать итоговые байты (`gzip/xz/lzma/lz4/bzip2/zstd`); не применять к уже сжатым файлам | реализовано |
 | нет `content` | нода наполняется командами | реализовано |
 
-Дополнительно `content` может содержать `compression`, `exclude` и другие
-ключи — их читает соответствующий плагин/писатель.
+Дополнительно `content` может содержать `exclude` и другие ключи — их читает
+соответствующий плагин/писатель.
 
 Если нода с `content` затем редактируется командой, команда перекрывает
 источник; в `layout export` попадёт уже результат правок.
@@ -127,7 +128,7 @@ children:
 
 | команда | назначение |
 | ------- | ---------- |
-| `layout export <image> <schema.yaml>` | экспорт раскладки; immutable-содержимое кладётся в `<schema>.blobs/` | реализовано |
+| `layout export <image> <schema.yaml>` | экспорт раскладки; ФС → `<schema>.files/` (`content.dir`), ядра/контейнеры → `<schema>.blobs/` | реализовано |
 | `layout validate <schema.yaml>` | проверка схемы без сборки | реализовано |
 | `mkimage <format> <schema.yaml>` | создать план (слоты) для дальнейшего редактирования командами | реализовано |
 | `build <schema.yaml> <out>` | собрать образ по схеме (декларативный путь) | реализовано |
@@ -228,6 +229,116 @@ public class CompositeImagePlugin
 - После сборки рекомендуется round-trip: `load` результата через пайплайн и
   сверка обнаруженного дерева с ожидаемым.
 
+## Файловая система как корень
+
+Если `format` — файловая система, `build` собирает standalone-образ (без
+NAND/диска). Содержимое задаётся корневым `content.dir`, параметры — `options`:
+
+```yaml
+schema: 1
+format: squashfs
+options: { compression: lz4 }
+content: { dir: inputs/rootfs }
+```
+
+```yaml
+schema: 1
+format: fat
+size: 16M                 # размер итогового файла (регион)
+options: { type: fat16, fs-size: 4M }   # размер тома FAT
+content: { dir: inputs/efi }
+```
+
+Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs2`, `yaffs2`,
+`f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`, `cpio`, `tar` и другие
+плагины с записью. `layout validate` проверяет такие схемы, `mkimage` пока
+только composite-форматы.
+
+### Одно правило размера
+
+`size` всегда означает **размер итоговых байтов** узла/файла:
+
+- `size: auto` (у слотов) — натуральный размер содержимого;
+- явный `size` — регион: данные длиннее — ошибка, короче — добиваются `fill`;
+- `fill` по умолчанию `0xFF` для NAND/MTD (`ubifs`, `jffs2`, `yaffs2`) и
+  `0x00` для остальных; можно задать явно;
+- `fs-size` — **размер тома** внутри региона, только для форматов с
+  фиксированным размером (`ext2/3/4`, `fat`, `f2fs`, MCU); `fs-size > size` —
+  ошибка;
+- для content-sized форматов (`squashfs`, `ubifs`, `cramfs`, `erofs`, ...)
+  `fs-size` игнорируется, а регион добивается контейнером/`build`.
+
+Параметры (те же имена работают на `kind: filesystem` узлах внутри
+NAND/диска; без префикса — только если `format` совпадает):
+
+| опция | значения |
+| --- | --- |
+| `fs-size` | размер тома (ext/fat/f2fs/MCU), не больше `size` |
+| `compression` / `squashfs.compression` | `gzip`, `lzma`, `lz4`, `zstd` |
+| `ubifs.compression` | `none`, `lzo`, `zlib`, `zstd`; `container: ubi|raw` |
+| `fat.type` | `auto`, `fat12`, `fat16`, `fat32` |
+| `jffs2.compression` | `none`, `zlib`, `rtime`, `lzo`, `priority` |
+| `jffs2.pagesize`, `jffs2.eraseblock` | размеры (4K, 64K, ...) |
+| `udf.vat`, `udf.sparable` | bool (взаимоисключающие) |
+| `erofs.fragments`, `erofs.tail-fragments`, `erofs.shared-xattrs`, `erofs.compression-level`, `erofs.xattr-prefix` | EROFS-опции |
+| `f2fs.compression`, `f2fs.compression.cluster` | `none/lzo/lz4/zstd/lzorle`, 16K..1M |
+| `cramfs.endian` | `little`/`big` |
+
+`content` также понимает `user`, `group`, `dir-mode`, `file-mode`.
+
+Руководство для авторов плагинов ФС (опции, размер, валидация, тесты):
+[fs_plugin.md](fs_plugin.md).
+
+## Диск (MBR/GPT)
+
+`format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
+образ заполняется нулями (это диск, а не flash).
+
+```yaml
+schema: 1
+format: disk
+options: { table: gpt, align: 1048576, seed: myboard }   # table: mbr | gpt
+children:
+  - { name: boot, offset: 1048576, size: 16M, kind: raw, content: { file: inputs/boot.img } }
+  - { name: root, offset: 18M, size: 32M, kind: raw, content: { file: inputs/rootfs.ext4 } }
+```
+
+- `table` — `gpt` по умолчанию; MBR ограничен 4 разделами.
+- `total` — размер диска; по умолчанию последний раздел + `align`.
+- `align` — выравнивание авто-слотов (по умолчанию 1 МиБ).
+- `size: auto` — длина payload'а, округлённая до 512 байт.
+- `seed` — детерминированные GPT GUID'ы (иначе меняются между сборками).
+- Дочерние: `mbr-type` (по умолчанию `0x83`), `type-guid` (по умолчанию
+  Linux data `0FC63DAF-...`), `partition-guid` (по умолчанию из `seed`+имя).
+- GPT-имена разделов берутся из `name`; пишутся primary и backup копии
+  таблицы и заголовков, CRC32 считается по entries/header.
+
+## Вендорские контейнеры (шаблон)
+
+Для RKFW/SWUpdate заголовки и служебные структуры берутся из образца:
+`options.template` (путь относительно схемы или абсолютный). В раскладке
+перечисляются только записи, которые нужно заменить/добавить.
+
+```yaml
+schema: 1
+format: rkfw
+options: { template: sample/update.img }
+children:
+  - { name: rootfs, kind: raw, content: { file: rootfs.ext4 } }
+```
+
+- **RKFW**: сохраняются RKFW-заголовок, loader и метаданные RKAF; payload'ы
+  заменяются по имени, новые имена добавляются новыми разделами
+  (`MiniLoaderAll.bin` заменяется как отдельная запись). Размеры/offset/хвост
+  пересчитываются.
+- **SWUpdate**: CPIO-архив сохраняется; записи заменяются по имени, новые
+  добавляются; `sha256` в `sw-description` обновляются автоматически. Если
+  нужен новый файл в `sw-description`, задайте его текст отдельной нодой
+  `sw-description` — хеши будут пересчитаны. Подпись пересоздаётся только при
+  наличии `swu.sign-key` (существующая иначе помечается устаревшей).
+- Без `options.template` сборка невозможна: генерация вендорских заголовков с
+  нуля не поддерживается (см. «Открытые вопросы»).
+
 ## Ограничения
 
 - Raw NAND (OOB/ECC) не пишется: только линейные образы.
@@ -246,13 +357,25 @@ public class CompositeImagePlugin
 - активная нода: `use` + `GetFs/GetKernel/GetDevTree`, `MarkDirty` по ветке;
 - `mkimage`, `build`, `layout export`, `layout validate`;
 - `content.file`, `content.dir` (каталог → ФС в памяти), `content.blob` (локальный кэш), `content.empty`;
+- `content.compression` (`gzip`, `xz`, `lzma`, `lz4`, `bzip2`, `zstd`): сжимает
+  итоговые байты file/blob/dir (например, cpio-ramdisk), входные архивы
+  подавайте без этой опции;
 - NAND: `CreatePlan` + layout-режим писателя (raw и filesystem-слоты);
-- `layout export` пишет immutable-содержимое в `<schema>.blobs/<sha256>` и
-  ссылается на него через `content.file`, поэтому экспорт → `mkimage` → `store`
-  воспроизводит образ побайтово (проверено на 256 МиБ дампе Amlogic).
+- Диск: `CreatePlan` + layout-режим (`DiskImageBuilder`, MBR и GPT с
+  protective MBR, primary/backup заголовками, CRC32 и GPT-именами);
+- RKFW/SWUpdate: шаблонный режим (`options.template`), замена/добавление
+  записей, пересчёт хешей и размеров;
+- Standalone ФС (`build` + `layout validate`): `format: squashfs|ext4|fat|...`,
+  корневой `content.dir`; FS-опции (`compression`, `fat.type`, `jffs2.*`,
+  `erofs.*`, `udf.*`, `fs-size`, ...) применяются и в узлах NAND/диска;
+- `layout export` для **файловых систем** (cpio, ext4, squashfs, ...) выгружает
+  дерево в `<schema>.files/<path>/` и пишет `content.dir` + `compression`,
+  поэтому ramdisk остаётся редактируемым (не immutable); ядра, DTB и
+  контейнеры по-прежнему сохраняются как immutable-файлы в `<schema>.blobs/`;
+  если ФС содержит спецфайлы (device/fifo/socket), экспорт откатывается на
+  immutable-блоб, чтобы не потерять содержимое.
 - Контейнеры **FIT** и **Android** собираются из дочерних нод (`PlanMaterializer`):
-  ядро/ramdisk/DTB можно задавать файлами и каталогами, без промежуточных файлов;
-  при экспорте они по-прежнему сохраняются как immutable-файл и пересобираются как есть.
+  ядро/ramdisk/DTB можно задавать файлами и каталогами, без промежуточных файлов.
 - Мультитомный UBI в одной ноде (`format: ubi` + несколько томов) — следующий этап;
   отдельные UBI-разделы (`format: ubifs`) собираются уже сейчас.
 
@@ -263,7 +386,7 @@ public class CompositeImagePlugin
    активная нода для `use`/`GetFs`/`MarkDirty`.
 2. NAND: `SupportLayout`, `CreatePlan`, layout-режим писателя; проверка на
    реальном дампе (`layout export` → rebuild → сравнение карты и содержимого).
-3. Диск (MBR/GPT).
+3. Диск (MBR/GPT) — сделано.
 4. FIT/Android/CIMG/UBI (в основном обвязка `CreatePlan`).
 5. Бандлы и кэш на `NyaPackage`, YAML как обязательный вход.
 6. Vendor-форматы (RKFW, SWUpdate, ...).

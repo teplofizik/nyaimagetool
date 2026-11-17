@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.0.148" />
+    <PackageReference Include="NyaFs" Version="1.0.152" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

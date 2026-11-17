@@ -1,0 +1,17 @@
+﻿schema: 1
+format: disk
+options: { table: mbr, align: 1048576 }
+children:
+  - name: boot
+    offset: 1048576
+    size: 16777216
+    kind: raw
+    mbr-type: 0x0c
+    content: { file: inputs/boot.img }
+
+  - name: rootfs
+    offset: 18874368
+    size: 33554432
+    kind: raw
+    mbr-type: 0x83
+    content: { file: inputs/rootfs.ext4 }

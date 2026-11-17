@@ -1,4 +1,6 @@
 using NyaFs.ImageFormat;
+using NyaFs.ImageFormat.Composite;
+using NyaFs.ImageFormat.Plugins;
 using NyaFs.ImageFormat.Plugins.Base;
 using NyaFs.Filesystem.Cpio.Types;
 using NyaFsSwupdate.Types;
@@ -26,8 +28,52 @@ namespace NyaFsSwupdate
 
         public override bool SupportWrite => true;
 
+        public override bool SupportLayout => true;
+
+        public override ImageBuildNode CreatePlan(PlanDocument Document, out string Error)
+        {
+            var Template = PlanTemplate.Load(Document, Format, out Error);
+            if (Template == null)
+                return null;
+
+            var Archive = new SwuArchive(Template);
+            if (!Archive.Correct)
+            {
+                Error = "Template is not a valid SWU CPIO archive";
+                return null;
+            }
+
+            var Root = new ImageBuildNode
+            {
+                Name = "swu",
+                Path = "",
+                Kind = ImageKind.Unknown,
+                Format = Format,
+                Raw = Template
+            };
+
+            Root.Options["plan.layout"] = "1";
+
+            foreach (var Child in Document.Children)
+                Root.Children.Add(PlanNodes.FromElement(Child, ""));
+
+            return Root;
+        }
+
         public override byte[] Build(BaseImageBlob Blob, out string Error) =>
             new SwuWriter().Build(Blob, out Error);
+
+        public override byte[] Build(BaseImageBlob Blob, PluginRegistry Plugins, out string Error)
+        {
+            var Root = Blob?.BuildPlan?.Root;
+            if ((Root == null) || !Root.Options.ContainsKey("plan.layout") || !PlanTemplate.HasProvidedContent(Root))
+                return Build(Blob, out Error);
+
+            if (!PlanTemplate.ResolveProvided(Root, Plugins, out Error))
+                return null;
+
+            return Build(Blob, out Error);
+        }
 
         public override bool DetectImage(ImageData Image)
         {

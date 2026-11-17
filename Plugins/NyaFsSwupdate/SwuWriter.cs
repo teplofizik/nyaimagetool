@@ -62,13 +62,31 @@ namespace NyaFsSwupdate
                     Contents[Name] = (Child != null) ? (GetChildData(Child) ?? Node.Content) : Node.Content;
                 }
 
-                var Description = Fw.Read("sw-description");
+                foreach (var Child in AllChildren(Root))
+                {
+                    var Name = (Child.Name ?? "").TrimStart('/');
+                    if ((Name.Length == 0) || Contents.ContainsKey(Name) ||
+                        String.Equals(Name, "sw-description.sig", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var Data = GetChildData(Child);
+                    if ((Data != null) && (Data.Length > 0))
+                        Contents[Name] = Data;
+                }
+
+                var SourceDescription = Fw.Read("sw-description");
+                var Description = SourceDescription;
+                var DescriptionChild = FindChild(Root, "sw-description");
+                var ProvidedDescription = (DescriptionChild != null) ? GetChildData(DescriptionChild) : null;
+                if ((ProvidedDescription != null) && (ProvidedDescription.Length > 0))
+                    Description = ProvidedDescription;
+
                 var DescriptionChanged = false;
                 if (Description != null)
                 {
                     var UpdatedDescription = Encoding.UTF8.GetBytes(
                         UpdateHashes(Encoding.UTF8.GetString(Description), Contents));
-                    DescriptionChanged = !UpdatedDescription.SequenceEqual(Description);
+                    DescriptionChanged = (SourceDescription == null) || !UpdatedDescription.SequenceEqual(SourceDescription);
                     Contents["sw-description"] = UpdatedDescription;
                 }
 
@@ -115,14 +133,29 @@ namespace NyaFsSwupdate
                 }
 
                 var Builder = new NyaFs.Filesystem.Cpio.CpioFsBuilder("070702");
+                var Existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var Node in Fw.Items)
                 {
                     var Name = (Node.Path ?? "").TrimStart('/');
+                    Existing.Add(Name);
                     if (Contents.TryGetValue(Name, out var Data) && (Data != null) &&
                         !Data.SequenceEqual(Node.Content))
                         Builder.Raw(Node.UpdateContent(Data));
                     else
                         Builder.Raw(Node);
+                }
+
+                foreach (var Pair in Contents)
+                {
+                    if (Existing.Contains(Pair.Key) ||
+                        String.Equals(Pair.Key, "sw-description.sig", StringComparison.OrdinalIgnoreCase) ||
+                        (Pair.Value == null) || (Pair.Value.Length == 0))
+                        continue;
+
+                    var Added = new CpioFile(Pair.Key, 0x1A4, 0, 0, Pair.Value);
+                    Added.SetMagic("070702");
+                    Added.UpdateCheck();
+                    Builder.Raw(Added);
                 }
 
                 if (HasNewSignature && Contents.TryGetValue("sw-description.sig", out var NewSignature))
@@ -194,6 +227,19 @@ namespace NyaFsSwupdate
                 if (IsDirty(Child))
                     return true;
             return false;
+        }
+
+        private static IEnumerable<ImageBuildNode> AllChildren(ImageBuildNode Node)
+        {
+            if (Node == null)
+                yield break;
+
+            foreach (var Child in Node.Children)
+            {
+                yield return Child;
+                foreach (var Nested in AllChildren(Child))
+                    yield return Nested;
+            }
         }
 
         private static ImageBuildNode FindChild(ImageBuildNode Node, string Name)
