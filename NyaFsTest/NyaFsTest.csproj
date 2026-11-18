@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.2.8" />
+    <PackageReference Include="NyaFs" Version="1.2.9" />
   </ItemGroup>
 
 </Project>
