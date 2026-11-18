@@ -34,6 +34,9 @@
 - **Слот** — метаданные размещения ноды внутри родителя: `offset`, `size`,
   `align`, `repeat`, `fill`. Для простых форматов («блобы по смещениям»)
   слоты пакуются хелпером `PlanPacker`; сложные форматы используют их сами.
+- **Потоковая запись**: `build`/`store` для NAND и диска пишут в `Stream`
+  (без seek); у NAND в памяти остаются payload'ы слотов, у диска `content.file`
+  копируется из файла.
 - **Нода** — элемент плана: `name`, `kind` (`kernel`, `filesystem`, `devtree`,
   `raw`, `container`), `format` (имя формата/плагина), `options`, `children`,
   `content`.

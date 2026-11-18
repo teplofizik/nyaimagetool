@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Composite;
@@ -105,6 +105,12 @@ namespace NyaFsNand
 
         public override byte[] Build(BaseImageBlob Blob, PluginRegistry Plugins, out string Error) =>
             NandImageWriter.Build(Blob, Plugins, out Error);
+
+        public override bool SupportsStreaming => true;
+
+        public override bool BuildTo(System.IO.Stream Output, BaseImageBlob Blob,
+            PluginRegistry Plugins, out string Error) =>
+            NandImageWriter.BuildTo(Output, Blob, Plugins, out Error);
 
         public override ImageBuildNode CreatePlan(PlanDocument Document, out string Error)
         {
