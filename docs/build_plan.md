@@ -254,8 +254,10 @@ content: { dir: inputs/efi }
 
 Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs2`, `yaffs2`,
 `f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`, `cpio`, `tar` и другие
-плагины с записью. `layout validate` проверяет такие схемы, `mkimage` пока
-только composite-форматы.
+плагины с записью. `layout validate` проверяет такие схемы; `mkimage` умеет и
+composite, и активную ноду чистой ФС, сохранение — `store ... ramfs <format>`.
+`cpio`/`tar` отдают образ в `Stream` (каркас `IFilesystemStreamBuilder`);
+остальные ФС пока собираются в памяти.
 
 ### Одно правило размера
 
