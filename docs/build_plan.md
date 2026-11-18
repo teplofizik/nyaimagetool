@@ -316,7 +316,9 @@ children:
 - `peb`/`block` (по умолчанию 128K), `page` (2K);
 - `total`/`size` — добить образ до размера `0xFF`;
 - дочерние: `volume-type: dynamic|static`, `autoresize`, `volume-id`;
-- для UBIFS тома сжатие задаётся `options: { compression: lzo|zlib|zstd }`.
+- для UBIFS тома сжатие задаётся `options: { compression: lzo|zlib|zstd }`;
+- `build`/`store` пишут UBI по PEB'ам в `Stream` (образ не аллоцируется целиком),
+  payload'ы томов пока собираются в памяти.
 
 ## Загрузочный ISO (El Torito)
 
