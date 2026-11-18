@@ -337,6 +337,7 @@ content: { dir: inputs/cd_root }
 - `boot-load-size` — размер в 512-байтных секторах (0/не задано — по размеру файла);
 - `boot-load-segment`, `boot-media-type`, `boot-system-type`, `boot-identifier`;
 - UDF остаётся data-only; ISO + El Torito — для CD/DVD.
+- uild/store пишут ISO через seekable-поток: path tables, каталоги и файлы размещаются по extent'ам, полный образ в памяти не нужен.
 ## Диск (MBR/GPT)
 
 `format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
