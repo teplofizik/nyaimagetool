@@ -36,8 +36,22 @@ class MyFsFilesystemPlugin : FilesystemPlugin
 | `FsType` | `FsType` для детекта в пайплайне; `Unknown`, если своего типа нет |
 | `DisplayName`, `Aliases`, `Extensions` | CLI-имена и расширения |
 
-`GetFilesystemWriter` не должен писать в файл: `BaseFsWriter(builder)`
-вызывает `builder.GetFilesystemImage()` и отдаёт `RawStream`.
+`GetFilesystemWriter` не должен писать в файл. Базовый путь — `BaseFsWriter`:
+он вызывает `builder.GetFilesystemImage()` и отдаёт `RawStream` (`store` без
+потока). Чтобы получать образ потоком (`WriteFsTo`, `build`, большие образы),
+реализуйте в builder'е `IFilesystemStreamBuilder.WriteFilesystemImage(Stream)`:
+
+- последовательные форматы (cpio/tar/romfs/cramfs/iso9660/fat/exfat/jffs2/yaffs2)
+  пишут сразу в `Stream`;
+- ФС с произвольным доступом (ext2/3/4, ubifs/ubi, f2fs, erofs, udf) используют
+  `IRandomAccessStore` (`StreamStore`) или `ImageStore` и требуют seek; для
+  non-seekable потока базовый хелпер собирает образ в `MemoryStream`;
+- `GetFilesystemImage()` реализуйте через `WriteFilesystemImage(new MemoryStream())`,
+  чтобы оба пути давали одинаковые байты.
+
+`BaseFsWriter.SupportsStreaming` включается автоматически, если builder
+реализует `IFilesystemStreamBuilder` (или передан `StreamingBuilderFactory`,
+как у ext2/ext4 с `StreamStore`).
 
 ## 3. Опции
 

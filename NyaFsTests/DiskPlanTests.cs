@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -68,6 +68,112 @@ namespace NyaFsTests
                 Assert.Equal(0xA1, Data[1048576]);
                 Assert.Equal(0xB2, Data[4194304]);
                 Assert.Equal(0x00, Data[2097152]);
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Disk_Streams_Filesystem_Partition()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "disk-fs-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "rootfs");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "disk.yaml");
+            var Out = Path.Combine(Dir, "disk.img");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "hello disk ubifs");
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: disk\n" +
+                    "options: { table: mbr, align: 1048576 }\n" +
+                    "children:\n" +
+                    "  - { name: root, offset: 1048576, size: auto, kind: filesystem, format: ubifs, content: { dir: rootfs } }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc,
+                    "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.True(DiskImage.TryParse(Data, out var Disk));
+                var Part = Disk.Partitions.Single();
+
+                var Volume = new byte[Part.SectorCount * 512];
+                Array.Copy(Data, Part.StartLba * 512, Volume, 0, Volume.Length);
+
+                var Ubi = new NyaFs.Filesystem.UbiFs.UbiFsReader(Volume);
+                var Rootfs = Ubi.FindVolume("rootfs");
+                Assert.NotNull(Rootfs);
+
+                var Reader = new NyaFs.Filesystem.UbiFs.Ubifs.UbifsReader(Ubi, Rootfs);
+                Assert.Equal(Encoding.UTF8.GetBytes("hello disk ubifs"), Reader.Read("/etc/hello"));
+            }
+            finally
+            {
+                if (Directory.Exists(Dir)) Directory.Delete(Dir, true);
+            }
+        }
+
+        [Fact]
+        public void Plan_Disk_Streams_Ubi_Container_Partition()
+        {
+            var Dir = Path.Combine(Path.GetTempPath(), "disk-ubi-" + Guid.NewGuid().ToString("N"));
+            var Root = Path.Combine(Dir, "rootfs");
+            Directory.CreateDirectory(Path.Combine(Root, "etc"));
+
+            var Layout = Path.Combine(Dir, "disk.yaml");
+            var Kernel = Path.Combine(Dir, "kernel.bin");
+            var Out = Path.Combine(Dir, "disk.img");
+            var KernelData = Encoding.ASCII.GetBytes("kernel in nested ubi");
+
+            try
+            {
+                File.WriteAllText(Path.Combine(Root, "etc", "hello"), "hello disk ubi");
+                File.WriteAllBytes(Kernel, KernelData);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: disk\n" +
+                    "options: { table: mbr, align: 1048576 }\n" +
+                    "children:\n" +
+                    "  - name: root\n" +
+                    "    offset: 1048576\n" +
+                    "    size: auto\n" +
+                    "    kind: container\n" +
+                    "    format: ubi\n" +
+                    "    options: { peb: 131072, page: 2048 }\n" +
+                    "    children:\n" +
+                    "      - { name: rootfs, kind: filesystem, format: ubifs, content: { dir: rootfs } }\n" +
+                    "      - { name: kernel, kind: raw, content: { file: kernel.bin } }\n",
+                    new UTF8Encoding(false));
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.True(DiskImage.TryParse(Data, out var Disk));
+                var Part = Disk.Partitions.Single();
+
+                var Volume = new byte[Part.SectorCount * 512];
+                Array.Copy(Data, Part.StartLba * 512, Volume, 0, Volume.Length);
+                Assert.Equal(Encoding.ASCII.GetBytes("UBI#"), Volume.Take(4).ToArray());
+
+                var Ubi = new NyaFs.Filesystem.UbiFs.UbiFsReader(Volume);
+                var Rootfs = Ubi.FindVolume("rootfs");
+                Assert.NotNull(Rootfs);
+                var Reader = new NyaFs.Filesystem.UbiFs.Ubifs.UbifsReader(Ubi, Rootfs);
+                Assert.Equal(Encoding.UTF8.GetBytes("hello disk ubi"), Reader.Read("/etc/hello"));
+
+                var KernelVol = Ubi.Volumes.Find(V => V.Name == "kernel");
+                Assert.NotNull(KernelVol);
+                var Leb = Ubi.ReadLeb(KernelVol.Id, 0);
+                Assert.NotNull(Leb);
+                Assert.Equal(KernelData, Leb.Take(KernelData.Length).ToArray());
             }
             finally
             {
@@ -163,6 +269,45 @@ namespace NyaFsTests
             Data[Offset + 3] = (byte)(Value >> 24);
         }
 
+        [Fact]
+        public void BuildTo_Streams_Large_Gpt_Without_Buffering()
+        {
+            var Root = new ImageBuildNode
+            {
+                Name = "disk",
+                Path = "",
+                Kind = ImageKind.Unknown,
+                Format = "disk"
+            };
+            Root.Options["table"] = "gpt";
+            Root.Options["total"] = "2560M";
+
+            var Sink = new CountingStream();
+            Assert.True(DiskImageBuilder.BuildTo(Sink, Root, Processor().Plugins, out var Error), Error);
+            Assert.Equal(2560L * 1024 * 1024, Sink.Length);
+        }
+
+        private sealed class CountingStream : Stream
+        {
+            private long Count;
+
+            public override bool CanRead => false;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length => Count;
+
+            public override long Position
+            {
+                get => Count;
+                set => throw new NotSupportedException();
+            }
+
+            public override void Write(byte[] Buffer, int Offset, int Count) => this.Count += Count;
+            public override void Flush() { }
+            public override int Read(byte[] Buffer, int Offset, int Count) => throw new NotSupportedException();
+            public override long Seek(long Offset, SeekOrigin Origin) => throw new NotSupportedException();
+            public override void SetLength(long Value) => throw new NotSupportedException();
+        }
         private static uint Crc32(byte[] Data, int Offset, int Length)
         {
             var Crc = 0xFFFFFFFFu;

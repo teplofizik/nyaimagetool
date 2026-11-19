@@ -34,6 +34,11 @@
 - **Слот** — метаданные размещения ноды внутри родителя: `offset`, `size`,
   `align`, `repeat`, `fill`. Для простых форматов («блобы по смещениям»)
   слоты пакуются хелпером `PlanPacker`; сложные форматы используют их сами.
+- **Потоковая запись**: `build`/`store` для NAND и диска пишут в `Stream`;
+  `content.file` копируется из файла, а `content.dir` файловой системы пишется
+  через `Writer.WriteFsTo` в `PlanSlot.WriteData`/`RegionStream`. Размер
+  auto-слота сначала определяется пробным проходом во временный файл, затем
+  содержимое пишется ещё раз уже в итоговый образ.
 - **Нода** — элемент плана: `name`, `kind` (`kernel`, `filesystem`, `devtree`,
   `raw`, `container`), `format` (имя формата/плагина), `options`, `children`,
   `content`.
@@ -251,8 +256,14 @@ content: { dir: inputs/efi }
 
 Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs2`, `yaffs2`,
 `f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`, `cpio`, `tar` и другие
-плагины с записью. `layout validate` проверяет такие схемы, `mkimage` пока
-только composite-форматы.
+плагины с записью. `layout validate` проверяет такие схемы; `mkimage` умеет и
+composite, и активную ноду чистой ФС, сохранение — `store ... ramfs <format>`.
+Все встроенные писатели реализуют `IFilesystemStreamBuilder` и отдают образ в
+`Stream`. Метаданные-ёмкие ФС (ext2/3/4, ubifs/ubi, f2fs, erofs, udf) пишут через
+`IRandomAccessStore` (`StreamStore`) или `ImageStore`; последовательные форматы
+(cpio, tar, romfs, cramfs, iso9660, fat, exfat, jffs2, yaffs2) — сразу в поток.
+Если поток не поддерживает seek, писатель собирает образ во внутреннем
+`MemoryStream` и копирует его (UBI/UBIFS — тем же путём).
 
 ### Одно правило размера
 
@@ -313,7 +324,13 @@ children:
 - `peb`/`block` (по умолчанию 128K), `page` (2K);
 - `total`/`size` — добить образ до размера `0xFF`;
 - дочерние: `volume-type: dynamic|static`, `autoresize`, `volume-id`;
-- для UBIFS тома сжатие задаётся `options: { compression: lzo|zlib|zstd }`.
+- для UBIFS тома сжатие задаётся `options: { compression: lzo|zlib|zstd }`;
+- `build`/`store` пишут UBI по PEB'ам в `Stream` (образ не аллоцируется целиком);
+  standalone `format: ubifs` (raw или UBI-обёртка) пишет LEB'ы сразу в data-области
+  PEB'ов через `PebStore`. В мультитомном `format: ubi` UBIFS-тома проходят
+  `UbifsBuilder.PrepareLayout()` (известен `reserved_pebs`) и затем пишутся в
+  свои PEB'ы через `PebStore`; static-тома держат исходные байты один раз и
+  раскладываются по PEB'ам без дублирования LEB-массивов.
 
 ## Загрузочный ISO (El Torito)
 
@@ -330,6 +347,7 @@ content: { dir: inputs/cd_root }
 - `boot-load-size` — размер в 512-байтных секторах (0/не задано — по размеру файла);
 - `boot-load-segment`, `boot-media-type`, `boot-system-type`, `boot-identifier`;
 - UDF остаётся data-only; ISO + El Torito — для CD/DVD.
+- uild/store пишут ISO через seekable-поток: path tables, каталоги и файлы размещаются по extent'ам, полный образ в памяти не нужен.
 ## Диск (MBR/GPT)
 
 `format: disk` собирает таблицу разделов и размещает payload'ы по слотам;
@@ -353,6 +371,12 @@ children:
   Linux data `0FC63DAF-...`), `partition-guid` (по умолчанию из `seed`+имя).
 - GPT-имена разделов берутся из `name`; пишутся primary и backup копии
   таблицы и заголовков, CRC32 считается по entries/header.
+- `build`/`store` пишут диск потоком (нужен только `Stream`, seek не требуется):
+  `content.file` копируется из файла, а не читается в `byte[]`; разделы
+  `kind: filesystem` с `content.dir` пишутся `WriteFsTo` через `RegionStream`
+  (для seekable) или временный `MemoryStream` (для не-seekable). В памяти
+  остаются только сериализованные/сжатые payload'ы. `Build(byte[])` сохранён
+  для совместимости.
 
 ## Вендорские контейнеры (шаблон)
 
@@ -383,6 +407,11 @@ children:
 ## Ограничения
 
 - Raw NAND (OOB/ECC) не пишется: только линейные образы.
+- Контейнеры `fit`/`android`/`cimg` и вендорские RKFW/SWUpdate/TVIP, положенные
+  в слот NAND/диска, пока собираются в `byte[]` (`CompositeImagePlugin.BuildTo`
+  по умолчанию). Пересмотреть, если такой слот превысит ~256 МБ, появится OOM
+  или пробный проход станет заметен по времени: тогда переопределить
+  `BuildTo`/`SupportsStreaming` в плагине.
 - Secure boot: подписи/шифрование — отдельный слой (KeyStore/FIT-подпись).
 - Вендорские служебные структуры, не выводимые из раскладки, задаются
   `options` или отдельными билдерами.
@@ -424,6 +453,18 @@ children:
 - **Загрузочный ISO9660**: El Torito no-emulation (`boot-image`, `boot-load-size`,
   `boot-load-segment`, `boot-media-type`, `boot-system-type`, `boot-identifier`);
   UDF остаётся data-only.
+- **Потоковая запись ФС**: `IFilesystemStreamBuilder` реализован всеми встроенными
+  писателями (cpio, tar, romfs, cramfs, iso9660, fat, exfat, ext2/3/4, squashfs,
+  f2fs, ubifs/ubi, erofs, jffs2, udf, yaffs2); `store`/`build` используют
+  `WriteFsTo` при seekable-потоке, иначе — внутренний `MemoryStream`.
+- **Потоковые слоты и UBI**: `PlanSlot.WriteData`/`RegionStream` пишут
+  `content.dir` непосредственно в слот NAND/диска (`PlanPacker`, `DiskImageBuilder`);
+  мультитомный `format: ubi` определяет размеры UBIFS-томов через
+  `PrepareLayout` и пишет их в PEB'ы через `PebStore`, static-тома — без
+  дублирования в LEB-массивы. Вложенные `format: ubi` и `format: disk` как
+  дочерние слоты тоже стримятся (`TryProbeStreaming`/`TryWriteStreaming` →
+  `UbiImageBuilder.BuildTo`/`DiskImageBuilder.BuildTo`); FIT/Android/CIMG и
+  вендорские контейнеры пока собираются в памяти.
 
 ## Этапы
 

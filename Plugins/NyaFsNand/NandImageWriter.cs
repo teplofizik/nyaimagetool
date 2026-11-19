@@ -41,7 +41,13 @@ namespace NyaFsNand
                 if (Root.Raw != null)
                     return BuildFromSource(Root, out Error);
 
-                return BuildFromLayout(Root, Plugins ?? PluginHost.Current, out Error);
+                using (var Stream = new System.IO.MemoryStream())
+                {
+                    if (!BuildFromLayoutTo(Stream, Root, Plugins ?? PluginHost.Current, out Error))
+                        return null;
+
+                    return Stream.ToArray();
+                }
             }
             catch (Exception E)
             {
@@ -50,6 +56,38 @@ namespace NyaFsNand
             }
         }
 
+        public static bool BuildTo(System.IO.Stream Output, BaseImageBlob Blob,
+            PluginRegistry Plugins, out string Error)
+        {
+            Error = null;
+
+            try
+            {
+                var Root = Blob?.BuildPlan?.Root;
+                if (Root == null)
+                {
+                    Error = "NAND writer needs a build plan";
+                    return false;
+                }
+
+                if (Root.Raw != null)
+                {
+                    var Data = BuildFromSource(Root, out Error);
+                    if (Data == null)
+                        return false;
+
+                    Output.Write(Data, 0, Data.Length);
+                    return true;
+                }
+
+                return BuildFromLayoutTo(Output, Root, Plugins ?? PluginHost.Current, out Error);
+            }
+            catch (Exception E)
+            {
+                Error = E.Message;
+                return false;
+            }
+        }
         // ---- source mode (template + replacements) ----
 
         private static byte[] BuildFromSource(ImageBuildNode Root, out string Error)
@@ -96,7 +134,8 @@ namespace NyaFsNand
 
         // ---- layout mode (build from scratch) ----
 
-        private static byte[] BuildFromLayout(ImageBuildNode Root, PluginRegistry Plugins, out string Error)
+        private static bool BuildFromLayoutTo(System.IO.Stream Output, ImageBuildNode Root,
+            PluginRegistry Plugins, out string Error)
         {
             Error = null;
 
@@ -113,7 +152,7 @@ namespace NyaFsNand
             if ((Total <= 0) || (Block <= 0) || ((Total % Block) != 0))
             {
                 Error = "NAND layout needs a positive 'total' (multiple of 'block') or 'blocks'";
-                return null;
+                return false;
             }
 
             var Slots = new List<PlanSlot>();
@@ -123,10 +162,37 @@ namespace NyaFsNand
 
             foreach (var Child in Root.Children)
             {
-                if (!PlanNodeSerializer.TrySerialize(Child, Plugins, BaseDir, BlobDir, out var Data, out var Skip, out var Err))
+                byte[] Data = null;
+                long DataLength;
+                Func<System.IO.Stream, string> WriteData = null;
+                bool Skip = false;
+
+                if (PlanNodeSerializer.TryProbeStreaming(Child, Plugins, BaseDir, BlobDir,
+                    out var StreamLength, out var Handled, out var StreamError))
                 {
-                    Error = Err;
-                    return null;
+                    DataLength = StreamLength;
+                    var Node = Child;
+                    WriteData = Stream =>
+                    {
+                        if (!PlanNodeSerializer.TryWriteStreaming(Node, Plugins, BaseDir, BlobDir, Stream, out _, out var WriteError))
+                            return WriteError ?? "Cannot write streamable content";
+                        return null;
+                    };
+                }
+                else if (Handled)
+                {
+                    Error = StreamError;
+                    return false;
+                }
+                else
+                {
+                    if (!PlanNodeSerializer.TrySerialize(Child, Plugins, BaseDir, BlobDir, out Data, out Skip, out var Err))
+                    {
+                        Error = Err;
+                        return false;
+                    }
+
+                    DataLength = Data?.Length ?? 0;
                 }
 
                 if (Skip)
@@ -135,7 +201,7 @@ namespace NyaFsNand
                 long? Size = Child.Size;
                 var Auto = Child.SizeAuto || !Size.HasValue;
                 if (Auto)
-                    Size = RoundUp(Data.Length, Block);
+                    Size = RoundUp(DataLength, Block);
 
                 Slots.Add(new PlanSlot
                 {
@@ -147,13 +213,14 @@ namespace NyaFsNand
                     RepeatCount = Child.RepeatCount,
                     RepeatStride = Child.RepeatStride,
                     Fill = Child.Fill,
-                    Data = Data
+                    Data = Data,
+                    DataLength = DataLength,
+                    WriteData = WriteData
                 });
             }
 
-            return PlanPacker.Pack(Total, Root.Fill, Block, Slots, out Error);
+            return PlanPacker.PackTo(Output, Total, Root.Fill, Block, Slots, out Error);
         }
-
         private static long Option(ImageBuildNode Node, string Key, long Default)
         {
             if (!Node.Options.TryGetValue(Key, out var Text) || String.IsNullOrWhiteSpace(Text))
