@@ -26,25 +26,29 @@ F2FS writer (reader+writer ready; NyaFs 1.0.4x):
 * compression supports inode + 2 direct nodes + 2 indirect + double-indirect;
   cluster size configurable: `set ramfs f2fs.compression.cluster 16K|32K|...|1M`
   (log 2..8, fixed previously at log=2/16 KiB).
-* unified raw-stream API in `ImageFormat.Compressors` (no container headers) for
-  LZ4/LZO/LZORLE — partially done (`Lz4Raw`, NyaLZO raw).
+* unified raw-stream API in `ImageFormat.Compressors` — **optional refactor, not planned**:
+  implementations exist (`Lz4Raw`, NyaLZO raw LZO/LZO-RLE, `ZStd` frame) and F2FS
+  selects them directly. Revisit only if adding a new F2FS algorithm or
+  plugin-based compressors for F2FS.
 
 Detection of filesystem limitations before writing! Uid/Gid, mode.
 Scan filesystem: detect elf arch, etc...
 
-## Packages (MVP, NyaFs 1.0.47)
-One package = one file: gzip(tar) with `PACKAGE` control (key: value, unknown keys
-preserved — extensible) and a `data/` tree. Commands: `pkg info <file>`,
-`pkg add <file>` (arch/os filter), `pkg create <file> <fs-path> <name> <version>`.
-Examples in `common/`: `pkg_scp.nyam` -> `scp.nyapkg`, `pkg_root.nyam` ->
-`root.nyapkg` (settings shipped as a package). Documented in `readme.md`
-(Packages, xattr, F2FS compression).
-TODO:
-* xattr: DONE — preserved via PAX `SCHILY.xattr.*` (TarFsBuilder emits PAX,
-  TarFsReader reads it, installed by `pkg add`).
-* richer metadata: depends/conflicts/provides, version constraints, matching policy.
-* create from a local directory (CLI), compression choice (gzip now, zstd later).
-* long paths are handled (GNU long name); special files (char/block/fifo) supported.
+## Packages (done; NyaFs 1.3.1)
+One package = one file: gzip/zstd(tar) with `PACKAGE` control (key: value, unknown
+keys preserved — extensible) and a `data/` tree. Commands:
+`pkg info`, `pkg add`, `pkg create` (fs subtree), `pkg createdir` (local dir),
+`pkg adddir` (dependency/conflict resolve from a directory), `pkg meta`
+(set/remove metadata and repack).
+Done:
+* xattr via PAX `SCHILY.xattr.*`; long paths (GNU long name); special files
+  (char/block/fifo) supported.
+* richer metadata: `depends`/`conflicts`/`provides`, version operators
+  `>= <= = > <`, circular-dependency detection, `provides` in both installed-DB
+  checks and candidate resolution.
+* create from a local directory (CLI) and compression choice `gzip|zstd`.
+Remaining (not planned): package repository/index; single `pkg add` does not
+auto-resolve dependencies by design — use `pkg adddir`.
 
 ## Not supported (later)
 

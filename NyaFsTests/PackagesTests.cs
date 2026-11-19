@@ -1,10 +1,13 @@
 using System;
+using System.IO;
 using System.Text;
 using NyaFs.Filesystem.Universal.Items;
 using NyaFs.Filesystem.Universal.Types;
 using NyaFs.ImageFormat.Elements.Fs;
 using NyaFs.ImageFormat.Types;
 using NyaFs.Packages;
+using NyaFs.Processor;
+using NyaFs.Processor.Scripting;
 using Xunit;
 using FFile = NyaFs.Filesystem.Universal.Items.File;
 using CChar = NyaFs.Filesystem.Universal.Items.Char;
@@ -96,6 +99,66 @@ namespace NyaFsTests
             Db.Set(Dep.Metadata);
             Assert.True(Db.CheckInstall(App.Metadata, out Error), Error);
             Assert.False(Db.CheckInstall(Bad.Metadata, out Error));
+        }
+
+        [Fact]
+        public void Package_Database_Resolve_Uses_Provides()
+        {
+            var Lib = new NyaPackage
+            {
+                Metadata = new PackageMetadata { Name = "lib", Version = "1.0", Provides = "virtual-lib=1.0" }
+            };
+            var App = new NyaPackage
+            {
+                Metadata = new PackageMetadata { Name = "app", Version = "1.0", Depends = "virtual-lib>=1.0" }
+            };
+            var TooNew = new NyaPackage
+            {
+                Metadata = new PackageMetadata { Name = "tool", Version = "1.0", Depends = "virtual-lib>=2.0" }
+            };
+
+            System.Collections.Generic.List<NyaPackage> Order;
+            string Error;
+
+            Assert.True(PackageDatabase.Resolve(new[] { App, Lib }, "app", out Order, out Error), Error);
+            Assert.Equal(2, Order.Count);
+            Assert.Equal("lib", Order[0].Metadata.Name);
+
+            Assert.False(PackageDatabase.Resolve(new[] { TooNew, Lib }, "tool", out Order, out Error));
+        }
+
+        [Fact]
+        public void Package_Cli_Meta_Updates_Dependency_And_Keeps_Compression()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nyapkg-meta-" + Guid.NewGuid().ToString("N"));
+            var Package = Path.Combine(Root, "app.nyapkg");
+            Directory.CreateDirectory(Path.Combine(Root, "src", "etc"));
+            System.IO.File.WriteAllText(Path.Combine(Root, "src", "etc", "app.conf"), "enabled=1");
+
+            try
+            {
+                var P = NyaPackage.FromDirectory(Path.Combine(Root, "src"),
+                    new PackageMetadata { Name = "app", Version = "1.0" });
+                System.IO.File.WriteAllBytes(Package, P.ToFile("zstd"));
+
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Process(Parser.ParseScript("t", new[]
+                {
+                    "pkg meta \"" + Package + "\" depends \"lib>=1.0\"",
+                    "pkg meta \"" + Package + "\" provides \"virtual-app=1.0\""
+                }));
+
+                var Q = NyaPackage.Open(System.IO.File.ReadAllBytes(Package));
+                Assert.Equal("lib>=1.0", Q.Metadata.Depends);
+                Assert.Equal("virtual-app=1.0", Q.Metadata.Provides);
+                Assert.Equal("zstd", Q.Metadata.Compression);
+                Assert.Equal("enabled=1", Encoding.UTF8.GetString(Q.Entries.Find(E => E.Path == "etc/app.conf").Content));
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+            }
         }
 
         [Fact]

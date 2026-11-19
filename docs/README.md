@@ -2,7 +2,8 @@
 
 Start here:
 
-- [release-1.3.0.md](release-1.3.0.md) - what is new, upgrade notes, limitations
+- [release-1.3.1.md](release-1.3.1.md) - packages metadata/dependencies
+- [release-1.3.0.md](release-1.3.0.md) - streaming writers
 - [release-1.1.0.md](release-1.1.0.md) - previous release
 - [BUILDING.md](BUILDING.md) - build, test and publish
 - [manual-testing.md](manual-testing.md) - live testing checklist

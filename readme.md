@@ -3,6 +3,13 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
+## What's new in 1.3.1
+
+Packages: `pkg meta` for editing `depends`/`conflicts`/`provides`/custom metadata,
+`provides`-aware dependency resolution in `pkg adddir`, full `pkg info` output,
+and updated package documentation (createdir/adddir, gzip/zstd, version specs).
+See [docs/release-1.3.1.md](docs/release-1.3.1.md).
+
 ## What's new in 1.3.0
 
 Streaming image writers: every built-in filesystem can now emit its image
@@ -529,13 +536,24 @@ package as ordinary files. Extended attributes are preserved in the package
 (PAX `SCHILY.xattr.*`) and restored on `pkg add`; device nodes and FIFOs are
 preserved as tar entry types.
 
-Create a package from a subtree of the current in-memory filesystem:
+Create a package from a subtree of the current in-memory filesystem or from a
+local directory:
 ```
-pkg create <file.nyapkg> <fs-path> <name> <version>
+pkg create <file.nyapkg> <fs-path> <name> <version> [gzip|zstd]
+pkg createdir <file.nyapkg> <local-dir> <name> <version> [gzip|zstd]
 ```
 If target arch/os are set (`set ... arch/os`), they are stored in the metadata.
 
-Print package metadata:
+Metadata can carry `depends`, `conflicts`, `provides`, `description` and arbitrary
+extra fields. Version operators in specs: `>=`, `<=`, `=`, `>`, `<`. Edit an
+existing package (repacked with the same compression):
+```
+pkg meta <file.nyapkg> depends "lib>=1.0"
+pkg meta <file.nyapkg> provides "virtual-lib=1.0"
+pkg meta <file.nyapkg> description -      # "-" removes the field
+```
+
+Print all package metadata fields and the entry count:
 ```
 pkg info <file.nyapkg>
 ```
@@ -545,6 +563,15 @@ its arch/os does not match the target:
 ```
 pkg add <file.nyapkg>
 ```
+
+Install a directory of `*.nyapkg` files with dependency/conflict resolution
+(`depends`/`provides`/`conflicts` are honoured, packages are installed in
+dependency order):
+```
+pkg adddir <dir-with-*.nyapkg> <root-package>
+```
+`pkg add` checks one package against the already-installed database; `adddir`
+resolves the graph among candidate packages.
 
 ## Services
 ```
