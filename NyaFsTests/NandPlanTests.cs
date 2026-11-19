@@ -243,6 +243,101 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void Plan_Build_Streams_Ext4_Filesystem_Slot()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nand-ext4-" + Guid.NewGuid().ToString("N"));
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Content = Encoding.UTF8.GetBytes("hello streamed ext4");
+
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(Root, "etc"));
+                File.WriteAllBytes(Path.Combine(Root, "etc", "hello"), Content);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 0, block: 131072, blocks: 128 }\n" +
+                    "children:\n" +
+                    "  - { name: rootfs, offset: 0, size: auto, kind: filesystem, format: ext4," +
+                    " content: { dir: '" + Root + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(0x53, Data[0x438]);
+                Assert.Equal(0xEF, Data[0x439]);
+
+                var Reader = new NyaFs.Filesystem.Ext2.Ext4FsReader(Data);
+                Assert.Equal(Content, Reader.Read("/etc/hello"));
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
+
+        [Fact]
+        public void Plan_Build_Streams_Ubi_Container_Slot()
+        {
+            var Root = Path.Combine(Path.GetTempPath(), "nand-ubi-" + Guid.NewGuid().ToString("N"));
+            var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");
+            var Out = Path.Combine(Path.GetTempPath(), "nand-plan-" + Guid.NewGuid().ToString("N") + ".bin");
+            var Kernel = Path.Combine(Root, "kernel.bin");
+            var KernelData = Encoding.ASCII.GetBytes("static kernel volume");
+
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(Root, "rootfs", "etc"));
+                File.WriteAllText(Path.Combine(Root, "rootfs", "etc", "hello"), "hello nested ubi");
+                File.WriteAllBytes(Kernel, KernelData);
+
+                File.WriteAllText(Layout,
+                    "schema: 1\nformat: nand\n" +
+                    "options: { page: 2048, oob: 0, block: 131072, blocks: 64 }\n" +
+                    "children:\n" +
+                    "  - name: os\n" +
+                    "    offset: 0\n" +
+                    "    size: auto\n" +
+                    "    kind: container\n" +
+                    "    format: ubi\n" +
+                    "    options: { peb: 131072, page: 2048 }\n" +
+                    "    children:\n" +
+                    "      - { name: rootfs, kind: filesystem, format: ubifs, content: { dir: '" + Path.Combine(Root, "rootfs") + "' } }\n" +
+                    "      - { name: kernel, kind: raw, content: { file: '" + Kernel + "' } }\n");
+
+                var Proc = Processor();
+                Run(Proc, "build \"" + Layout + "\" \"" + Out + "\"");
+
+                var Data = File.ReadAllBytes(Out);
+                Assert.Equal(Encoding.ASCII.GetBytes("UBI#"), Data.Take(4).ToArray());
+
+                var Ubi = new NyaFs.Filesystem.UbiFs.UbiFsReader(Data);
+                Assert.Equal(2, Ubi.Volumes.Count);
+
+                var Rootfs = Ubi.FindVolume("rootfs");
+                Assert.NotNull(Rootfs);
+                var Reader = new NyaFs.Filesystem.UbiFs.Ubifs.UbifsReader(Ubi, Rootfs);
+                Assert.Equal(Encoding.UTF8.GetBytes("hello nested ubi"), Reader.Read("/etc/hello"));
+
+                var KernelVol = Ubi.Volumes.Find(V => V.Name == "kernel");
+                Assert.NotNull(KernelVol);
+                var Leb = Ubi.ReadLeb(KernelVol.Id, 0);
+                Assert.NotNull(Leb);
+                Assert.Equal(KernelData, Leb.Take(KernelData.Length).ToArray());
+            }
+            finally
+            {
+                if (Directory.Exists(Root)) Directory.Delete(Root, true);
+                if (File.Exists(Layout)) File.Delete(Layout);
+                if (File.Exists(Out)) File.Delete(Out);
+            }
+        }
+
+        [Fact]
         public void Plan_Build_Command_Resolves_Blob_Content()
         {
             var Layout = Path.Combine(Path.GetTempPath(), "nand-layout-" + Guid.NewGuid().ToString("N") + ".yaml");

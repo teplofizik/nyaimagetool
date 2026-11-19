@@ -162,10 +162,37 @@ namespace NyaFsNand
 
             foreach (var Child in Root.Children)
             {
-                if (!PlanNodeSerializer.TrySerialize(Child, Plugins, BaseDir, BlobDir, out var Data, out var Skip, out var Err))
+                byte[] Data = null;
+                long DataLength;
+                Func<System.IO.Stream, string> WriteData = null;
+                bool Skip = false;
+
+                if (PlanNodeSerializer.TryProbeStreaming(Child, Plugins, BaseDir, BlobDir,
+                    out var StreamLength, out var Handled, out var StreamError))
                 {
-                    Error = Err;
+                    DataLength = StreamLength;
+                    var Node = Child;
+                    WriteData = Stream =>
+                    {
+                        if (!PlanNodeSerializer.TryWriteStreaming(Node, Plugins, BaseDir, BlobDir, Stream, out _, out var WriteError))
+                            return WriteError ?? "Cannot write streamable content";
+                        return null;
+                    };
+                }
+                else if (Handled)
+                {
+                    Error = StreamError;
                     return false;
+                }
+                else
+                {
+                    if (!PlanNodeSerializer.TrySerialize(Child, Plugins, BaseDir, BlobDir, out Data, out Skip, out var Err))
+                    {
+                        Error = Err;
+                        return false;
+                    }
+
+                    DataLength = Data?.Length ?? 0;
                 }
 
                 if (Skip)
@@ -174,7 +201,7 @@ namespace NyaFsNand
                 long? Size = Child.Size;
                 var Auto = Child.SizeAuto || !Size.HasValue;
                 if (Auto)
-                    Size = RoundUp(Data.Length, Block);
+                    Size = RoundUp(DataLength, Block);
 
                 Slots.Add(new PlanSlot
                 {
@@ -186,7 +213,9 @@ namespace NyaFsNand
                     RepeatCount = Child.RepeatCount,
                     RepeatStride = Child.RepeatStride,
                     Fill = Child.Fill,
-                    Data = Data
+                    Data = Data,
+                    DataLength = DataLength,
+                    WriteData = WriteData
                 });
             }
 

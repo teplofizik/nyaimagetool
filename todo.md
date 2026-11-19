@@ -1,5 +1,11 @@
 # TODO
 
+## Streaming (done, NyaFs 1.3.0)
+All built-in filesystem writers implement `IFilesystemStreamBuilder`; NAND/disk
+slots and multi-volume UBI stream via `PlanSlot.WriteData`/`RegionStream`/
+`PebStore`. Remaining: FIT/Android/CIMG and vendor containers as large slots
+still use the `byte[]` fallback (see `docs/build_plan.md`, «Ограничения»).
+
 ## Filesystems
 CPIO: (done)
 * `CpioFsBuilder` now supports `070702` and raw-record preservation

@@ -3,6 +3,15 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
+## What's new in 1.3.0
+
+Streaming image writers: every built-in filesystem can now emit its image
+directly to a `Stream` (`IFilesystemStreamBuilder`), including UBIFS
+(`PrepareLayout` + `PebStore`), multi-volume UBI, and nested `ubi`/`disk`
+containers placed into NAND/disk slots. Large rootfs builds no longer allocate
+the whole image in memory. See [docs/release-1.3.0.md](docs/release-1.3.0.md)
+and [docs/build_plan.md](docs/build_plan.md).
+
 ## What's new in 1.1.0
 
 Declarative layout/build plans (`build`, `mkimage`, `layout export|validate`) for
@@ -48,6 +57,11 @@ Supported at now:
 14. UDF (RW basic; ECMA-167/OSTA, ICB FE/EFE, directories, files, symlinks, VAT/sparable read/write).
 15. YAFFS2 (RW basic; raw NAND page/OOB auto-detection, files, dirs, symlinks, special files).
 16. JFFS2 (RW basic; raw MTD, little/big endian, zlib/rtime/lzo, cleanmarkers, xattrs).
+
+All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
+use this path when the target supports it, including filesystem slots in NAND/disk
+layouts and multi-volume UBI. FIT/Android/CIMG/vendor containers still buffer
+their payload (see `docs/build_plan.md`, «Ограничения»).
 
 Extended attributes are kept in the generic filesystem model; they are written
 for EXT2/3/4 (external block; inline and EA-inode values are read), F2FS
