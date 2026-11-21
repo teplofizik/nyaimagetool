@@ -1,8 +1,19 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Macintosh File System (MFS, 1984), Disk Copy 4.2 images and
-StuffIt 1.x/3.x archives.
+CP/M 2.2/3, Macintosh File System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy
+4.2 images and StuffIt 1.x/3.x archives.
+
+## UNIX V6
+
+```text
+load ra1boot.rx50
+ls /
+```
+
+Reads the V6 filesystem used on RX50/RD52 media: 512-byte blocks, superblock
+at block 1, 32-byte inodes from block 2, 16-byte directory entries and `ILARG`
+single-indirect block mapping. Device nodes are exposed as char/block entries.
 
 ## StuffIt
 

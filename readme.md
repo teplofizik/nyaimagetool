@@ -74,6 +74,7 @@ Supported at now:
 24. MFS / Macintosh File System (external `NyaFsAncientFs` plugin, read-only; flat 400K volumes).
 25. Disk Copy 4.2 image wrapper (external `NyaFsAncientFs` plugin; unwraps MFS/HFS volumes).
 26. StuffIt 1.x/3.x `.sit` archives (external `NyaFsAncientFs` plugin; method 0/13 data forks).
+27. UNIX V6 / PDP-11 filesystem (external `NyaFsAncientFs` plugin; RX50/RD52, read-only).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

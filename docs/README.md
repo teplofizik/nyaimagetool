@@ -26,7 +26,7 @@ Formats:
 - [iso9660.md](iso9660.md), [udf.md](udf.md), [ubifs.md](ubifs.md),
   [jffs.md](jffs.md), [jffs2.md](jffs2.md), [yaffs.md](yaffs.md),
   [yaffs2.md](yaffs2.md), [xfs.md](xfs.md), [minix.md](minix.md),
-  [ntfs.md](ntfs.md), [hfs.md](hfs.md), [cpm.md](cpm.md), [mfs.md](mfs.md), [diskcopy42.md](diskcopy42.md), [stuffit.md](stuffit.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
+  [ntfs.md](ntfs.md), [hfs.md](hfs.md), [cpm.md](cpm.md), [mfs.md](mfs.md), [diskcopy42.md](diskcopy42.md), [stuffit.md](stuffit.md), [v6.md](v6.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
   [cimg.md](cimg.md)
 - [keys.md](keys.md) - signing keys and KeyStore
 - [identity.md](identity.md) - users/groups inside filesystems
