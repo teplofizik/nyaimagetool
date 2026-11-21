@@ -72,6 +72,7 @@ Supported at now:
 22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
 23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin, read-only; 8.3 names, user areas, skew, extents).
 24. MFS / Macintosh File System (external `NyaFsAncientFs` plugin, read-only; flat 400K volumes).
+25. Disk Copy 4.2 image wrapper (external `NyaFsAncientFs` plugin; unwraps MFS/HFS volumes).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

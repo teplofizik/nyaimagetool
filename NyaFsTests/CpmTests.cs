@@ -99,6 +99,7 @@ namespace NyaFsTests
 
             var Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs_cpm_sample.dsk");
             File.WriteAllBytes(Path, Data);
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
             try
             {
                 var Parser = new ScriptParser(new ScriptBaseAll());
@@ -117,6 +118,7 @@ namespace NyaFsTests
             finally
             {
                 File.Delete(Path);
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
             }
         }
     }

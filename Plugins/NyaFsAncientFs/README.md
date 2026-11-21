@@ -1,7 +1,18 @@
 # NyaFsAncientFs
 
-External read-only filesystem plugin for legacy formats. Supported formats:
-CP/M 2.2/3 and Macintosh File System (MFS, 1984).
+External plugin for legacy filesystems and wrappers. Supported formats:
+CP/M 2.2/3, Macintosh File System (MFS, 1984) and Disk Copy 4.2 images.
+
+## Disk Copy 4.2
+
+```text
+load "System Disk.image"
+ls /
+```
+
+Disk Copy 4.2 images have an 84-byte header, the raw volume and an optional tag
+area. The wrapper is exposed as a child volume, so MFS/HFS detection runs on the
+raw data automatically. Real System 1.1 `System Disk.image` has been validated.
 
 ## MFS
 

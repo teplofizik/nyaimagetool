@@ -191,6 +191,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - HFS (classic, Mac OS Standard): done (dev, read-only) - MDB, catalog B-tree, extents overflow, hfsutils fixture.
 - CP/M 2.2/3: done (dev, external `NyaFsAncientFs` plugin, read-only) - 8.3 names, user areas, 8/16-bit block pointers, sector skew, extents; cpmtools fixtures.
 - MFS (Macintosh File System): done (dev, external `NyaFsAncientFs` plugin, read-only) - MDB, packed 12-bit VABM, flat directory, data forks; synthetic 400 KiB fixture.
+- Disk Copy 4.2 wrapper: done (dev, external `NyaFsAncientFs` plugin) - 84-byte header/tag unwrap; validated on real Finder 1.0 System Disk.image.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.
