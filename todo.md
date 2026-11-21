@@ -195,6 +195,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - StuffIt 1.x/3.x: done (dev, external `NyaFsAncientFs` plugin) - SIT!/rLau parser, method 0 and 13 LZ+Huffman; real System 1.1 archive validated.
 - StuffIt remaining: static-table method 13, methods 1/2/3/5/8/14/15, StuffIt 5 (`SIT5`), encrypted entries, resource forks (both forks currently only data fork is exposed).
 - Early Mac CD archives: `cd.html` is an article/history page with no direct CD downloads; the referenced 400K/800K disk archives are already covered through MFS/HFS + StuffIt/Disk Copy 4.2.
+- UNIX V6 filesystem (PDP-11 RX50): sample `ra1boot.rx50` (409600 bytes) parsed; filesystem starts at block 1, root contains `bin`, `dev`, `etc`, `lib`, `mnt`, `tmp`, `usr`, `unix`; read-only V6 superblock/inode/direct+indirect reader feasible, not implemented yet.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.
