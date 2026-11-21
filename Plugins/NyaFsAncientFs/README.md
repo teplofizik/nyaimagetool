@@ -1,8 +1,19 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Macintosh File System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy
-4.2 images and StuffIt 1.x/3.x archives.
+CP/M 2.2/3, Commodore DOS (`.d64`), Macintosh File System (MFS, 1984), UNIX V6
+(PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+
+## Commodore DOS
+
+```text
+load cool.d64
+ls /
+```
+
+Reads standard 35-track 1541 `.d64` images: BAM, directory chain and file
+chains. CBM DOS is flat; SEQ/PRG/USR/REL files are exposed at the root.
+PETSCII names are converted to readable ASCII where possible.
 
 ## UNIX V6
 
