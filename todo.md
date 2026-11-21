@@ -192,6 +192,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - CP/M 2.2/3: done (dev, external `NyaFsAncientFs` plugin, read-only) - 8.3 names, user areas, 8/16-bit block pointers, sector skew, extents; cpmtools fixtures.
 - MFS (Macintosh File System): done (dev, external `NyaFsAncientFs` plugin, read-only) - MDB, packed 12-bit VABM, flat directory, data forks; synthetic 400 KiB fixture.
 - Disk Copy 4.2 wrapper: done (dev, external `NyaFsAncientFs` plugin) - 84-byte header/tag unwrap; validated on real Finder 1.0 System Disk.image.
+- StuffIt 1.x/3.x: done (dev, external `NyaFsAncientFs` plugin) - SIT!/rLau parser, method 0 and 13 LZ+Huffman; real System 1.1 archive validated.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.

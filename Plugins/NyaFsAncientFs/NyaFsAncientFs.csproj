@@ -10,6 +10,12 @@
   </Target>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>NyaFsTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NyaFs" Version="1.4.3" />
   </ItemGroup>
 

@@ -1,7 +1,21 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Macintosh File System (MFS, 1984) and Disk Copy 4.2 images.
+CP/M 2.2/3, Macintosh File System (MFS, 1984), Disk Copy 4.2 images and
+StuffIt 1.x/3.x archives.
+
+## StuffIt
+
+```text
+load "1.1 System Disk.sit"
+ls /
+```
+
+StuffIt data forks are extracted as child files and then passed through Disk
+Copy/MFS/HFS detection. The built-in decoder handles the LZ+Huffman method 13
+used by early Macintosh System disks; stored (method 0) entries are also
+handled. Resource forks, encrypted entries and newer StuffIt 5 methods are not
+exposed.
 
 ## Disk Copy 4.2
 
