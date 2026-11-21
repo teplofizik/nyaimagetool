@@ -2,6 +2,7 @@
 
 Start here:
 
+- [release-1.4.3.md](release-1.4.3.md) - HFS classic read-only
 - [release-1.4.2.md](release-1.4.2.md) - Minix / NTFS read-only
 - [release-1.4.1.md](release-1.4.1.md) - XFS read-only
 - [release-1.4.0.md](release-1.4.0.md) - JFFS v1 / YAFFS v1 support
@@ -25,7 +26,7 @@ Formats:
 - [iso9660.md](iso9660.md), [udf.md](udf.md), [ubifs.md](ubifs.md),
   [jffs.md](jffs.md), [jffs2.md](jffs2.md), [yaffs.md](yaffs.md),
   [yaffs2.md](yaffs2.md), [xfs.md](xfs.md), [minix.md](minix.md),
-  [ntfs.md](ntfs.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
+  [ntfs.md](ntfs.md), [hfs.md](hfs.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
   [cimg.md](cimg.md)
 - [keys.md](keys.md) - signing keys and KeyStore
 - [identity.md](identity.md) - users/groups inside filesystems

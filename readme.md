@@ -69,6 +69,7 @@ Supported at now:
 19. XFS v4/v5 (read-only; shortform/block/leaf dirs, extents/btree, sparse, symlinks).
 20. Minix v1/v2/v3 (read-only; 14/30/60-char names, indirect blocks, symlinks/devices).
 21. NTFS (read-only; MFT tree, resident/non-resident DATA, runlists, sparse).
+22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk
