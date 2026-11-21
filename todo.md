@@ -193,6 +193,8 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - MFS (Macintosh File System): done (dev, external `NyaFsAncientFs` plugin, read-only) - MDB, packed 12-bit VABM, flat directory, data forks; synthetic 400 KiB fixture.
 - Disk Copy 4.2 wrapper: done (dev, external `NyaFsAncientFs` plugin) - 84-byte header/tag unwrap; validated on real Finder 1.0 System Disk.image.
 - StuffIt 1.x/3.x: done (dev, external `NyaFsAncientFs` plugin) - SIT!/rLau parser, method 0 and 13 LZ+Huffman; real System 1.1 archive validated.
+- StuffIt remaining: static-table method 13, methods 1/2/3/5/8/14/15, StuffIt 5 (`SIT5`), encrypted entries, resource forks (both forks currently only data fork is exposed).
+- Early Mac CD archives: `cd.html` is an article/history page with no direct CD downloads; the referenced 400K/800K disk archives are already covered through MFS/HFS + StuffIt/Disk Copy 4.2.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.
