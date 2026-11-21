@@ -70,6 +70,7 @@ Supported at now:
 20. Minix v1/v2/v3 (read-only; 14/30/60-char names, indirect blocks, symlinks/devices).
 21. NTFS (read-only; MFT tree, resident/non-resident DATA, runlists, sparse).
 22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
+23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin, read-only; 8.3 names, user areas, skew, extents).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

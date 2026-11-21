@@ -53,7 +53,7 @@ auto-resolve dependencies by design — use `pkg adddir`.
 ## Not supported (later)
 
 ### Filesystems
-EXT3/EXT4, XFS, Minix, NTFS and HFS are implemented; Btrfs is not implemented.
+EXT3/EXT4, XFS, Minix, NTFS and HFS are implemented; CP/M is an external plugin; Btrfs is not implemented.
 
 UBIFS: reader + writer.
 
@@ -189,6 +189,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - ReiserFS: read-only, obsolete/complex; low priority.
 - NTFS: done (dev, read-only) - MFT/FILE_NAME tree, resident/non-resident DATA runlists, mkntfs fixture.
 - HFS (classic, Mac OS Standard): done (dev, read-only) - MDB, catalog B-tree, extents overflow, hfsutils fixture.
+- CP/M 2.2/3: done (dev, external `NyaFsAncientFs` plugin, read-only) - 8.3 names, user areas, 8/16-bit block pointers, sector skew, extents; cpmtools fixtures.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.
