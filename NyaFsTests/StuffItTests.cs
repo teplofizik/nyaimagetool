@@ -111,6 +111,39 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void StuffIt_Loads_800k_Hfs()
+        {
+            var Source = Corpus("mac/Plus32.sit");
+            if (Source == null)
+                return;
+
+            var Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs_plus32.sit");
+            File.Copy(Source, Path, true);
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
+            try
+            {
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Plugins.Load(new StuffItImagePlugin());
+                Proc.Plugins.Load(new DiskCopy42ImagePlugin());
+
+                Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Path + "\"" }));
+
+                var Fs = Proc.GetFs();
+                Assert.NotNull(Fs);
+                Assert.True(Fs.Loaded);
+                Assert.Equal("hfs", Fs.FilesystemFormat);
+                Assert.NotEmpty(Fs.Fs.Root.Items);
+                Assert.Contains(Fs.Fs.Root.Items, I => I.ItemType == NyaFs.Filesystem.Universal.Types.FilesystemItemType.Directory);
+            }
+            finally
+            {
+                File.Delete(Path);
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
+            }
+        }
+
+        [Fact]
         public void StuffIt_StoredArchive_Loads_DiskCopy_Mfs()
         {
             var Raw = ReadFixture("mfs_sample.img.gz");
