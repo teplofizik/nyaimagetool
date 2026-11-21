@@ -71,6 +71,7 @@ Supported at now:
 21. NTFS (read-only; MFT tree, resident/non-resident DATA, runlists, sparse).
 22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
 23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin, read-only; 8.3 names, user areas, skew, extents).
+24. MFS / Macintosh File System (external `NyaFsAncientFs` plugin, read-only; flat 400K volumes).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

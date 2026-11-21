@@ -1,7 +1,27 @@
 # NyaFsAncientFs
 
-External read-only filesystem plugin for legacy formats. The first supported
-format is CP/M 2.2/3.
+External read-only filesystem plugin for legacy formats. Supported formats:
+CP/M 2.2/3 and Macintosh File System (MFS, 1984).
+
+## MFS
+
+```text
+load mfs_sample.img
+ls /
+export out/
+```
+
+MFS is the flat 400K floppy filesystem from the original Macintosh. The reader
+checks the `D2D7` signature at block 2 and supports:
+
+- 512-byte container blocks;
+- variable-length directory records in the directory blocks;
+- allocation block chains from the packed 12-bit VABM;
+- data forks and exact logical lengths.
+
+Finder folders are metadata only: MFS is flat, so all files are exposed at the
+root. Resource forks are not exposed and MFS has no POSIX permissions.
+
 
 ## CP/M
 
