@@ -66,9 +66,21 @@ UBIFS: reader + writer.
   managed LZMA2 decoder is retained as fallback (it does not maintain history
   across interleaved uncompressed chunks 0x01/0x02 or all reset states). A proper
   stateful LZMA2 decoder remains a separate task.
+- Keenetic/ZNBG writer: preserve the source SquashFS compression/block size
+  (xz, 512 KiB in the tested 2.04 image) and any FS metadata when rebuilding a
+  dirty rootfs. NyaFs currently rebuilds with defaults, which can exceed the
+  fixed rootfs slot and makes `store` reject the image. Until this is done,
+  read-only/passthrough is the supported mode for Keenetic images.
 
 ### Composite / vendor images
 OpenWRT.
+D-Link SHRS (DIR-3040): private decryptor done (`NyaFsDLinkEncrypted`, SHRS/AES-128-CBC, SHA-512 checks; key not public). Remaining: signature verification, safe re-encrypt/re-sign (dlink-decrypt has an encrypt mode but signatures are fake), and corpus samples.
+D-Link: reader for WRGG/HDR0/cr6b/uImage done. Remaining: WRGG/HDR0 payload decryption (keys), RU signature verification/regeneration (MD5 + salts), and write support for uImage+rootfs images.
+Keenetic: legacy ZNBG reader/writer done; `TLV.NDM` reader (marker, 0x20000 block,
+tags 1/0x12/17, kernel/tlv/rootfs) implemented from the SDK `unpack.sh` and
+validated on real KN-1010 3.09/4.03/5.02, KN-1811 5.02, KN-3710/KN-2310/KN-2110 5.02. Signature (`ndmfw`)
+is not verified; TLV images are read-only. Remaining: test other models/platforms
+and long-term signature handling.
 
 ### Bootloader mkimage images (deferred, samples needed)
 Not implemented yet (only enum names exist in `ImageType`/`FitHelper`):
@@ -156,3 +168,33 @@ TFTP: return different images based on requested filename
 ## Legacy vendor containers
 - ABV4 относится к Actions Semiconductor, не к Allwinner LiveSuit; отдельный формат, нужен образец.
 - Allwinner LiveSuit / PhoenixSuit / zdisk: старые форматы без доступных образцов; не путать с PhoenixCard (PHOENIX_CARD_IMG) и WTY.
+
+## Filesystem backlog (reviewed; samples/targets needed)
+Rule: do not add a format without a real sample or a concrete device; detection-only
+is acceptable when the magic/extension is clear.
+
+Already covered / not a new format:
+- DOS-FAT: supported as FAT12/16/32.
+- SmartMedia DOS-FAT: FAT data area; raw SmartMedia needs SSFDC OOB/ECC mapping.
+- FileX (Azure RTOS): FAT/exFAT-compatible; LevelX is a NAND wear-leveling layer,
+  not a filesystem format.
+- LogFS: removed from Linux 4.10 (2016), complex journal/inode-file design, no
+  samples; defer.
+- FLogFS (b.nahill): tiny append-only NAND logging FS for Cortex-M, no dirs,
+  needs raw OOB dump; defer.
+
+Open source/spec exists, read-only feasible (high effort unless noted):
+- Btrfs: generateable/mountable in WSL, but reader scope is very large (CoW/checksums/trees); deferred.
+- minix fs: done (dev, read-only) — v1/v2/v3, 14/30/60-char names, fixtures via mkfs.minix.
+- ReiserFS: read-only, obsolete/complex; low priority.
+- NTFS: done (dev, read-only) - MFT/FILE_NAME tree, resident/non-resident DATA runlists, mkntfs fixture.
+- AXFS: compressed XIP read-only; project is dead; low priority.
+- MnemoFS (NuttX): NAND log FS, paper/source; no samples.
+- STORfs: MCU log FS, open source; no samples.
+- Reliance Edge: commercial, source under license, no public on-disk spec.
+- EFS: ambiguous (SGI EFS has docs; vendor "Embedded FS" is proprietary).
+
+Vendor/closed, no public on-disk spec (skip unless a sample/NDA appears):
+- Cypress FFS (source gated), EFTS (QNX), EdgeFS (Tuxera), TargetFFS-NAND,
+  SafeFLASH (HCC), emFile (SEGGER), rl-flashfs (Keil), TrueFFS/NTFL (DiskOnChip).
+- MNFS: research FS (mobile multimedia NAND, 2006), paper only.

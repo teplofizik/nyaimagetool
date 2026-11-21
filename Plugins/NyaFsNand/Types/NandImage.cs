@@ -969,6 +969,9 @@ namespace NyaFsNand.Types
                 return "fit";
             if (Match(Raw, Off, "-rom1fs-"))
                 return "romfs";
+            if (MatchBytes(Raw, Off, 0x31, 0x39, 0x38, 0x34) ||
+                MatchBytes(Raw, Off, 0x34, 0x38, 0x39, 0x31))
+                return "jffs";
             if (MatchBytes(Raw, Off, 0x45, 0x3d, 0xcd, 0x28))
                 return "cramfs";
             if ((G.PageSize >= 2048) && (Raw.Length >= Off + 0x440) &&
@@ -1002,6 +1005,9 @@ namespace NyaFsNand.Types
                 return 5;
             if (Match(D, Off, "-rom1fs-"))
                 return 5;
+            if (MatchBytes(D, Off, 0x31, 0x39, 0x38, 0x34) ||
+                MatchBytes(D, Off, 0x34, 0x38, 0x39, 0x31))
+                return 6;
 
             return 0;
         }

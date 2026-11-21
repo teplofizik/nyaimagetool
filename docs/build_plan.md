@@ -254,14 +254,18 @@ options: { type: fat16, fs-size: 4M }   # размер тома FAT
 content: { dir: inputs/efi }
 ```
 
-Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs2`, `yaffs2`,
-`f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`, `cpio`, `tar` и другие
-плагины с записью. `layout validate` проверяет такие схемы; `mkimage` умеет и
+Поддерживаются `squashfs`, `ext2/3/4`, `fat`, `ubifs`, `jffs`, `jffs2`,
+`yaffs`, `yaffs2`, `f2fs`, `erofs`, `cramfs`, `romfs`, `iso9660`, `udf`,
+`cpio`, `tar` и другие
+плагины с записью. XFS, Minix и NTFS читаются (read-only) и в `store`/`build`
+не участвуют.
+`layout validate` проверяет такие схемы; `mkimage` умеет и
 composite, и активную ноду чистой ФС, сохранение — `store ... ramfs <format>`.
 Все встроенные писатели реализуют `IFilesystemStreamBuilder` и отдают образ в
 `Stream`. Метаданные-ёмкие ФС (ext2/3/4, ubifs/ubi, f2fs, erofs, udf) пишут через
 `IRandomAccessStore` (`StreamStore`) или `ImageStore`; последовательные форматы
-(cpio, tar, romfs, cramfs, iso9660, fat, exfat, jffs2, yaffs2) — сразу в поток.
+(cpio, tar, romfs, cramfs, iso9660, fat, exfat, jffs, jffs2, yaffs, yaffs2) —
+сразу в поток.
 Если поток не поддерживает seek, писатель собирает образ во внутреннем
 `MemoryStream` и копирует его (UBI/UBIFS — тем же путём).
 
@@ -271,7 +275,8 @@ composite, и активную ноду чистой ФС, сохранение 
 
 - `size: auto` (у слотов) — натуральный размер содержимого;
 - явный `size` — регион: данные длиннее — ошибка, короче — добиваются `fill`;
-- `fill` по умолчанию `0xFF` для NAND/MTD (`ubifs`, `jffs2`, `yaffs2`) и
+- `fill` по умолчанию `0xFF` для NAND/MTD (`ubifs`, `jffs`, `jffs2`, `yaffs`,
+  `yaffs2`) и
   `0x00` для остальных; можно задать явно;
 - `fs-size` — **размер тома** внутри региона, только для форматов с
   фиксированным размером (`ext2/3/4`, `fat`, `f2fs`, MCU); `fs-size > size` —
@@ -290,6 +295,7 @@ NAND/диска; без префикса — только если `format` со
 | `fat.type` | `auto`, `fat12`, `fat16`, `fat32` |
 | `jffs2.compression` | `none`, `zlib`, `rtime`, `lzo`, `priority` |
 | `jffs2.pagesize`, `jffs2.eraseblock` | размеры (4K, 64K, ...) |
+| `jffs.pagesize`, `jffs.eraseblock` | размеры JFFS v1 (4K, 64K, ...) |
 | `udf.vat`, `udf.sparable` | bool (взаимоисключающие) |
 | `erofs.fragments`, `erofs.tail-fragments`, `erofs.shared-xattrs`, `erofs.compression-level`, `erofs.xattr-prefix` | EROFS-опции |
 | `f2fs.compression`, `f2fs.compression.cluster` | `none/lzo/lz4/zstd/lzorle`, 16K..1M |
@@ -455,7 +461,7 @@ children:
   UDF остаётся data-only.
 - **Потоковая запись ФС**: `IFilesystemStreamBuilder` реализован всеми встроенными
   писателями (cpio, tar, romfs, cramfs, iso9660, fat, exfat, ext2/3/4, squashfs,
-  f2fs, ubifs/ubi, erofs, jffs2, udf, yaffs2); `store`/`build` используют
+  f2fs, ubifs/ubi, erofs, jffs, jffs2, udf, yaffs, yaffs2); `store`/`build` используют
   `WriteFsTo` при seekable-потоке, иначе — внутренний `MemoryStream`.
 - **Потоковые слоты и UBI**: `PlanSlot.WriteData`/`RegionStream` пишут
   `content.dir` непосредственно в слот NAND/диска (`PlanPacker`, `DiskImageBuilder`);

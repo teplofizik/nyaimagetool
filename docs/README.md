@@ -2,6 +2,9 @@
 
 Start here:
 
+- [release-1.4.2.md](release-1.4.2.md) - Minix / NTFS read-only
+- [release-1.4.1.md](release-1.4.1.md) - XFS read-only
+- [release-1.4.0.md](release-1.4.0.md) - JFFS v1 / YAFFS v1 support
 - [release-1.3.1.md](release-1.3.1.md) - packages metadata/dependencies
 - [release-1.3.0.md](release-1.3.0.md) - streaming writers
 - [release-1.1.0.md](release-1.1.0.md) - previous release
@@ -20,8 +23,10 @@ Declarative builds:
 Formats:
 
 - [iso9660.md](iso9660.md), [udf.md](udf.md), [ubifs.md](ubifs.md),
-  [jffs2.md](jffs2.md), [yaffs2.md](yaffs2.md), [erofs.md](erofs.md),
-  [exfat.md](exfat.md), [cimg.md](cimg.md)
+  [jffs.md](jffs.md), [jffs2.md](jffs2.md), [yaffs.md](yaffs.md),
+  [yaffs2.md](yaffs2.md), [xfs.md](xfs.md), [minix.md](minix.md),
+  [ntfs.md](ntfs.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
+  [cimg.md](cimg.md)
 - [keys.md](keys.md) - signing keys and KeyStore
 - [identity.md](identity.md) - users/groups inside filesystems
 

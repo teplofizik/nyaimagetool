@@ -67,6 +67,8 @@ namespace NyaFsTests
         [InlineData("fixtures/udf_small.img")]
         [InlineData("fixtures/jffs2_sample.img")]
         [InlineData("fixtures/yaffs2_sample.bin.gz")]
+        [InlineData("fixtures/jffs_sample.img")]
+        [InlineData("fixtures/yaffs_sample.bin")]
         [InlineData("fixtures/ubifs_sample.ubi")]
         [InlineData("fixtures/ubifs_sample.raw")]
         public void Repack_Root_Filesystem(string Relative)
