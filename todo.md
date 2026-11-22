@@ -199,6 +199,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - Commodore DOS (`.d64`): done (dev, external `NyaFsAncientFs` plugin, read-only) - BAM, directory/file chains, PETSCII, 35-track; real C128/C64 images validated.
 - Amiga OFS/FFS (`.adf`): done (dev, external `NyaFsAncientFs` plugin, read-only) - root hash, dirs/files, FFS block lists, OFS nextData chains; real ADFs validated.
 - Atari DOS 2.x (`.atr`): done (dev, external `NyaFsAncientFs` plugin, read-only) - ATR header, sector 360 directory, contiguous files; real DOS 2.5 images validated.
+- Apple ProDOS 8 (`.po`): done (dev, external `NyaFsAncientFs` plugin, read-only) - volume/directory blocks, seedling/sapling/tree, subdirs; real AppleWorks images validated.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.

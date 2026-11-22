@@ -1,9 +1,20 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Amiga OFS/FFS
-(`.adf`), Macintosh File System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2
-images and StuffIt 1.x/3.x archives.
+CP/M 2.2/3, Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Apple ProDOS
+(`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System (MFS, 1984), UNIX V6
+(PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+
+## Apple ProDOS
+
+```text
+load samples.po
+ls /
+```
+
+Reads ProDOS 8 `.po` images: volume directory at block 2, 39-byte directory
+entries, seedling/sapling/tree file storage and subdirectories. ProDOS index
+blocks use the split low/high block-pointer tables.
 
 ## Atari DOS 2.x
 
