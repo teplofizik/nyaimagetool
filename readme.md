@@ -77,6 +77,7 @@ Supported at now:
 27. UNIX V6 / PDP-11 filesystem (external `NyaFsAncientFs` plugin; RX50/RD52, read-only).
 28. Commodore DOS / `.d64` (external `NyaFsAncientFs` plugin; 1541 BAM/directory/file chains).
 29. Amiga OFS/FFS / `.adf` (external `NyaFsAncientFs` plugin; 880K ADF, read-only).
+30. Atari DOS 2.x / `.atr` (external `NyaFsAncientFs` plugin; flat directory, contiguous sectors).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

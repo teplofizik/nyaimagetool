@@ -1,9 +1,19 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Commodore DOS (`.d64`), Amiga OFS/FFS (`.adf`), Macintosh File
-System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x
-archives.
+CP/M 2.2/3, Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Amiga OFS/FFS
+(`.adf`), Macintosh File System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2
+images and StuffIt 1.x/3.x archives.
+
+## Atari DOS 2.x
+
+```text
+load dos25.atr
+ls /
+```
+
+Reads Atari DOS 2.0/2.5 ATR images: 16-byte ATR header, sector size from the
+header, flat directory at sector 360 and contiguous file sectors.
 
 ## Amiga OFS/FFS
 
