@@ -1,8 +1,20 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Commodore DOS (`.d64`), Macintosh File System (MFS, 1984), UNIX V6
-(PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+CP/M 2.2/3, Commodore DOS (`.d64`), Amiga OFS/FFS (`.adf`), Macintosh File
+System (MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x
+archives.
+
+## Amiga OFS/FFS
+
+```text
+load extras.adf
+ls /
+```
+
+Reads 880K ADF images with OFS or FFS data blocks: root header/hash table,
+directory data blocks, file header data-block lists, file extension blocks and
+OFS `nextData` chains.
 
 ## Commodore DOS
 

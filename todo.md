@@ -197,6 +197,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - Early Mac CD archives: `cd.html` is an article/history page with no direct CD downloads; the referenced 400K/800K disk archives are already covered through MFS/HFS + StuffIt/Disk Copy 4.2.
 - UNIX V6 filesystem (PDP-11 RX50): done (dev, external `NyaFsAncientFs` plugin, read-only) - superblock, 32-byte inodes, 16-byte dirs, direct + ILARG files, device nodes; real `ra1boot.rx50` validated.
 - Commodore DOS (`.d64`): done (dev, external `NyaFsAncientFs` plugin, read-only) - BAM, directory/file chains, PETSCII, 35-track; real C128/C64 images validated.
+- Amiga OFS/FFS (`.adf`): done (dev, external `NyaFsAncientFs` plugin, read-only) - root hash, dirs/files, FFS block lists, OFS nextData chains; real ADFs validated.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
 - STORfs: MCU log FS, open source; no samples.
