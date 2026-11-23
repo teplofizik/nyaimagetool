@@ -19,11 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NyaFs" Version="1.3.0" />
+    <PackageReference Include="NyaFs" Version="1.4.3" />
     <PackageReference Include="NyaLZO" Version="1.0.4" />
     <ProjectReference Include="..\Plugins\NyaFsLinux\NyaFsLinux.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsBmu\NyaFsBmu.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsMcuFs\NyaFsMcuFs.csproj" />
+    <ProjectReference Include="..\Plugins\NyaFsAncientFs\NyaFsAncientFs.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsFit\NyaFsFit.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsNfs\NyaFsNfs.csproj" />
     <ProjectReference Include="..\Plugins\NyaFsTftp\NyaFsTftp.csproj" />

@@ -3,6 +3,13 @@
 There is a tool for editing and converting uboot images in different formats: cpio, gz, legacy, FIT etc.
 There is possible to add or update files in ramfs image.
 
+## What's new in 1.3.1
+
+Packages: `pkg meta` for editing `depends`/`conflicts`/`provides`/custom metadata,
+`provides`-aware dependency resolution in `pkg adddir`, full `pkg info` output,
+and updated package documentation (createdir/adddir, gzip/zstd, version specs).
+See [docs/release-1.3.1.md](docs/release-1.3.1.md).
+
 ## What's new in 1.3.0
 
 Streaming image writers: every built-in filesystem can now emit its image
@@ -57,6 +64,27 @@ Supported at now:
 14. UDF (RW basic; ECMA-167/OSTA, ICB FE/EFE, directories, files, symlinks, VAT/sparable read/write).
 15. YAFFS2 (RW basic; raw NAND page/OOB auto-detection, files, dirs, symlinks, special files).
 16. JFFS2 (RW basic; raw MTD, little/big endian, zlib/rtime/lzo, cleanmarkers, xattrs).
+17. YAFFS v1 (RW; classic 512+16 OOB tags, SmartMedia ECC, serial duplicate resolution).
+18. JFFS v1 (RW; Axis 60-byte raw inodes, LE/BE, eraseblock padding).
+19. XFS v4/v5 (read-only; shortform/block/leaf dirs, extents/btree, sparse, symlinks).
+20. Minix v1/v2/v3 (read-only; 14/30/60-char names, indirect blocks, symlinks/devices).
+21. NTFS (read-only; MFT tree, resident/non-resident DATA, runlists, sparse).
+22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
+23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin, read-only; 8.3 names, user areas, skew, extents).
+24. MFS / Macintosh File System (external `NyaFsAncientFs` plugin, read-only; flat 400K volumes).
+25. Disk Copy 4.2 image wrapper (external `NyaFsAncientFs` plugin; unwraps MFS/HFS volumes).
+26. StuffIt 1.x/3.x `.sit` archives (external `NyaFsAncientFs` plugin; method 0/13 data forks).
+27. UNIX V6 / PDP-11 filesystem (external `NyaFsAncientFs` plugin; RX50/RD52, read-only).
+28. Commodore DOS / `.d64` (external `NyaFsAncientFs` plugin; 1541 BAM/directory/file chains).
+29. Amiga OFS/FFS / `.adf` (external `NyaFsAncientFs` plugin; 880K ADF, read-only).
+30. Atari DOS 2.x / `.atr` (external `NyaFsAncientFs` plugin; flat directory, contiguous sectors).
+31. Apple ProDOS 8 / `.po` (external `NyaFsAncientFs` plugin; seedling/sapling/tree, directories).
+32. TRS-80 DMK with CP/M (external `NyaFsAncientFs` plugin; Model 4 40T/18S/256B, read-only).
+33. TRS-80 TRSDOS/LDOS (external `NyaFsAncientFs` plugin; DMK, track 20/17 directory, 3-sector granules, read-only).
+34. Tandy CoCo Disk BASIC (external `NyaFsAncientFs` plugin; raw 35/40T `.dsk`, granule map).
+35. ImageDisk `.imd` (external `NyaFsAncientFs` plugin; uniform-geometry raw sector extraction).
+36. WOZ Apple II 5.25" (external `NyaFsAncientFs` plugin; 6-and-2 GCR, ProDOS order).
+37. SCP Apple II flux (external `NyaFsAncientFs` plugin; PLL + 6-and-2 GCR, ProDOS order).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk
@@ -376,7 +404,7 @@ Update filesystem type:
 ```
 set ramfs filesystem <fs>
 ```
-(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs', 'iso9660', 'exfat', 'erofs', 'yaffs2', 'jffs2' or 'cpio'.
+(fs) is one of 'ext2', 'squashfs', 'cramfs', 'romfs', 'f2fs', 'iso9660', 'exfat', 'erofs', 'yaffs', 'yaffs2', 'jffs', 'jffs2' or 'cpio'.
 
 CramFS output endian (default little-endian; auto-detected on load):
 ```
@@ -529,13 +557,24 @@ package as ordinary files. Extended attributes are preserved in the package
 (PAX `SCHILY.xattr.*`) and restored on `pkg add`; device nodes and FIFOs are
 preserved as tar entry types.
 
-Create a package from a subtree of the current in-memory filesystem:
+Create a package from a subtree of the current in-memory filesystem or from a
+local directory:
 ```
-pkg create <file.nyapkg> <fs-path> <name> <version>
+pkg create <file.nyapkg> <fs-path> <name> <version> [gzip|zstd]
+pkg createdir <file.nyapkg> <local-dir> <name> <version> [gzip|zstd]
 ```
 If target arch/os are set (`set ... arch/os`), they are stored in the metadata.
 
-Print package metadata:
+Metadata can carry `depends`, `conflicts`, `provides`, `description` and arbitrary
+extra fields. Version operators in specs: `>=`, `<=`, `=`, `>`, `<`. Edit an
+existing package (repacked with the same compression):
+```
+pkg meta <file.nyapkg> depends "lib>=1.0"
+pkg meta <file.nyapkg> provides "virtual-lib=1.0"
+pkg meta <file.nyapkg> description -      # "-" removes the field
+```
+
+Print all package metadata fields and the entry count:
 ```
 pkg info <file.nyapkg>
 ```
@@ -545,6 +584,15 @@ its arch/os does not match the target:
 ```
 pkg add <file.nyapkg>
 ```
+
+Install a directory of `*.nyapkg` files with dependency/conflict resolution
+(`depends`/`provides`/`conflicts` are honoured, packages are installed in
+dependency order):
+```
+pkg adddir <dir-with-*.nyapkg> <root-package>
+```
+`pkg add` checks one package against the already-installed database; `adddir`
+resolves the graph among candidate packages.
 
 ## Services
 ```

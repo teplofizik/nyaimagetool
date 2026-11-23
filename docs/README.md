@@ -2,7 +2,12 @@
 
 Start here:
 
-- [release-1.3.0.md](release-1.3.0.md) - what is new, upgrade notes, limitations
+- [release-1.4.3.md](release-1.4.3.md) - HFS classic read-only
+- [release-1.4.2.md](release-1.4.2.md) - Minix / NTFS read-only
+- [release-1.4.1.md](release-1.4.1.md) - XFS read-only
+- [release-1.4.0.md](release-1.4.0.md) - JFFS v1 / YAFFS v1 support
+- [release-1.3.1.md](release-1.3.1.md) - packages metadata/dependencies
+- [release-1.3.0.md](release-1.3.0.md) - streaming writers
 - [release-1.1.0.md](release-1.1.0.md) - previous release
 - [BUILDING.md](BUILDING.md) - build, test and publish
 - [manual-testing.md](manual-testing.md) - live testing checklist
@@ -19,8 +24,10 @@ Declarative builds:
 Formats:
 
 - [iso9660.md](iso9660.md), [udf.md](udf.md), [ubifs.md](ubifs.md),
-  [jffs2.md](jffs2.md), [yaffs2.md](yaffs2.md), [erofs.md](erofs.md),
-  [exfat.md](exfat.md), [cimg.md](cimg.md)
+  [jffs.md](jffs.md), [jffs2.md](jffs2.md), [yaffs.md](yaffs.md),
+  [yaffs2.md](yaffs2.md), [xfs.md](xfs.md), [minix.md](minix.md),
+  [ntfs.md](ntfs.md), [hfs.md](hfs.md), [cpm.md](cpm.md), [dmk.md](dmk.md), [trsdos.md](trsdos.md), [coco.md](coco.md), [imd.md](imd.md), [woz.md](woz.md), [scp.md](scp.md), [mfs.md](mfs.md), [diskcopy42.md](diskcopy42.md), [stuffit.md](stuffit.md), [v6.md](v6.md), [cbm.md](cbm.md), [adf.md](adf.md), [atari.md](atari.md), [prodos.md](prodos.md), [erofs.md](erofs.md), [exfat.md](exfat.md),
+  [cimg.md](cimg.md)
 - [keys.md](keys.md) - signing keys and KeyStore
 - [identity.md](identity.md) - users/groups inside filesystems
 

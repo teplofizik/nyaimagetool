@@ -110,4 +110,4 @@ Writing raw (OOB/ECC) dumps back is intentionally not supported: the vendor ECC
   most written pages violate it (some controllers keep ECC/zeros there, e.g. the
   Amlogic Meson NAND driver), `nandinfo` reports the count as unknown instead of
   guessing.
-- YAFFS2 needs the spare area for its tags; it is not reconstructed here.
+- YAFFS1/YAFFS2 need the spare area for their tags; it is not reconstructed here.

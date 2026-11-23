@@ -41,7 +41,8 @@ class MyFsFilesystemPlugin : FilesystemPlugin
 потока). Чтобы получать образ потоком (`WriteFsTo`, `build`, большие образы),
 реализуйте в builder'е `IFilesystemStreamBuilder.WriteFilesystemImage(Stream)`:
 
-- последовательные форматы (cpio/tar/romfs/cramfs/iso9660/fat/exfat/jffs2/yaffs2)
+- последовательные форматы
+  (cpio/tar/romfs/cramfs/iso9660/fat/exfat/jffs/jffs2/yaffs/yaffs2)
   пишут сразу в `Stream`;
 - ФС с произвольным доступом (ext2/3/4, ubifs/ubi, f2fs, erofs, udf) используют
   `IRandomAccessStore` (`StreamStore`) или `ImageStore` и требуют seek; для
@@ -92,8 +93,9 @@ public override FilesystemOption[] Options => new[]
   размер/дефолт. При нехватке места возвращайте ошибку, а не обрезайте;
 - content-sized форматы (`squashfs`, `ubifs`, `cramfs`, `erofs`, `romfs`,
   `cpio`, `tar`) `Fs.FsSize` игнорируют: регион добивается снаружи;
-- исключение — форматы, где padding является частью формата (`jffs2`,
-  `yaffs2`): добивайте до eraseblock сами и опишите это в документации;
+- исключение — форматы, где padding является частью формата (`jffs`, `jffs2`,
+  `yaffs`, `yaffs2`): добивайте до eraseblock сами (для YAFFS это делает слот)
+  и опишите это в документации;
 - вывод должен быть детерминированным (без времени/рандома, если формат это
   допускает).
 
@@ -126,5 +128,8 @@ Layout передаёт `fs-size` только в `Fs.FsSize`; `size` в writer 
 `SquashFsFilesystemPlugin` — опции → `Fs.SquashFsCompression`, writer
 `new SquashFsBuilder(Fs.SquashFsCompression)`; `Ext4FilesystemPlugin` —
 `Fs.FsSize` как размер тома; `FatFilesystemPlugin` — `Fs.FatType` и
-`Fs.FsSize`; `Jffs2FilesystemPlugin` — опции `jffs2.*` и padding до
-eraseblock внутри writer.
+`Fs.FsSize`; `XfsFilesystemPlugin`/`MinixFilesystemPlugin`/`NtfsFilesystemPlugin`
+— read-only (`SupportWrite = false`, `GetFilesystemWriter` не переопределяется);
+`JffsFilesystemPlugin`/`Jffs2FilesystemPlugin` — опции `jffs.*`/
+`jffs2.*` и padding до eraseblock внутри writer; `YaffsFilesystemPlugin`/
+`Yaffs2FilesystemPlugin` — classic OOB tags (v1) / sequence tags (v2).
