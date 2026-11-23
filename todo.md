@@ -193,7 +193,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - TRS-80 DMK (CP/M): done (dev, external `NyaFsAncientFs` plugin, read-only) - DMK IDAM extraction, 40T/18S/256B Model 4 CP/M geometry, skew 2; real `CPM QC.dmk` validated against cpmtools `trsg`.
 - TRS-80 TRSDOS/LDOS (DMK): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 20/17 directory, 32-byte entries, extent list, 3-sector granules; real `CHURCH DATA` sample0/sample1 validated. FXDE chains and date/protection metadata remain.
 - Tandy CoCo Disk BASIC (`.dsk`): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 17 directory, granule-map chains, 9-sector granules; real `Robert Rhythm` 35T image validated against `cocofs`.
-- ImageDisk (`.imd`): done (dev, external `NyaFsAncientFs` plugin) - uniform-geometry track extraction to raw `.dsk`; real `DISKUTIL IMPORTANT.imd` loads through CoCo. Mixed-sector-size IMD remains.
+- ImageDisk (`.imd`): done (dev, external `NyaFsAncientFs` plugin) - uniform tracks copied, mixed-sector tracks packed into the largest sector size and padded; real `DISKUTIL IMPORTANT.imd` loads through CoCo, `CPM.imd` mixed geometry parsed.
 - WOZ Apple II 5.25" (`.woz`): done (dev, external `NyaFsAncientFs` plugin) - WOZ1/WOZ2, TMAP/TRKS, 6-and-2 GCR, ProDOS logical order; real ProDOS WOZ validated. DOS 3.3/13-sector remain.
 - SCP Apple II flux (`.scp`): done (dev, external `NyaFsAncientFs` plugin) - SCP flux/TDH, zero gaps, PLL, 6-and-2 GCR, ProDOS order; validated with a clean Greaseweazle-generated SCP. Copy-protected/error SCPs remain unsupported.
 - MFS (Macintosh File System): done (dev, external `NyaFsAncientFs` plugin, read-only) - MDB, packed 12-bit VABM, flat directory, data forks; synthetic 400 KiB fixture.

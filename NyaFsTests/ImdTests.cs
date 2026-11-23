@@ -37,6 +37,21 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void Imd_NormalizesMixedSectors()
+        {
+            var Path = Sample("CPM.imd");
+            if (Path == null)
+                return;
+
+            Assert.True(ImdImage.TryRead(File.ReadAllBytes(Path), out var Imd));
+            Assert.Equal(40, Imd.Tracks);
+            Assert.Equal(2, Imd.Sides);
+            Assert.Equal(10, Imd.SectorsPerTrack);
+            Assert.Equal(512, Imd.SectorSize);
+            Assert.Equal(409600, Imd.Raw.Length);
+        }
+
+        [Fact]
         public void Imd_Loads_Coco_Via_Pipeline()
         {
             var Source = Sample("DISKUTIL IMPORTANT.imd");

@@ -46,9 +46,9 @@ load "DISKUTIL IMPORTANT.imd"
 ls /
 ```
 
-Unpacks uniform-geometry IMD tracks into a raw `disk.dsk` child; normal CoCo,
-CP/M, ProDOS and FAT detection then runs on that child. Mixed-sector-size IMDs
-are rejected.
+Unpacks IMD tracks into a raw `disk.dsk` child; mixed-sector tracks are
+packed into the largest sector size and padded. Normal CoCo, CP/M, ProDOS and
+FAT detection then runs on that child.
 
 ## WOZ Apple II 5.25"
 

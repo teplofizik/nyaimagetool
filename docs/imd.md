@@ -1,4 +1,4 @@
-# ImageDisk / .imd (external plugin)
+﻿# ImageDisk / .imd (external plugin)
 
 `NyaFsAncientFs` reads ImageDisk `.imd` files and exposes the sectors as a raw
 `disk.dsk` child:
@@ -19,10 +19,10 @@ ls /
 ## Limitations
 
 - read-only;
-- only uniform geometry (same sector count and sector size on every track);
-- mixed-size disks such as some 8" CP/M IMDs are rejected;
+- mixed-sector tracks are packed into the largest sector size and padded;
 - the child is a raw `.dsk`; the actual filesystem depends on the normal
-  CoCo/CP/M/ProDOS/FAT detectors.
+  CoCo/CP/M/ProDOS/FAT detectors;
+- unusual boot tracks may still need a filesystem-specific geometry.
 
 ## Verification
 

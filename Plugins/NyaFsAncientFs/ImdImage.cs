@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace NyaFsAncientFs
 {
     /// <summary>
-    /// ImageDisk (.imd) parser. Converts the track/sector records into a flat
-    /// sector image when all tracks use the same geometry.
+    /// ImageDisk (.imd) parser. Converts track/sector records into a flat
+    /// sector image. Uniform images are copied directly; mixed-sector tracks
+    /// are packed into the largest sector size and padded.
     /// </summary>
     public sealed class ImdImage
     {
@@ -44,15 +44,13 @@ namespace NyaFsAncientFs
             var TrackList = new List<Track>();
             int MaxCylinder = -1;
             int MaxHead = -1;
-            int SectorSize = -1;
-            int SectorsPerTrack = -1;
 
             while (Pos < Data.Length)
             {
                 if (Pos + 5 > Data.Length)
                     break;
 
-                int Mode = Data[Pos++];
+                Pos++; // recording mode
                 int Cylinder = Data[Pos++];
                 int Head = Data[Pos++];
                 int Sectors = Data[Pos++];
@@ -60,19 +58,17 @@ namespace NyaFsAncientFs
                 if ((Sectors <= 0) || (Sectors > MaxSectors))
                     return false;
 
-                int SectorSizeValue;
                 int[] Sizes;
                 if (SizeCode == 0xFF)
                 {
                     Sizes = new int[Sectors];
-                    SectorSizeValue = 0;
                 }
                 else
                 {
-                    SectorSizeValue = 128 << SizeCode;
+                    int Size = 128 << SizeCode;
                     Sizes = new int[Sectors];
                     for (int I = 0; I < Sectors; I++)
-                        Sizes[I] = SectorSizeValue;
+                        Sizes[I] = Size;
                 }
 
                 if ((Head & 0x80) != 0)
@@ -103,26 +99,6 @@ namespace NyaFsAncientFs
                             return false;
                         Sizes[I] = 128 << Code;
                     }
-                }
-
-                if (SectorSizeValue == 0)
-                {
-                    SectorSizeValue = Sizes[0];
-                    for (int I = 1; I < Sectors; I++)
-                        if (Sizes[I] != SectorSizeValue)
-                            return false;
-                }
-                if (SectorSizeValue <= 0)
-                    return false;
-
-                if (SectorsPerTrack < 0)
-                {
-                    SectorsPerTrack = Sectors;
-                    SectorSize = SectorSizeValue;
-                }
-                else if ((SectorsPerTrack != Sectors) || (SectorSize != SectorSizeValue))
-                {
-                    return false;
                 }
 
                 var SectorData = new Dictionary<int, byte[]>();
@@ -168,13 +144,31 @@ namespace NyaFsAncientFs
                 MaxHead = Math.Max(MaxHead, Head & 0x3F);
             }
 
-            if ((TrackList.Count == 0) || (MaxCylinder < 0) || (MaxHead < 0) ||
-                (SectorsPerTrack <= 0) || (SectorSize <= 0))
+            if ((TrackList.Count == 0) || (MaxCylinder < 0) || (MaxHead < 0))
+                return false;
+
+            int TargetSize = 0;
+            foreach (var Record in TrackList)
+                foreach (var Payload in Record.Data.Values)
+                    TargetSize = Math.Max(TargetSize, Payload.Length);
+            if (TargetSize <= 0)
+                return false;
+
+            int TargetSpt = 0;
+            foreach (var Record in TrackList)
+            {
+                int Bytes = 0;
+                foreach (var Payload in Record.Data.Values)
+                    Bytes += Payload.Length;
+                int Needed = (Bytes + TargetSize - 1) / TargetSize;
+                TargetSpt = Math.Max(TargetSpt, Needed);
+            }
+            if (TargetSpt <= 0)
                 return false;
 
             int TrackCount = MaxCylinder + 1;
             int SideCount = MaxHead + 1;
-            long Total = (long)TrackCount * SideCount * SectorsPerTrack * SectorSize;
+            long Total = (long)TrackCount * SideCount * TargetSpt * TargetSize;
             if ((Total <= 0) || (Total > 256L * 1024 * 1024))
                 return false;
 
@@ -182,20 +176,33 @@ namespace NyaFsAncientFs
             Array.Fill(Raw, (byte)0xE5);
             foreach (var Record in TrackList)
             {
-                foreach (var Pair in Record.Data)
+                long TrackOffset = ((long)Record.Cylinder * SideCount + Record.Head) *
+                    TargetSpt * TargetSize;
+                int Packed = 0;
+                var Keys = new List<int>(Record.Data.Keys);
+                Keys.Sort();
+                foreach (var Id in Keys)
                 {
-                    int Index = Pair.Key - 1;
-                    if ((Index < 0) || (Index >= SectorsPerTrack) ||
-                        (Pair.Value.Length != SectorSize))
-                        continue;
-
-                    long Offset = ((long)Record.Cylinder * SideCount + Record.Head) *
-                        SectorsPerTrack * SectorSize + (long)Index * SectorSize;
-                    Array.Copy(Pair.Value, 0, Raw, Offset, SectorSize);
+                    var Payload = Record.Data[Id];
+                    if (Payload.Length == TargetSize)
+                    {
+                        int Index = Id - 1;
+                        if ((Index >= 0) && (Index < TargetSpt))
+                            Array.Copy(Payload, 0, Raw, TrackOffset + (long)Index * TargetSize, TargetSize);
+                    }
+                    else
+                    {
+                        int Copy = Math.Min(Payload.Length, (int)(Total - TrackOffset - Packed));
+                        if (Copy > 0)
+                        {
+                            Array.Copy(Payload, 0, Raw, TrackOffset + Packed, Copy);
+                            Packed += Copy;
+                        }
+                    }
                 }
             }
 
-            Image = new ImdImage(TrackCount, SideCount, SectorsPerTrack, SectorSize, Raw);
+            Image = new ImdImage(TrackCount, SideCount, TargetSpt, TargetSize, Raw);
             return true;
         }
 
