@@ -1,9 +1,54 @@
 # NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
-CP/M 2.2/3, Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Apple ProDOS
-(`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System (MFS, 1984), UNIX V6
-(PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+CP/M 2.2/3, TRS-80 DMK with CP/M or TRSDOS/LDOS, Tandy CoCo Disk BASIC,
+ImageDisk (`.imd`), Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Apple
+ProDOS (`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System (MFS, 1984),
+UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+
+## TRS-80 DMK (CP/M)
+
+```text
+load "CPM QC.dmk"
+ls /
+```
+
+Reads the standard 40-track, 18-sector, 256-byte TRS-80 Model 4 CP/M layout:
+DMK track headers/IDAMs are unpacked into a CP/M sector image (2 reserved
+tracks, 2 KiB blocks, 128 directory entries, skew 2).
+
+## TRS-80 DMK (TRSDOS/LDOS)
+
+```text
+load "CHURCH DATA.dmk"
+ls /
+```
+
+Scans the Model III/4 directory at track 20 (falling back to track 17) using
+32-byte entries, and follows 3-sector granules from the extent list. System
+files such as `BOOT.SYS` and `DIR.SYS` are exposed like ordinary files.
+
+## Tandy CoCo Disk BASIC
+
+```text
+load "Robert Rhythm_SS.35T.18S.dsk"
+ls /
+```
+
+Reads raw 35/40-track CoCo `.dsk` images: directory track 17, 32-byte entries,
+granule-map chains and 9-sector granules.
+
+## ImageDisk (`.imd`)
+
+```text
+load "DISKUTIL IMPORTANT.imd"
+ls /
+```
+
+Unpacks uniform-geometry IMD tracks into a raw `disk.dsk` child; normal CoCo,
+CP/M, ProDOS and FAT detection then runs on that child. Mixed-sector-size IMDs
+are rejected.
+
 
 ## Apple ProDOS
 

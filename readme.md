@@ -79,6 +79,10 @@ Supported at now:
 29. Amiga OFS/FFS / `.adf` (external `NyaFsAncientFs` plugin; 880K ADF, read-only).
 30. Atari DOS 2.x / `.atr` (external `NyaFsAncientFs` plugin; flat directory, contiguous sectors).
 31. Apple ProDOS 8 / `.po` (external `NyaFsAncientFs` plugin; seedling/sapling/tree, directories).
+32. TRS-80 DMK with CP/M (external `NyaFsAncientFs` plugin; Model 4 40T/18S/256B, read-only).
+33. TRS-80 TRSDOS/LDOS (external `NyaFsAncientFs` plugin; DMK, track 20/17 directory, 3-sector granules, read-only).
+34. Tandy CoCo Disk BASIC (external `NyaFsAncientFs` plugin; raw 35/40T `.dsk`, granule map).
+35. ImageDisk `.imd` (external `NyaFsAncientFs` plugin; uniform-geometry raw sector extraction).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk
