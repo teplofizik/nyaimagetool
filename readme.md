@@ -84,6 +84,7 @@ Supported at now:
 34. Tandy CoCo Disk BASIC (external `NyaFsAncientFs` plugin; raw 35/40T `.dsk`, granule map).
 35. ImageDisk `.imd` (external `NyaFsAncientFs` plugin; uniform-geometry raw sector extraction).
 36. WOZ Apple II 5.25" (external `NyaFsAncientFs` plugin; 6-and-2 GCR, ProDOS order).
+37. SCP Apple II flux (external `NyaFsAncientFs` plugin; PLL + 6-and-2 GCR, ProDOS order).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

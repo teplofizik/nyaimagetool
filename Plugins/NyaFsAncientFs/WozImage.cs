@@ -173,8 +173,9 @@ namespace NyaFsAncientFs
             DecodeBits(Bits.ToString(), Track, Output);
         }
 
-        internal static void DecodeBits(string Data, int Track, byte[] Output)
+        internal static void DecodeBits(string Data, int Track, byte[] Output, int? AddressTrack = null)
         {
+            int ExpectedTrack = AddressTrack ?? Track;
             string Sync = "1111111100";
             string SyncRun = Sync + Sync + Sync + Sync + Sync;
             int SyncPos = Data.IndexOf(SyncRun, StringComparison.Ordinal);
@@ -214,7 +215,7 @@ namespace NyaFsAncientFs
                 int ATrack = Decode4x4(Nibbles[Address + 5], Nibbles[Address + 6]);
                 int Sector = Decode4x4(Nibbles[Address + 7], Nibbles[Address + 8]);
                 int Checksum = Decode4x4(Nibbles[Address + 9], Nibbles[Address + 10]);
-                if ((ATrack != Track) || (Checksum != (Volume ^ Track ^ Sector)))
+                if ((ATrack != ExpectedTrack) || (Checksum != (Volume ^ ExpectedTrack ^ Sector)))
                 {
                     Pos = Address + 3;
                     continue;

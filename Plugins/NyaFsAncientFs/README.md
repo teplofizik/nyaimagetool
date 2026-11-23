@@ -2,7 +2,7 @@
 
 External plugin for legacy filesystems and wrappers. Supported formats:
 CP/M 2.2/3, TRS-80 DMK with CP/M or TRSDOS/LDOS, Tandy CoCo Disk BASIC,
-ImageDisk (`.imd`), WOZ Apple II 5.25", Commodore DOS (`.d64`), Atari DOS 2.x
+ImageDisk (`.imd`), WOZ/SCP Apple II 5.25", Commodore DOS (`.d64`), Atari DOS 2.x
 (`.atr`), Apple ProDOS (`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System
 (MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x
 archives.
@@ -59,6 +59,16 @@ ls /
 
 Decodes 6-and-2 GCR tracks into ProDOS logical-sector order and exposes a
 `disk.po` child. Only 5.25" 16-sector ProDOS-order output is supported.
+
+## SCP Apple II flux
+
+```text
+load clean_prodos.scp
+ls /
+```
+
+Applies a 4 µs PLL to the flux timings, decodes 6-and-2 GCR and exposes the
+same `disk.po` child. Standard 300 rpm single-sided 35-track images only.
 
 
 ## Apple ProDOS

@@ -1,4 +1,4 @@
-# WOZ Apple II / 5.25" (external plugin, read-only)
+﻿# WOZ Apple II / 5.25" (external plugin, read-only)
 
 `NyaFsAncientFs` reads WOZ1/WOZ2 Apple II 5.25" images:
 
@@ -22,7 +22,7 @@ export out/
 - only 5.25" single-sided 16-sector ProDOS-order output;
 - DOS 3.3 ordering, 13-sector DOS 3.2, 3.5" and copy-protected tracks are not
   handled;
-- SCP flux images are not supported yet.
+- SCP flux images use the separate `scp` format.
 
 ## Verification
 
