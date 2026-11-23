@@ -83,6 +83,7 @@ Supported at now:
 33. TRS-80 TRSDOS/LDOS (external `NyaFsAncientFs` plugin; DMK, track 20/17 directory, 3-sector granules, read-only).
 34. Tandy CoCo Disk BASIC (external `NyaFsAncientFs` plugin; raw 35/40T `.dsk`, granule map).
 35. ImageDisk `.imd` (external `NyaFsAncientFs` plugin; uniform-geometry raw sector extraction).
+36. WOZ Apple II 5.25" (external `NyaFsAncientFs` plugin; 6-and-2 GCR, ProDOS order).
 
 All built-in writers stream the image to the output (`WriteFsTo`); `build`/`store`
 use this path when the target supports it, including filesystem slots in NAND/disk

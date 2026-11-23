@@ -1,10 +1,11 @@
-# NyaFsAncientFs
+﻿# NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
 CP/M 2.2/3, TRS-80 DMK with CP/M or TRSDOS/LDOS, Tandy CoCo Disk BASIC,
-ImageDisk (`.imd`), Commodore DOS (`.d64`), Atari DOS 2.x (`.atr`), Apple
-ProDOS (`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System (MFS, 1984),
-UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x archives.
+ImageDisk (`.imd`), WOZ Apple II 5.25", Commodore DOS (`.d64`), Atari DOS 2.x
+(`.atr`), Apple ProDOS (`.po`), Amiga OFS/FFS (`.adf`), Macintosh File System
+(MFS, 1984), UNIX V6 (PDP-11), Disk Copy 4.2 images and StuffIt 1.x/3.x
+archives.
 
 ## TRS-80 DMK (CP/M)
 
@@ -48,6 +49,16 @@ ls /
 Unpacks uniform-geometry IMD tracks into a raw `disk.dsk` child; normal CoCo,
 CP/M, ProDOS and FAT detection then runs on that child. Mixed-sector-size IMDs
 are rejected.
+
+## WOZ Apple II 5.25"
+
+```text
+load "M&M Software - RT1225 Convert It.woz"
+ls /
+```
+
+Decodes 6-and-2 GCR tracks into ProDOS logical-sector order and exposes a
+`disk.po` child. Only 5.25" 16-sector ProDOS-order output is supported.
 
 
 ## Apple ProDOS
@@ -160,8 +171,8 @@ CP/M has no filesystem magic and does not store its disk geometry. The plugin
 tries a small table of common geometries and validates the directory, so
 `.dsk`/`.cpm` images should normally auto-detect:
 
-- `ibm-3740` — 8" SSSD, 128-byte sectors, 26 sectors/track, 1 KiB blocks;
-- `cpm-2k-40t` / `cpm-2k-210t` — 2 KiB blocks, 8-bit and 16-bit block pointers;
+- `ibm-3740` вЂ” 8" SSSD, 128-byte sectors, 26 sectors/track, 1 KiB blocks;
+- `cpm-2k-40t` / `cpm-2k-210t` вЂ” 2 KiB blocks, 8-bit and 16-bit block pointers;
 - `z80pack-hd`, `4mb-hd`, `sdcard`, `pcw`, `osborne1`.
 
 Supported reader features:

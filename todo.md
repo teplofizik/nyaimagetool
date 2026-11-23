@@ -193,7 +193,8 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - TRS-80 DMK (CP/M): done (dev, external `NyaFsAncientFs` plugin, read-only) - DMK IDAM extraction, 40T/18S/256B Model 4 CP/M geometry, skew 2; real `CPM QC.dmk` validated against cpmtools `trsg`.
 - TRS-80 TRSDOS/LDOS (DMK): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 20/17 directory, 32-byte entries, extent list, 3-sector granules; real `CHURCH DATA` sample0/sample1 validated. FXDE chains and date/protection metadata remain.
 - Tandy CoCo Disk BASIC (`.dsk`): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 17 directory, granule-map chains, 9-sector granules; real `Robert Rhythm` 35T image validated against `cocofs`.
-- ImageDisk (`.imd`): done (dev, external `NyaFsAncientFs` plugin) - uniform-geometry track extraction to raw `.dsk`; real `DISKUTIL IMPORTANT.imd` loads through CoCo. Mixed-sector-size IMD and WOZ/SCP remain.
+- ImageDisk (`.imd`): done (dev, external `NyaFsAncientFs` plugin) - uniform-geometry track extraction to raw `.dsk`; real `DISKUTIL IMPORTANT.imd` loads through CoCo. Mixed-sector-size IMD and SCP flux remain.
+- WOZ Apple II 5.25" (`.woz`): done (dev, external `NyaFsAncientFs` plugin) - WOZ1/WOZ2, TMAP/TRKS, 6-and-2 GCR, ProDOS logical order; real ProDOS WOZ validated. SCP flux and DOS 3.3/13-sector remain.
 - MFS (Macintosh File System): done (dev, external `NyaFsAncientFs` plugin, read-only) - MDB, packed 12-bit VABM, flat directory, data forks; synthetic 400 KiB fixture.
 - Disk Copy 4.2 wrapper: done (dev, external `NyaFsAncientFs` plugin) - 84-byte header/tag unwrap; validated on real Finder 1.0 System Disk.image.
 - StuffIt 1.x/3.x: done (dev, external `NyaFsAncientFs` plugin) - SIT!/rLau parser, method 0 and 13 LZ+Huffman; real System 1.1 archive validated.
