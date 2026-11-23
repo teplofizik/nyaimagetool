@@ -1,4 +1,5 @@
-﻿using NyaFs.Processor;
+﻿using FsFile = NyaFs.Filesystem.Universal.Items.File;
+using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsAncientFs;
 using System;
@@ -44,6 +45,40 @@ namespace NyaFsTests
             Assert.Equal(129855, Reader.Read("/LEDGER").Length);
             Assert.Equal("2b16196fc22477b1f812c8441c5cd894b67046ecd71006747a8f7df5a3b90a10",
                 Convert.ToHexString(SHA256.HashData(Reader.Read("/LEDGER"))).ToLowerInvariant());
+        }
+
+        [Fact]
+        public void ProDos_RebuildsImage()
+        {
+            var Source = Sample("samples.po");
+            if (Source == null) return;
+
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
+            try
+            {
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Plugins.Load(new ProDosFilesystemPlugin());
+                Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Source + "\"" }));
+                var Fs = Proc.GetFs();
+                Fs.Fs.Root.Items.Add(new FsFile("NEW.TXT", 0, 0, 0x1A4,
+                    System.Text.Encoding.ASCII.GetBytes("hello prodos")));
+
+                var Writer = new ProDosWriter();
+                Assert.True(Writer.CheckFilesystem(Fs));
+                Writer.WriteFs(Fs);
+                Assert.NotNull(Writer.RawStream);
+                Assert.True(ProDosReader.IsProDos(Writer.RawStream, "rebuilt.po"));
+
+                var Reader = new ProDosReader(Writer.RawStream);
+                Assert.Contains(Reader.ReadDir("/"), E => E.ShortName == "NEW.TXT");
+                Assert.Equal("hello prodos",
+                    System.Text.Encoding.ASCII.GetString(Reader.Read("/NEW.TXT")));
+            }
+            finally
+            {
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
+            }
         }
 
         [Fact]

@@ -82,6 +82,8 @@ Reads ProDOS 8 `.po` images: volume directory at block 2, 39-byte directory
 entries, seedling/sapling/tree file storage and subdirectories. ProDOS index
 blocks use the split low/high block-pointer tables.
 
+`store` rebuilds a fresh 140K ProDOS volume with a flat root directory.
+
 ## Atari DOS 2.x
 
 ```text
@@ -105,6 +107,9 @@ ls /
 Reads 880K ADF images with OFS or FFS data blocks: root header/hash table,
 directory data blocks, file header data-block lists, file extension blocks and
 OFS `nextData` chains.
+
+`store` rebuilds a fresh 880K FFS image with flat root files (max 72 blocks
+per file).
 
 ## Commodore DOS
 

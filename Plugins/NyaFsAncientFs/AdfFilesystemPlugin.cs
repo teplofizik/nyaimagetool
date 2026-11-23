@@ -1,4 +1,4 @@
-using NyaFs.ImageFormat;
+﻿using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Elements.Fs.Reader;
 using NyaFs.ImageFormat.Plugins.Base;
 
@@ -7,7 +7,7 @@ namespace NyaFsAncientFs
     /// <summary>Read-only Amiga OFS/FFS (.adf) filesystem plugin.</summary>
     public class AdfFilesystemPlugin : FilesystemPlugin
     {
-        public AdfFilesystemPlugin() : base("fs.adf", "adf", true, false, false)
+        public AdfFilesystemPlugin() : base("fs.adf", "adf", true, true, false)
         {
         }
 
@@ -25,5 +25,8 @@ namespace NyaFsAncientFs
             var Reader = new AdfReader(Data);
             return new BaseFsReader(NyaFs.ImageFormat.Types.FsType.Unknown, Reader, Reader.VolumeBytes);
         }
+
+        public override NyaFs.ImageFormat.Elements.Fs.Writer.Writer GetFilesystemWriter(
+            NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem Fs) => new AdfWriter();
     }
 }
