@@ -1,4 +1,4 @@
-using NyaFs.ImageFormat;
+﻿using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Elements.Fs.Reader;
 using NyaFs.ImageFormat.Plugins.Base;
 
@@ -7,7 +7,7 @@ namespace NyaFsAncientFs
     /// <summary>Read-only Atari DOS 2.0/2.5 (.atr) filesystem plugin.</summary>
     public class AtariDosFilesystemPlugin : FilesystemPlugin
     {
-        public AtariDosFilesystemPlugin() : base("fs.atari", "atari", true, false, false)
+        public AtariDosFilesystemPlugin() : base("fs.atari", "atari", true, true, false)
         {
         }
 
@@ -25,5 +25,8 @@ namespace NyaFsAncientFs
             var Reader = new AtariDosReader(Data);
             return new BaseFsReader(NyaFs.ImageFormat.Types.FsType.Unknown, Reader, Reader.VolumeBytes);
         }
+
+        public override NyaFs.ImageFormat.Elements.Fs.Writer.Writer GetFilesystemWriter(
+            NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem Fs) => new AtariDosWriter();
     }
 }

@@ -1,4 +1,4 @@
-using NyaFs.ImageFormat;
+﻿using NyaFs.ImageFormat;
 using NyaFs.ImageFormat.Elements.Fs.Reader;
 using NyaFs.ImageFormat.Plugins.Base;
 
@@ -9,7 +9,7 @@ namespace NyaFsAncientFs
     /// </summary>
     public class CpmFilesystemPlugin : FilesystemPlugin
     {
-        public CpmFilesystemPlugin() : base("fs.cpm", "cpm", true, false, false)
+        public CpmFilesystemPlugin() : base("fs.cpm", "cpm", true, true, false)
         {
         }
 
@@ -27,5 +27,8 @@ namespace NyaFsAncientFs
             var Reader = new CpmReader(Data);
             return new BaseFsReader(NyaFs.ImageFormat.Types.FsType.Unknown, Reader, Reader.VolumeBytes);
         }
+
+        public override NyaFs.ImageFormat.Elements.Fs.Writer.Writer GetFilesystemWriter(
+            NyaFs.ImageFormat.Elements.Fs.LinuxFilesystem Fs) => new CpmDosWriter();
     }
 }

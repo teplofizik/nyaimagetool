@@ -189,7 +189,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - ReiserFS: read-only, obsolete/complex; low priority.
 - NTFS: done (dev, read-only) - MFT/FILE_NAME tree, resident/non-resident DATA runlists, mkntfs fixture.
 - HFS (classic, Mac OS Standard): done (dev, read-only) - MDB, catalog B-tree, extents overflow, hfsutils fixture.
-- CP/M 2.2/3: done (dev, external `NyaFsAncientFs` plugin, read-only) - 8.3 names, user areas, 8/16-bit block pointers, sector skew, extents; cpmtools fixtures.
+- CP/M 2.2/3: done (dev, external `NyaFsAncientFs` plugin) - read-only reader (8.3 names, user areas, 8/16-bit pointers, skew, extents) plus fresh `ibm-3740` repack writer; cpmtools fixtures.
 - TRS-80 DMK (CP/M): done (dev, external `NyaFsAncientFs` plugin, read-only) - DMK IDAM extraction, 40T/18S/256B Model 4 CP/M geometry, skew 2; real `CPM QC.dmk` validated against cpmtools `trsg`.
 - TRS-80 TRSDOS/LDOS (DMK): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 20/17 directory, 32-byte entries, extent list, 3-sector granules; real `CHURCH DATA` sample0/sample1 validated. FXDE chains and date/protection metadata remain.
 - Tandy CoCo Disk BASIC (`.dsk`): done (dev, external `NyaFsAncientFs` plugin, read-only) - track 17 directory, granule-map chains, 9-sector granules; real `Robert Rhythm` 35T image validated against `cocofs`.
@@ -204,7 +204,7 @@ Open source/spec exists, read-only feasible (high effort unless noted):
 - UNIX V6 filesystem (PDP-11 RX50): done (dev, external `NyaFsAncientFs` plugin, read-only) - superblock, 32-byte inodes, 16-byte dirs, direct + ILARG files, device nodes; real `ra1boot.rx50` validated.
 - Commodore DOS (`.d64`): done (dev, external `NyaFsAncientFs` plugin, read-only) - BAM, directory/file chains, PETSCII, 35-track; real C128/C64 images validated.
 - Amiga OFS/FFS (`.adf`): done (dev, external `NyaFsAncientFs` plugin, read-only) - root hash, dirs/files, FFS block lists, OFS nextData chains; real ADFs validated.
-- Atari DOS 2.x (`.atr`): done (dev, external `NyaFsAncientFs` plugin, read-only) - ATR header, sector 360 directory, contiguous files; real DOS 2.5 images validated.
+- Atari DOS 2.x (`.atr`): done (dev, external `NyaFsAncientFs` plugin) - ATR header, sector 360 directory, contiguous files; real DOS 2.5 images validated; fresh 720x128 repack writer.
 - Apple ProDOS 8 (`.po`): done (dev, external `NyaFsAncientFs` plugin, read-only) - volume/directory blocks, seedling/sapling/tree, subdirs; real AppleWorks images validated.
 - AXFS: compressed XIP read-only; project is dead; low priority.
 - MnemoFS (NuttX): NAND log FS, paper/source; no samples.
