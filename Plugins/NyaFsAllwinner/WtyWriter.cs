@@ -149,6 +149,8 @@ namespace NyaFsAllwinner
             {
                 foreach (var Child in Plan.Root.Children)
                 {
+                    if (Child.Removed)
+                        continue;
                     if ((Child.Raw == null) || (Child.Raw.Length == 0))
                         continue;
                     var ChildData = GetChildData(Child);

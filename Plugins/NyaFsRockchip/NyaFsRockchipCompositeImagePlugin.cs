@@ -23,6 +23,8 @@ namespace NyaFsRockchip
 
         public override bool SupportLayout => true;
 
+        public override bool SupportChildDrop => true;
+
         public override ImageBuildNode CreatePlan(PlanDocument Document, out string Error)
         {
             var Template = PlanTemplate.Load(Document, Format, out Error);

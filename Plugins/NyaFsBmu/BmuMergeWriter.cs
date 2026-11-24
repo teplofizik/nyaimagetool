@@ -38,6 +38,7 @@ namespace NyaFsBmu
                 }
 
                 var Items = new List<MergeItem>();
+                var Dropped = false;
                 for (var I = 0; I < Count; I++)
                 {
                     var Base = HeaderSize + I * ItemSize;
@@ -61,6 +62,12 @@ namespace NyaFsBmu
                     var Name = string.Join("/", Segments);
 
                     var Child = FindChild(Blob.BuildPlan.Root, Name);
+                    if ((Child != null) && Child.Removed)
+                    {
+                        Dropped = true;
+                        continue;
+                    }
+
                     var Data = ((Child != null) && IsDirty(Child))
                         ? BuildInner(Blob, Child, Name, out Error)
                         : Slice(Source, Offset, Size);
@@ -71,11 +78,19 @@ namespace NyaFsBmu
                     {
                         Name = Name,
                         Data = Data,
-                        ItemOffset = Base
+                        ItemOffset = Base,
+                        Header = Slice(Source, Base, ItemSize)
                     });
                 }
 
-                var Total = (long)DataOffset;
+                if (Items.Count == 0)
+                {
+                    Error = "Merged BMU has no remaining items";
+                    return null;
+                }
+
+                var NewDataOffset = Dropped ? HeaderSize + Items.Count * ItemSize : DataOffset;
+                var Total = (long)NewDataOffset;
                 foreach (var Item in Items)
                     Total += Item.Data.Length;
                 if ((Total <= 0) || (Total > Int32.MaxValue))
@@ -85,9 +100,21 @@ namespace NyaFsBmu
                 }
 
                 var Result = new byte[(int)Total];
-                Buffer.BlockCopy(Source, 0, Result, 0, DataOffset);
+                Buffer.BlockCopy(Source, 0, Result, 0, Dropped ? HeaderSize : DataOffset);
 
-                var DataPosition = DataOffset;
+                if (Dropped)
+                {
+                    SetU32LE(Result, 0x0C, (uint)Items.Count);
+                    SetU32LE(Result, 0x14, (uint)NewDataOffset);
+                    for (var I = 0; I < Items.Count; I++)
+                    {
+                        var TableOffset = HeaderSize + I * ItemSize;
+                        Buffer.BlockCopy(Items[I].Header, 0, Result, TableOffset, ItemSize);
+                        Items[I].ItemOffset = TableOffset;
+                    }
+                }
+
+                var DataPosition = NewDataOffset;
                 foreach (var Item in Items)
                 {
                     SetU32LE(Result, Item.ItemOffset + 0xA4, (uint)DataPosition);
@@ -180,6 +207,7 @@ namespace NyaFsBmu
             public string Name;
             public byte[] Data;
             public int ItemOffset;
+            public byte[] Header;
         }
     }
 }

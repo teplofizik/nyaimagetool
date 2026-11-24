@@ -34,6 +34,11 @@ namespace NyaFsBmu
 
         public override bool SupportWrite => true;
 
+        public override bool PreserveUnknownChildren => true;
+
+        public override bool CanDropChildren(ImageData Image) =>
+            (Image.Length >= 4) && (Image.ReadUInt32(0) == MergeMagic);
+
         public override byte[] Build(BaseImageBlob Blob, out string Error) =>
             BmuWriter.Build(Blob, out Error);
 

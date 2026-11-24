@@ -40,6 +40,9 @@ namespace NyaFsNand
 
         public override bool SupportLayout => true;
 
+        // A dropped region is returned to the erased state (0xFF).
+        public override bool SupportChildDrop => true;
+
         /// <summary>Keep even fully encrypted regions so they can still be listed/extracted.</summary>
         public override bool PreserveUnknownChildren => true;
 

@@ -97,6 +97,19 @@ store <file> <type> <format>
 - composite: `store out.img all rkfw`, `store out.ubi all ubi`, ...
 - filesystem: `store out.cpio ramfs cpio`, `store out.ext4 ramfs ext4`, ...
 
+## `drop`
+
+```text
+drop <plan-path>
+```
+
+Remove an element from a loaded image before `store`: the container is rebuilt
+without it. Only containers that report `drop=yes` in `inspect` are allowed
+(for example FIT, legacy multi, multi-volume UBI, RKFW, merged BMU, disk, NAND
+and SPI-flash). For disk/NAND/SPI the slot is kept but the region is blanked
+(`0x00` for disks, `0xFF` for flash). Layout templates (`mkimage`) cannot be
+edited this way.
+
 ## UBI and ISO
 
 ```yaml

@@ -18,6 +18,7 @@ namespace NyaFsAllwinner
         }
 
         public override bool SupportWrite => true;
+        public override bool SupportChildDrop => true;
 
         public override byte[] Build(BaseImageBlob Blob, out string Error) =>
             new WtyWriter(null).Build(Blob, out Error);

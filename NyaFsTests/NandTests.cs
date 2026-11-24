@@ -232,6 +232,38 @@ namespace NyaFsTests
         }
 
         [Fact]
+        public void Nand_Dropped_Region_Is_Erased()
+        {
+            var Ubi = Fixture("ubifs_sample.ubi");
+            var Raw = Wrap(Ubi, Page, Oob);
+            var Nand = NandImage.TryParse(Raw, 0, Raw.Length, "dump.bin");
+            Assert.NotNull(Nand);
+
+            Assert.True(new NyaFsNandCompositeImagePlugin().CanDropChildren(new ImageData(Raw, "dump.bin")));
+
+            var Region = Nand.Regions[0];
+            var Root = new ImageBuildNode { Name = "dump.bin", Format = "nand", Raw = Raw, Dirty = true };
+            Root.Children.Add(new ImageBuildNode
+            {
+                Name = Region.Name,
+                Path = Region.Name,
+                Container = "nand",
+                Kind = ImageKind.Unknown,
+                Offset = Region.Offset,
+                Size = Region.Size,
+                Removed = true
+            });
+
+            var Blob = new BaseImageBlob { BuildPlan = new ImageBuildPlan(Root) };
+            var Written = NandImageWriter.Build(Blob, out var Error);
+
+            Assert.Null(Error);
+            Assert.NotNull(Written);
+            for (var I = 0; I < Region.Size; I++)
+                Assert.Equal(0xFF, Written[Region.Offset + I]);
+        }
+
+        [Fact]
         public void Nand_Writer_Rejects_Oversized_Region()
         {
             var Ubi = Fixture("ubifs_sample.ubi");

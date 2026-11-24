@@ -62,6 +62,8 @@ namespace NyaFsTvip
                 yield return new KeyValuePair<string, string>("version", Tvip.Version);
         }
 
+        public override bool SupportChildDrop => true;
+
         public override string ReadDescription(ImageData Image)
         {
             var Tvip = new TvipImage(Image.ReadArray(0, Image.Length));
@@ -102,6 +104,9 @@ namespace NyaFsTvip
                     {
                         var Section = Source.Sections[I];
                         var Child = FindChild(Root, Section.Name);
+                        if ((Child != null) && Child.Removed)
+                            continue;
+
                         var Dirty = (Child != null) && IsDirty(Child);
 
                         byte[] Data;

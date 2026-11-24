@@ -133,6 +133,12 @@ namespace NyaFsRockchip
                     Name = $"partition{I}";
 
                 var Child = FindChild(Root, Name);
+                if ((Child != null) && Child.Removed)
+                {
+                    Used.Add(Name);
+                    continue;
+                }
+
                 var Data = (Child != null) ? GetChildData(Child) : SourceFw.GetPartition(Header.Name);
                 Result.Add(new Part(Name, Header, Data ?? Array.Empty<byte>()));
                 Used.Add(Name);
@@ -140,6 +146,8 @@ namespace NyaFsRockchip
 
             foreach (var Child in Root.Children)
             {
+                if (Child.Removed)
+                    continue;
                 if (String.Equals(Child.Name, "MiniLoaderAll.bin", StringComparison.OrdinalIgnoreCase))
                     continue;
                 if (Used.Contains(Child.Name))

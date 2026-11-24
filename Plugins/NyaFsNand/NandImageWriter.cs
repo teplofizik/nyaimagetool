@@ -112,6 +112,13 @@ namespace NyaFsNand
                 if (Child == null)
                     continue;
 
+                if (Child.Removed)
+                {
+                    // Dropped region: return it to the erased state (0xFF), keep the layout.
+                    FillErased(Result, (int)Region.Offset, (int)Region.Size);
+                    continue;
+                }
+
                 var Data = GetChildData(Child);
                 if (Data == null)
                     continue;
@@ -162,6 +169,9 @@ namespace NyaFsNand
 
             foreach (var Child in Root.Children)
             {
+                if (Child.Removed)
+                    continue;
+
                 byte[] Data = null;
                 long DataLength;
                 Func<System.IO.Stream, string> WriteData = null;
