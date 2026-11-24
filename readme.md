@@ -70,15 +70,15 @@ Supported at now:
 20. Minix v1/v2/v3 (read-only; 14/30/60-char names, indirect blocks, symlinks/devices).
 21. NTFS (read-only; MFT tree, resident/non-resident DATA, runlists, sparse).
 22. HFS classic / Mac OS Standard (read-only; MDB, catalog B-tree, extents overflow).
-23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin, read-only; 8.3 names, user areas, skew, extents).
+23. CP/M 2.2/3 (external `NyaFsAncientFs` plugin; 8.3 names, user areas, skew, extents; flat `ibm-3740` repack writer).
 24. MFS / Macintosh File System (external `NyaFsAncientFs` plugin, read-only; flat 400K volumes).
 25. Disk Copy 4.2 image wrapper (external `NyaFsAncientFs` plugin; unwraps MFS/HFS volumes).
 26. StuffIt 1.x/3.x `.sit` archives (external `NyaFsAncientFs` plugin; method 0/13 data forks).
 27. UNIX V6 / PDP-11 filesystem (external `NyaFsAncientFs` plugin; RX50/RD52, read-only).
 28. Commodore DOS / `.d64` (external `NyaFsAncientFs` plugin; 1541 BAM/directory/file chains).
-29. Amiga OFS/FFS / `.adf` (external `NyaFsAncientFs` plugin; 880K ADF, read-only).
-30. Atari DOS 2.x / `.atr` (external `NyaFsAncientFs` plugin; flat directory, contiguous sectors).
-31. Apple ProDOS 8 / `.po` (external `NyaFsAncientFs` plugin; seedling/sapling/tree, directories).
+29. Amiga OFS/FFS / `.adf` (external `NyaFsAncientFs` plugin; 880K ADF reader + flat FFS repack writer).
+30. Atari DOS 2.x / `.atr` (external `NyaFsAncientFs` plugin; flat directory, contiguous sectors, 720x128 repack writer).
+31. Apple ProDOS 8 / `.po` (external `NyaFsAncientFs` plugin; seedling/sapling/tree, directories, flat-root repack writer).
 32. TRS-80 DMK with CP/M (external `NyaFsAncientFs` plugin; Model 4 40T/18S/256B, read-only).
 33. TRS-80 TRSDOS/LDOS (external `NyaFsAncientFs` plugin; DMK, track 20/17 directory, 3-sector granules, read-only).
 34. Tandy CoCo Disk BASIC (external `NyaFsAncientFs` plugin; raw 35/40T `.dsk`, granule map).

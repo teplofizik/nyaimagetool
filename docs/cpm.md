@@ -1,6 +1,6 @@
-# CP/M (external plugin, read-only)
+﻿# CP/M (external plugin, read/write)
 
-`NyaFsAncientFs` adds read-only CP/M 2.2/3 support as an external plugin. Copy
+`NyaFsAncientFs` adds CP/M 2.2/3 support as an external plugin. Copy
 `NyaFsAncientFs.dll` to the `plugins` directory (the normal build/publish
 already does this).
 
@@ -31,9 +31,15 @@ Built-in geometry candidates: `ibm-3740`, `cpm-2k-40t`, `cpm-2k-210t`,
 `z80pack-hd`, `4mb-hd`, `sdcard`, `pcw`, `osborne1`. Custom images can use the
 explicit `CpmGeometry` constructor.
 
+## Writer support
+
+`store` rebuilds a fresh standard 8" `ibm-3740` image: 77 tracks, 26x128-byte
+sectors, 1 KiB blocks, 64 directory entries, skew 6. The filesystem tree must
+be flat (root files only); user areas are not recreated.
+
 ## Limitations
 
-- read-only: no `store`/`build` writer;
+- writer supports only the `ibm-3740` geometry;
 - CP/M has no directories, symlinks, POSIX permissions or timestamps;
 - images with a wrapper/header before the CP/M disk area are not supported;
 - the core filesystem type stays `Unknown`; the plugin reports format `cpm`.
@@ -43,4 +49,5 @@ explicit `CpmGeometry` constructor.
 - fixtures generated with `cpmtools` (`ibm-3740`, 2 KiB blocks with logical
   extents, and 2 KiB blocks with 16-bit block pointers);
 - `CpmTests` covers detection, directory listing, exact sizes and data hashes;
+- `Cpm_RebuildsImage` verifies the fresh-image writer and reader round-trip;
 - a CLI smoke test confirmed plugin auto-loading from `plugins/`.

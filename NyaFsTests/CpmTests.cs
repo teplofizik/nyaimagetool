@@ -1,3 +1,4 @@
+﻿using FsFile = NyaFs.Filesystem.Universal.Items.File;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsAncientFs;
@@ -88,6 +89,45 @@ namespace NyaFsTests
             Assert.Equal(40000, Reader.Read("/BIG.BIN").Length);
             Assert.Equal("525bd7a68af0ae8a0051b7a5eaf68145342a22bfbc2c6506568348d0f20621e8",
                 Convert.ToHexString(SHA256.HashData(Reader.Read("/BIG.BIN"))).ToLowerInvariant());
+        }
+
+        [Fact]
+        public void Cpm_RebuildsImage()
+        {
+            var Data = ReadFixture("cpm_sample.dsk.gz");
+            if (Data == null)
+                return;
+
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
+            var Temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "nyafs_cpm_rebuild.dsk");
+            try
+            {
+                File.WriteAllBytes(Temp, Data);
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Plugins.Load(new CpmFilesystemPlugin());
+                Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Temp + "\"" }));
+                var Fs = Proc.GetFs();
+                Fs.Fs.Root.Items.Add(new FsFile("NEW.TXT", 0, 0, 0x1A4,
+                    System.Text.Encoding.ASCII.GetBytes("hello cpm")));
+
+                var Writer = new CpmDosWriter();
+                Assert.True(Writer.CheckFilesystem(Fs));
+                Writer.WriteFs(Fs);
+                Assert.NotNull(Writer.RawStream);
+                Assert.True(CpmReader.TryDetect(Writer.RawStream, "rebuilt.dsk", out var Geometry));
+                Assert.Equal("ibm-3740", Geometry.Name);
+
+                var Reader = new CpmReader(Writer.RawStream);
+                Assert.Contains(Reader.ReadDir("/"), E => E.ShortName == "NEW.TXT");
+                Assert.Equal("hello cpm",
+                    System.Text.Encoding.ASCII.GetString(Reader.Read("/NEW.TXT")).TrimEnd('\0', '\x1A'));
+            }
+            finally
+            {
+                File.Delete(Temp);
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
+            }
         }
 
         [Fact]

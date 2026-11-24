@@ -1,4 +1,5 @@
-﻿using NyaFs.Processor;
+﻿using FsFile = NyaFs.Filesystem.Universal.Items.File;
+using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsAncientFs;
 using System;
@@ -43,6 +44,41 @@ namespace NyaFsTests
             var Reader = new AtariDosReader(File.ReadAllBytes(Path));
             Assert.Contains(Reader.ReadDir("/"), E => E.ShortName == "DOS.SYS");
             Assert.Equal(4736, Reader.Read("/DOS.SYS").Length);
+        }
+
+        [Fact]
+        public void AtariDos_RebuildsImage()
+        {
+            var Source = Sample("dos25.atr");
+            if (Source == null) return;
+
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
+            try
+            {
+                var Parser = new ScriptParser(new ScriptBaseAll());
+                var Proc = new ImageProcessor(Parser, new string[0]);
+                Proc.Plugins.Load(new AtariDosFilesystemPlugin());
+                Proc.Process(Parser.ParseScript("t", new[] { "load \"" + Source + "\"" }));
+
+                var Fs = Proc.GetFs();
+                Assert.NotNull(Fs);
+                Fs.Fs.Root.Items.Add(new FsFile("NEW.TXT", 0, 0, 0x1A4,
+                    System.Text.Encoding.ASCII.GetBytes("hello atari")));
+
+                var Writer = new AtariDosWriter();
+                Assert.True(Writer.CheckFilesystem(Fs));
+                Writer.WriteFs(Fs);
+                Assert.NotNull(Writer.RawStream);
+
+                var Reader = new AtariDosReader(Writer.RawStream);
+                Assert.Contains(Reader.ReadDir("/"), E => E.ShortName == "NEW.TXT");
+                Assert.Equal("hello atari",
+                    System.Text.Encoding.ASCII.GetString(Reader.Read("/NEW.TXT")).TrimEnd('\0'));
+            }
+            finally
+            {
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
+            }
         }
 
         [Fact]

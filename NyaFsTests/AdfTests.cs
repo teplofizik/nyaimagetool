@@ -1,3 +1,5 @@
+﻿using FsFile = NyaFs.Filesystem.Universal.Items.File;
+using NyaFs.ImageFormat.Elements.Fs;
 using NyaFs.Processor;
 using NyaFs.Processor.Scripting;
 using NyaFsAncientFs;
@@ -48,6 +50,33 @@ namespace NyaFsTests
 
             var Reader = new AdfReader(File.ReadAllBytes(Path));
             Assert.NotEmpty(Reader.ReadDir("/"));
+        }
+
+        [Fact]
+        public void Adf_RebuildsImage()
+        {
+            var Previous = NyaFs.ImageFormat.Plugins.PluginHost.Current;
+            try
+            {
+                var Fs = new LinuxFilesystem();
+                Fs.Fs.Root.Items.Add(new FsFile("NEW.TXT", 0, 0, 0x1A4,
+                    System.Text.Encoding.ASCII.GetBytes("hello amiga")));
+
+                var Writer = new AdfWriter();
+                Assert.True(Writer.CheckFilesystem(Fs));
+                Writer.WriteFs(Fs);
+                Assert.NotNull(Writer.RawStream);
+                Assert.True(AdfReader.IsAdf(Writer.RawStream));
+
+                var Reader = new AdfReader(Writer.RawStream);
+                Assert.Contains(Reader.ReadDir("/"), E => E.ShortName == "NEW.TXT");
+                Assert.Equal("hello amiga",
+                    System.Text.Encoding.ASCII.GetString(Reader.Read("/NEW.TXT")));
+            }
+            finally
+            {
+                NyaFs.ImageFormat.Plugins.PluginHost.SetCurrent(Previous);
+            }
         }
 
         [Fact]

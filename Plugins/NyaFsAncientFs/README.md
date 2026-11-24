@@ -1,4 +1,4 @@
-﻿# NyaFsAncientFs
+# NyaFsAncientFs
 
 External plugin for legacy filesystems and wrappers. Supported formats:
 CP/M 2.2/3, TRS-80 DMK with CP/M or TRSDOS/LDOS, Tandy CoCo Disk BASIC,
@@ -82,6 +82,8 @@ Reads ProDOS 8 `.po` images: volume directory at block 2, 39-byte directory
 entries, seedling/sapling/tree file storage and subdirectories. ProDOS index
 blocks use the split low/high block-pointer tables.
 
+`store` rebuilds a fresh 140K ProDOS volume with a flat root directory.
+
 ## Atari DOS 2.x
 
 ```text
@@ -91,6 +93,9 @@ ls /
 
 Reads Atari DOS 2.0/2.5 ATR images: 16-byte ATR header, sector size from the
 header, flat directory at sector 360 and contiguous file sectors.
+
+`store` rebuilds a fresh 720x128-byte ATR with files contiguous from sector 4;
+only flat root files are supported.
 
 ## Amiga OFS/FFS
 
@@ -102,6 +107,9 @@ ls /
 Reads 880K ADF images with OFS or FFS data blocks: root header/hash table,
 directory data blocks, file header data-block lists, file extension blocks and
 OFS `nextData` chains.
+
+`store` rebuilds a fresh 880K FFS image with flat root files (max 72 blocks
+per file).
 
 ## Commodore DOS
 
@@ -200,5 +208,7 @@ The reader also supports an explicit geometry through
 `new CpmReader(data, new CpmGeometry(...))`; this is useful for custom CP/M
 formats that are not in the candidate table.
 
-The plugin is read-only. `FsType` stays `Unknown` at the core level; the loaded
-filesystem is identified by the plugin format `cpm`.
+The plugin is read-only for arbitrary images. `store` can rebuild a fresh
+standard `ibm-3740` image (77T/26S/128B, 1 KiB blocks) from a flat root tree.
+`FsType` stays `Unknown` at the core level; the loaded filesystem is identified
+by the plugin format `cpm`.
