@@ -61,16 +61,18 @@ UBIFS: reader + writer.
 - LZO write (lzop container) — implemented (LZO1X-1 + Adler32).
 - Brotli, lzip (.lz), compress (.Z), 7z/LZMA2-container, zpaq, rzip — not implemented.
 - XZ write via NyaXZ is LZMA2-only: no BCJ/delta filters, full-reset chunks
-  (lower ratio than native xz). Read side (SharpCompress) handles BCJ.
-- XZ decompression now uses SharpCompress.XZStream as the primary path; the small
-  managed LZMA2 decoder is retained as fallback (it does not maintain history
-  across interleaved uncompressed chunks 0x01/0x02 or all reset states). A proper
-  stateful LZMA2 decoder remains a separate task.
-- Keenetic/ZNBG writer: preserve the source SquashFS compression/block size
-  (xz, 512 KiB in the tested 2.04 image) and any FS metadata when rebuilding a
-  dirty rootfs. NyaFs currently rebuilds with defaults, which can exceed the
-  fixed rootfs slot and makes `store` reject the image. Until this is done,
-  read-only/passthrough is the supported mode for Keenetic images.
+  (lower ratio than native xz). Read side handles LZMA2, BCJ, Delta and verifies
+  CRC32/CRC64/SHA-256.
+- XZ decompression: NyaXZ uses its own stateful LZMA2/XZ decoder (no SharpCompress)
+  — multi-block, LZMA2 continuation and uncompressed chunks, BCJ/Delta filters,
+  verified CRC32/CRC64/SHA-256. Concatenated `.xz` streams after the first one are
+  ignored.
+- NyaFs no longer references SharpCompress: SquashFS/CramFS zlib uses SharpZipLib
+  (already required for BZip2/ZIP) and SquashFS xz uses NyaXZ.
+- Keenetic/ZNBG writer: SquashFS compression and block size from the source image
+  are preserved in NyaFs 1.4.6+ (xz + 512 KiB in the tested 2.04 image), so a
+  dirty rootfs can be rebuilt in place. TLV.NDM signatures are still not verified
+  (read-only).
 
 ### Composite / vendor images
 OpenWRT.
